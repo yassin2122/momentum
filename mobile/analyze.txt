@@ -1,0 +1,6 @@
+Analyzing mobile...                                             
+
+   info - The type name 'Failure_' isn't an UpperCamelCase identifier. Try changing the name to follow the UpperCamelCase style - lib\core\error\result.dart:45:13 - camel_case_types
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\core\widgets\loading_overlay.dart:27:22 - prefer_const_constructors
+   info - 'anonKey' is deprecated and shouldn't be used. Use publishableKey instead. anonKey will be removed in a future major version. Try replacing the use of the deprecated member with the replacement - lib\main.dart:18:7 - deprecated_member_use
+
