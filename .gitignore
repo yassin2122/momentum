@@ -1,0 +1,12 @@
+# Environment variables
+.env
+*.env
+supabase/.env
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Large files & artifacts
+free-exercise-db.zip
+supabase/scripts/audit_report.json
