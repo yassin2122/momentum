@@ -31,7 +31,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   final _emailFocusNode = FocusNode();
 
-  bool _isSignUpMode = true;
+  bool _isSignUpMode = false;
 
   @override
   void dispose() {

@@ -20,12 +20,15 @@ import 'app_shell.dart';
 /// allowed to depend on a feature's presentation layer directly, since its
 /// entire job is wiring features together into a navigable app.
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-
+  // Do NOT watch authStateProvider here — watching would cause a new GoRouter
+  // to be constructed on every auth change, leaving MaterialApp.router with a
+  // stale instance. Instead, read the current state inside the redirect closure
+  // each time GoRouter asks for it (triggered by _AuthRefreshNotifier).
   return GoRouter(
     initialLocation: AppRoutes.splash,
     refreshListenable: _AuthRefreshNotifier(ref),
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
       final isLoggedIn = authState.valueOrNull != null;
       final isLoading = authState.isLoading && !authState.hasValue;
       final isAuthRoute = state.matchedLocation == AppRoutes.login ||

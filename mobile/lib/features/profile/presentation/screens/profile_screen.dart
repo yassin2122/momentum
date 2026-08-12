@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/section_title.dart';
+import '../../../../core/theme/app_sizing.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 
-/// "or continue with" section divider — two [Divider] rules flanking
-/// a centred label.
-///
-/// Rule colour: [AppColors.divider] (6% white), matching spec §2.
-/// Label style: `caption` with +2% letter spacing per spec §3.
+/// A horizontal rule split by a centered label — e.g. the `OR` divider
+/// between the email/password form and social sign-in options.
 class DividerWithLabel extends StatelessWidget {
-  const DividerWithLabel({this.label = 'OR', super.key});
+  const DividerWithLabel({super.key, required this.label});
 
   final String label;
 
@@ -17,20 +16,17 @@ class DividerWithLabel extends StatelessWidget {
     return Row(
       children: [
         const Expanded(
-          child: Divider(color: AppColors.divider, thickness: 1),
+          child: Divider(color: AppColors.divider, thickness: 1, height: 1),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: Text(
             label,
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textTertiary,
-              letterSpacing: 0.26, // +2% of 13 px ≈ 0.26
-            ),
+            style: AppTypography.labelMedium,
           ),
         ),
         const Expanded(
-          child: Divider(color: AppColors.divider, thickness: 1),
+          child: Divider(color: AppColors.divider, thickness: 1, height: 1),
         ),
       ],
     );

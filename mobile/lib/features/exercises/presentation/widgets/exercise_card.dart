@@ -5,6 +5,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/exercise_entity.dart';
+import '../../../../core/theme/app_sizing.dart';
 
 /// List row for one exercise. Browse mode only — picker mode (per
 /// COMPONENT_LIBRARY.md, for future Workout Session use) is intentionally

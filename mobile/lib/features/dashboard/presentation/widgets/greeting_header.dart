@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_sizing.dart';
 
 /// Top bar of the dashboard: time-aware greeting + user name on the
 /// left; a notification bell icon button on the right.

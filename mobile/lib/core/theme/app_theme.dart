@@ -3,6 +3,7 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_radius.dart';
 import 'app_typography.dart';
+import './app_sizing.dart';
 
 /// Single source of truth for the app's ThemeData.
 ///

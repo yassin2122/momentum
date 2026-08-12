@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
+import '../theme/app_sizing.dart';
 
 /// Standard search input. Distinct from [AppTextField] — no label, pill
 /// radius, always visible under a screen's header rather than a separate

@@ -149,8 +149,8 @@ class _CertificationRow extends StatelessWidget {
   final SkillStatus? current;
   const _CertificationRow({required this.current});
 
-  static const _tiers = [SkillStatus.completed, SkillStatus.master, SkillStatus.legendary];
-  static const _labels = {
+  static final _tiers = [SkillStatus.completed, SkillStatus.master, SkillStatus.legendary];
+  static final _labels = {
     SkillStatus.completed: 'Complete',
     SkillStatus.master: 'Master',
     SkillStatus.legendary: 'Legendary',

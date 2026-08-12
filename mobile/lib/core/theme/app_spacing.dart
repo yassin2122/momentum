@@ -76,23 +76,3 @@ abstract final class AppSpacing {
   static const double xxxl = xl3;
 }
 
-/// Sizing tokens — touch targets, icon sizes, and standard control
-/// heights. Not part of the MOTRA spacing scale above (those are gaps
-/// *between* things; these are the dimensions of the things
-/// themselves), and not part of the original MOTRA design-system file
-/// list either — restored here during the post-migration cleanup
-/// because every interactive control in the app depends on it and
-/// there is no glass-system equivalent to migrate to instead.
-abstract final class AppSizing {
-  /// Absolute minimum tappable area, per platform accessibility
-  /// guidance — every tappable control must be at least this large
-  /// regardless of how small its visible content looks.
-  static const double minTouchTarget = 48;
-
-  static const double buttonHeight = 56;
-  static const double inputHeight = 56;
-
-  static const double iconSm = 18;
-  static const double iconMd = 24;
-  static const double iconLg = 32;
-}

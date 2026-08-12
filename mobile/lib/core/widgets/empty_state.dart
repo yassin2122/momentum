@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'secondary_button.dart';
+import '../theme/app_sizing.dart';
 
 /// Standard empty state: icon + title + message + optional action.
 /// One component for every "nothing here yet" case app-wide — zero

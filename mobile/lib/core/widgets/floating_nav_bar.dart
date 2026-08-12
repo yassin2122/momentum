@@ -7,6 +7,7 @@ import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_typography.dart';
+import '../theme/app_sizing.dart';
 
 class NavBarItem {
   const NavBarItem({required this.icon, required this.label});

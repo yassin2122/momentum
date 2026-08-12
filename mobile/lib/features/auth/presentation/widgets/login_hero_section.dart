@@ -1,32 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import 'hero_character_glow.dart';
-import 'wordmark_lockup.dart';
 
-/// Cinematic hero zone for the login screen — ~42% of viewport height.
+/// Static hero visual for the auth screen — vertical background
+/// gradient plus the MOTRA mascot illustration, anchored bottom-right
+/// with its glow baked into the source asset.
 ///
-/// Layout mirrors the React/Tailwind mockup:
-/// - Full-bleed dark gradient canvas behind the mascot
-/// - [HeroCharacterGlow] centred in the zone
-/// - Bottom fade dissolving into the scaffold background
-/// - [WordmarkLockup] anchored to the lower third of the hero
+/// Deliberately dumb/static: headline copy ("Start your journey" vs
+/// "Welcome back") lives in [LoginScreen] itself so it can toggle
+/// between login/sign-up modes and animate independently of this
+/// backdrop, which never changes.
 class LoginHeroSection extends StatelessWidget {
   const LoginHeroSection({super.key});
 
-  static const _heroGradient = LinearGradient(
-    colors: [
-      Color(0xFF1A1F2E),
-      Color(0xFF0B0E17),
-    ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-
   @override
   Widget build(BuildContext context) {
-    final heroHeight = MediaQuery.sizeOf(context).height * 0.42;
+    // ~42% of screen height matches the reference layout's hero-to-form
+    // proportion across common phone aspect ratios.
+    final double heroHeight = MediaQuery.sizeOf(context).height * 0.42;
 
     return SizedBox(
       height: heroHeight,
@@ -34,44 +25,25 @@ class LoginHeroSection extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const DecoratedBox(decoration: BoxDecoration(gradient: _heroGradient)),
-
-          const Align(
-            alignment: Alignment(0, -0.15),
-            child: HeroCharacterGlow(),
-          ),
-
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  AppColors.bgGradientBottom,
-                  AppColors.bgGradientBottom.withValues(alpha: 0.3),
-                  AppColors.transparent,
-                ],
-                stops: const [0.0, 0.35, 1.0],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.bgGradientTop, AppColors.bgGradientBottom],
               ),
             ),
           ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 16,
-            child: const Center(child: WordmarkLockup())
-                .animate()
-                .fadeIn(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOut,
-                )
-                .slideY(
-                  begin: 0.08,
-                  end: 0,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOut,
-                ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: FractionallySizedBox(
+              heightFactor: 0.95,
+              child: Image.asset(
+                'assets/images/auth/mascot_hero.png',
+                fit: BoxFit.contain,
+                alignment: Alignment.bottomRight,
+              ),
+            ),
           ),
         ],
       ),

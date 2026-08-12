@@ -7,6 +7,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/section_title.dart';
+import '../../../../core/theme/app_sizing.dart';
 
 class StatisticsScreen extends StatelessWidget {
   const StatisticsScreen({super.key});
