@@ -9,30 +9,27 @@ import 'core/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await Supabase.initialize(
-      // Project URL (NOT /rest/v1/)
-      url: 'https://adskpshwfymknhvqjmlu.supabase.co',
-
-      // Your Publishable (Anon) Key
-      publishableKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkc2twc2h3Znlta25odnFqbWx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NDI3ODIsImV4cCI6MjEwMDMxODc4Mn0.YrE5JJDakpkQceUSwvvAueuE0FySld7m3lMr7eRjKW4',
-    );
-
-    debugPrint('✅ Supabase initialized successfully');
-  } catch (e, stackTrace) {
-    debugPrint('❌ Failed to initialize Supabase: $e');
-    debugPrintStack(stackTrace: stackTrace);
-  }
+  await Supabase.initialize(
+    // Credentials are injected at build time via --dart-define.
+    // Run:  flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
+    // or use a --dart-define-from-file=.env flag (Flutter ≥3.7).
+    url: const String.fromEnvironment('SUPABASE_URL'),
+    anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+  );
 
   runApp(
     const ProviderScope(
-      child: GymApp(),
+      child: MomentumApp(),
     ),
   );
 }
 
-class GymApp extends ConsumerWidget {
-  const GymApp({super.key});
+/// Convenient top-level accessor — use `supabase.auth`, `supabase.from(...)`,
+/// etc. anywhere in the app without reaching for `Supabase.instance.client`.
+final supabase = Supabase.instance.client;
+
+class MomentumApp extends ConsumerWidget {
+  const MomentumApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

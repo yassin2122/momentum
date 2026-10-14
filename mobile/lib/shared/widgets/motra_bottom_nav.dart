@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
-import 'package:gym_app/lib/core/theme/app_colors.dart';
-import 'package:gym_app/lib/core/theme/app_typography.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
 
 /// Shell wrapping every bottom-nav-bearing screen. Port of PhoneScreen's
 /// per-page `<BottomNav />` + `<HomeIndicator />` composition, but as a

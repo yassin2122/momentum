@@ -19,6 +19,10 @@ abstract final class AppConstants {
   // Local storage keys
   static const String keyIsGuest = 'is_guest_session';
   static const String keyHasSeenOnboarding = 'has_seen_onboarding';
+
+  // Deep-link / OAuth redirect URL registered in AndroidManifest.xml and
+  // iOS Info.plist.  Supabase will redirect here after OAuth / magic-link flows.
+  static const String authRedirectUrl = 'io.momentum.app://login-callback/';
 }
 
 /// Route path constants, referenced by [AppRouter] and any widget that

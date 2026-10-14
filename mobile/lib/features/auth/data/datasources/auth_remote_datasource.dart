@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/exceptions.dart';
 
 /// Wraps raw Supabase Auth SDK calls. This is the ONLY place in the app
@@ -72,9 +73,33 @@ class AuthRemoteDataSource {
     }
   }
 
+  /// Initiates an OAuth sign-in flow (e.g. Google, Apple).
+  ///
+  /// Supabase will redirect back to [AppConstants.authRedirectUrl] after the
+  /// user authenticates in the browser/web-view.
+  Future<void> signInWithOAuth(supabase.OAuthProvider provider) async {
+    try {
+      await _client.auth.signInWithOAuth(
+        provider,
+        redirectTo: AppConstants.authRedirectUrl,
+      );
+    } on supabase.AuthException catch (e) {
+      throw AuthException(e.code ?? 'unknown', e.message);
+    } catch (_) {
+      throw const NetworkException();
+    }
+  }
+
+  /// Sends a password-reset email.
+  ///
+  /// [AppConstants.authRedirectUrl] is passed as `redirectTo` so the reset
+  /// link reopens the app on the password-update screen instead of a browser.
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await _client.auth.resetPasswordForEmail(email);
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: AppConstants.authRedirectUrl,
+      );
     } on supabase.AuthException catch (e) {
       throw AuthException(e.code ?? 'unknown', e.message);
     } catch (_) {

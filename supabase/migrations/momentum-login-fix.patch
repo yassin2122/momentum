@@ -1,0 +1,294 @@
+diff --git a/mobile/lib/core/error/failure.dart b/mobile/lib/core/error/failure.dart
+index 1951f94..1091895 100644
+--- a/mobile/lib/core/error/failure.dart
++++ b/mobile/lib/core/error/failure.dart
+@@ -34,6 +34,26 @@ final class UserNotFoundFailure extends Failure {
+   const UserNotFoundFailure() : super('No account found for this email.');
+ }
+ 
++final class EmailNotConfirmedFailure extends Failure {
++  const EmailNotConfirmedFailure()
++      : super('Please confirm your email first, then log in.');
++}
++
++final class ConfirmationRequiredFailure extends Failure {
++  const ConfirmationRequiredFailure()
++      : super('Account created. Check your email to confirm it, then log in.');
++}
++
++final class RateLimitFailure extends Failure {
++  const RateLimitFailure()
++      : super('Too many attempts. Please wait a minute and try again.');
++}
++
++final class GuestDisabledFailure extends Failure {
++  const GuestDisabledFailure()
++      : super('Guest mode is not available right now. Please log in.');
++}
++
+ // ---- General failures ----
+ 
+ final class NetworkFailure extends Failure {
+diff --git a/mobile/lib/features/auth/data/datasources/auth_remote_datasource.dart b/mobile/lib/features/auth/data/datasources/auth_remote_datasource.dart
+index 87e0986..ac16721 100644
+--- a/mobile/lib/features/auth/data/datasources/auth_remote_datasource.dart
++++ b/mobile/lib/features/auth/data/datasources/auth_remote_datasource.dart
+@@ -29,10 +29,14 @@ class AuthRemoteDataSource {
+         throw const AuthException('no_user', 'Sign in failed');
+       }
+       return user;
++    } on AuthException {
++      rethrow;
++    } on supabase.AuthRetryableFetchException {
++      throw const NetworkException();
+     } on supabase.AuthException catch (e) {
+       throw AuthException(e.code ?? 'unknown', e.message);
+-    } catch (_) {
+-      throw const NetworkException();
++    } catch (e) {
++      throw _asNetworkOrRethrow(e);
+     }
+   }
+ 
+@@ -49,11 +53,20 @@ class AuthRemoteDataSource {
+       if (user == null) {
+         throw const AuthException('no_user', 'Registration failed');
+       }
++      // With "Confirm email" enabled, Supabase returns a user but NO session.
++      // Treating that as logged-in sent people to the dashboard unauthenticated.
++      if (response.session == null) {
++        throw const AuthException('confirmation_required');
++      }
+       return user;
++    } on AuthException {
++      rethrow;
++    } on supabase.AuthRetryableFetchException {
++      throw const NetworkException();
+     } on supabase.AuthException catch (e) {
+       throw AuthException(e.code ?? 'unknown', e.message);
+-    } catch (_) {
+-      throw const NetworkException();
++    } catch (e) {
++      throw _asNetworkOrRethrow(e);
+     }
+   }
+ 
+@@ -65,30 +78,55 @@ class AuthRemoteDataSource {
+         throw const AuthException('no_user', 'Could not start guest session');
+       }
+       return user;
++    } on AuthException {
++      rethrow;
++    } on supabase.AuthRetryableFetchException {
++      throw const NetworkException();
+     } on supabase.AuthException catch (e) {
+       throw AuthException(e.code ?? 'unknown', e.message);
+-    } catch (_) {
+-      throw const NetworkException();
++    } catch (e) {
++      throw _asNetworkOrRethrow(e);
+     }
+   }
+ 
+   Future<void> sendPasswordResetEmail(String email) async {
+     try {
+       await _client.auth.resetPasswordForEmail(email);
++    } on AuthException {
++      rethrow;
++    } on supabase.AuthRetryableFetchException {
++      throw const NetworkException();
+     } on supabase.AuthException catch (e) {
+       throw AuthException(e.code ?? 'unknown', e.message);
+-    } catch (_) {
+-      throw const NetworkException();
++    } catch (e) {
++      throw _asNetworkOrRethrow(e);
+     }
+   }
+ 
+   Future<void> signOut() async {
+     try {
+       await _client.auth.signOut();
++    } on AuthException {
++      rethrow;
++    } on supabase.AuthRetryableFetchException {
++      throw const NetworkException();
+     } on supabase.AuthException catch (e) {
+       throw AuthException(e.code ?? 'unknown', e.message);
+-    } catch (_) {
+-      throw const NetworkException();
++    } catch (e) {
++      throw _asNetworkOrRethrow(e);
++    }
++  }
++
++  /// Only genuine connectivity problems become [NetworkException]; anything
++  /// else is re-thrown so it is not mislabelled as "no internet".
++  Object _asNetworkOrRethrow(Object e) {
++    final text = e.toString();
++    if (text.contains('SocketException') ||
++        text.contains('ClientException') ||
++        text.contains('Failed host lookup') ||
++        text.contains('TimeoutException')) {
++      return const NetworkException();
+     }
++    throw e;
+   }
+ }
+diff --git a/mobile/lib/features/auth/data/repositories/auth_repository_impl.dart b/mobile/lib/features/auth/data/repositories/auth_repository_impl.dart
+index 365c53e..d9c377c 100644
+--- a/mobile/lib/features/auth/data/repositories/auth_repository_impl.dart
++++ b/mobile/lib/features/auth/data/repositories/auth_repository_impl.dart
+@@ -67,6 +67,8 @@ class AuthRepositoryImpl implements AuthRepository {
+     try {
+       final user = await _remoteDataSource.signInAnonymously();
+       return Result.success(UserModel.fromSupabaseUser(user));
++    } on AuthException catch (e) {
++      return Result.failure(_mapAuthError(e));
+     } on NetworkException {
+       return const Result.failure(NetworkFailure());
+     } catch (_) {
+@@ -116,6 +118,15 @@ class AuthRepositoryImpl implements AuthRepository {
+         return const InvalidEmailFailure();
+       case 'user_not_found':
+         return const UserNotFoundFailure();
++      case 'email_not_confirmed':
++        return const EmailNotConfirmedFailure();
++      case 'confirmation_required':
++        return const ConfirmationRequiredFailure();
++      case 'over_request_rate_limit':
++      case 'over_email_send_rate_limit':
++        return const RateLimitFailure();
++      case 'anonymous_provider_disabled':
++        return const GuestDisabledFailure();
+       default:
+         return ServerFailure(e.message);
+     }
+diff --git a/mobile/lib/features/auth/presentation/providers/auth_state_notifier.dart b/mobile/lib/features/auth/presentation/providers/auth_state_notifier.dart
+index e9efe0a..190cf1a 100644
+--- a/mobile/lib/features/auth/presentation/providers/auth_state_notifier.dart
++++ b/mobile/lib/features/auth/presentation/providers/auth_state_notifier.dart
+@@ -1,4 +1,6 @@
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
++import '../../../../core/network/supabase_client_provider.dart';
+ import '../../../../core/error/failure.dart';
+ import '../../domain/entities/user_entity.dart';
+ import 'auth_providers.dart';
+@@ -11,7 +13,18 @@ import 'auth_providers.dart';
+ class AuthStateNotifier extends AsyncNotifier<UserEntity?> {
+   @override
+   Future<UserEntity?> build() async {
+-    return ref.watch(authRepositoryProvider).getCurrentUser();
++    final repo = ref.read(authRepositoryProvider);
++    // Keep app state in sync if the session ends elsewhere (expired refresh
++    // token, sign-out from another path).
++    final sub = ref.read(supabaseClientProvider).auth.onAuthStateChange.listen(
++      (event) async {
++        if (event.event == supabase.AuthChangeEvent.signedOut) {
++          state = const AsyncData(null);
++        }
++      },
++    );
++    ref.onDispose(sub.cancel);
++    return repo.getCurrentUser();
+   }
+ 
+   Future<Failure?> signIn({
+diff --git a/mobile/lib/features/auth/presentation/screens/login_screen.dart b/mobile/lib/features/auth/presentation/screens/login_screen.dart
+index e96807b..da2147e 100644
+--- a/mobile/lib/features/auth/presentation/screens/login_screen.dart
++++ b/mobile/lib/features/auth/presentation/screens/login_screen.dart
+@@ -186,7 +186,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
+                         const SizedBox(height: 20),
+                         _staggered(
+                           GradientPillButton(
+-                            label: 'LOG IN',
++                            label: _isSignUpMode ? 'SIGN UP' : 'LOG IN',
+                             isLoading: isLoading,
+                             onPressed: _handleAuthSubmit,
+                           ),
+diff --git a/mobile/lib/main.dart b/mobile/lib/main.dart
+index 224a414..116acde 100644
+--- a/mobile/lib/main.dart
++++ b/mobile/lib/main.dart
+@@ -12,10 +12,17 @@ Future<void> main() async {
+   try {
+     await Supabase.initialize(
+       // Project URL (NOT /rest/v1/)
+-      url: 'https://adskpshwfymknhvqjmlu.supabase.co',
++      url: const String.fromEnvironment(
++        'SUPABASE_URL',
++        defaultValue: 'https://adskpshwfymknhvqjmlu.supabase.co',
++      ),
+ 
+       // Your Publishable (Anon) Key
+-      publishableKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkc2twc2h3Znlta25odnFqbWx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NDI3ODIsImV4cCI6MjEwMDMxODc4Mn0.YrE5JJDakpkQceUSwvvAueuE0FySld7m3lMr7eRjKW4',
++      publishableKey: const String.fromEnvironment(
++        'SUPABASE_ANON_KEY',
++        defaultValue:
++            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkc2twc2h3Znlta25odnFqbWx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NDI3ODIsImV4cCI6MjEwMDMxODc4Mn0.YrE5JJDakpkQceUSwvvAueuE0FySld7m3lMr7eRjKW4',
++      ),
+     );
+ 
+     debugPrint('✅ Supabase initialized successfully');
+diff --git a/supabase/migrations/20261008000001_fix_signup_trigger_search_path.sql b/supabase/migrations/20261008000001_fix_signup_trigger_search_path.sql
+new file mode 100644
+index 0000000..71a396a
+--- /dev/null
++++ b/supabase/migrations/20261008000001_fix_signup_trigger_search_path.sql
+@@ -0,0 +1,54 @@
++-- FIX: sign-up / first login failing with "Database error saving new user".
++--
++-- Cause: handle_new_user() and initialize_user_skill_progress() are
++-- SECURITY DEFINER but had no fixed search_path. The auth.users trigger runs
++-- in the auth service's context where `public` is not on the search_path, so
++-- the unqualified enum casts (skill_status) failed and rolled back the signup.
++-- Fix: pin search_path and schema-qualify the enum type.
++
++create or replace function public.initialize_user_skill_progress(p_user_id uuid)
++returns void
++language plpgsql
++security definer
++set search_path = public, pg_temp
++as $$
++begin
++  insert into public.skill_progress (user_id, skill_id, status)
++  select p_user_id, s.id,
++    case when not exists (select 1 from public.skill_prerequisites sp where sp.skill_id = s.id)
++         then 'available'::public.skill_status else 'locked'::public.skill_status end
++  from public.skills s
++  where s.deleted_at is null and s.is_active
++  on conflict (user_id, skill_id) do nothing;
++end;
++$$;
++
++create or replace function public.handle_new_user()
++returns trigger
++language plpgsql
++security definer
++set search_path = public, pg_temp
++as $$
++begin
++  insert into public.profiles (id, username)
++  values (new.id, 'user_' || substr(replace(new.id::text, '-', ''), 1, 8))
++  on conflict (id) do nothing;
++  perform public.initialize_user_skill_progress(new.id);
++  return new;
++end;
++$$;
++
++drop trigger if exists on_auth_user_created on auth.users;
++create trigger on_auth_user_created
++  after insert on auth.users
++  for each row execute function public.handle_new_user();
++
++-- Backfill: accounts created while the trigger was failing/partial.
++insert into public.profiles (id, username)
++select u.id, 'user_' || substr(replace(u.id::text, '-', ''), 1, 8)
++from auth.users u
++left join public.profiles p on p.id = u.id
++where p.id is null
++on conflict (id) do nothing;
++
++select public.initialize_user_skill_progress(id) from public.profiles;

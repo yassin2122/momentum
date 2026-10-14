@@ -193,6 +193,8 @@ abstract final class AppTypography {
   static final TextStyle title = titleMedium;
   static final TextStyle body = bodyMedium;
   static final TextStyle headline = headlineMedium;
+  // Convenience alias used by nav-bar and micro-label widgets.
+  static final TextStyle small = labelSmall;
 
   // ==========================================================
   // Numeric — tabular-figure styles for anything where digits sit in

@@ -45,5 +45,20 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Deep-link / OAuth callback — matches io.momentum.app://login-callback/ -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>io.momentum.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>io.momentum.app</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

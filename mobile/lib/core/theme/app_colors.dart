@@ -199,4 +199,102 @@ abstract final class AppColors {
   // spinner case can be retuned independently of dialog/sheet scrims.
   // ==========================================================
   static const Color overlayScrim = overlay;
+
+  // ==========================================================
+  // Background gradient — used on auth screens and anywhere a
+  // top-to-bottom dark gradient is needed behind content.
+  // ==========================================================
+  static const Color bgGradientTop = Color(0xFF12151B);
+  static const Color bgGradientBottom = Color(0xFF191C21);
+
+  // ==========================================================
+  // Card surface / border — glass-style cards. Surface is slightly
+  // lighter than backgroundElevated; border is a faint white stroke.
+  // ==========================================================
+  static const Color cardSurface = Color(0x14FFFFFF); // ~8% white glass
+  static const Color cardBorder = Color(0x1AFFFFFF); // ~10% white stroke
+
+  // ==========================================================
+  // Hero glow — the teal/green bloom behind mascot / hero elements.
+  // heroGlowSoft is the low-opacity fill; heroGlow is the stronger rim.
+  // ==========================================================
+  static const Color heroGlow = Color(0xFF3DDDC2);
+  static const Color heroGlowSoft = Color(0x1A3DDDC2); // ~10% heroGlow
+
+  // ==========================================================
+  // CTA gradient — three-stop gradient for the primary action button.
+  // start (warm orange) → mid (coral) → end (teal) gives the energy feel.
+  // ==========================================================
+  static const Color ctaGradientStart = Color(0xFFFF7A3D);
+  static const Color ctaGradientMid = Color(0xFFFF4E6A);
+  static const Color ctaGradientEnd = Color(0xFF235768);
+
+  // ==========================================================
+  // Accent link — inline hyperlink / action text tint.
+  // ==========================================================
+  static const Color accentLink = Color(0xFF5B93F5);
+
+  // ==========================================================
+  // Activity rings — move / exercise / stand, plus the shared track.
+  // ==========================================================
+  static const Color ringMove = Color(0xFFFF3B30);
+  static const Color ringExercise = Color(0xFF30D158);
+  static const Color ringStand = Color(0xFF5AC8FA);
+  static const Color ringTrack = Color(0x26FFFFFF); // ~15% white track fill
+
+  // ==========================================================
+  // Heatmap — contribution / activity calendar cells.
+  // ==========================================================
+  static const Color heatmapWireframe = Color(0x26FFFFFF);
+  static const Color heatmapActiveStart = Color(0xFF235768);
+  static const Color heatmapActiveEnd = Color(0xFF3DDDC2);
+
+  // ==========================================================
+  // Skill violet — roadmap skill-tree accent hue.
+  // ==========================================================
+  static const Color skillViolet = Color(0xFF7C5CBF);
+  static const Color skillVioletLight = Color(0x337C5CBF); // ~20% violet
+
+  // ==========================================================
+  // Streak flame — hot orange/amber gradient for streak indicators.
+  // ==========================================================
+  static const Color streakFlameStart = Color(0xFFFF9F0A);
+  static const Color streakFlameEnd = Color(0xFFFF3B30);
+
+  // ==========================================================
+  // Social heart — like / reaction color on community feed cards.
+  // ==========================================================
+  static const Color socialHeart = Color(0xFFFF2D55);
+
+  // ==========================================================
+  // XP track — the background track behind an XP / progress bar.
+  // ==========================================================
+  static const Color xpTrack = Color(0x26FFFFFF);
+
+  // ==========================================================
+  // Glass fill gradient pair — top/bottom stops for the floating
+  // nav bar's glass container gradient (separate from the general
+  // glass* tokens so the nav bar can be retuned independently).
+  // ==========================================================
+  static const Color glassFillTop = Color(0x1AFFFFFF); // ~10% white
+  static const Color glassFillBottom = Color(0x0DFFFFFF); // ~5% white
+
+  // ==========================================================
+  // Shadow soft list — convenience alias for a single soft shadow
+  // used in the floating nav bar; kept here (not AppShadows) to
+  // avoid a circular dependency between theme files.
+  // ==========================================================
+  static const List<BoxShadow> shadowSoft = [
+    BoxShadow(
+      color: Color(0x40000000), // 25% black
+      blurRadius: 20,
+      offset: Offset(0, 6),
+    ),
+  ];
+
+  // ==========================================================
+  // Text muted — semantic alias for tertiary text, used in widgets
+  // that need a name more descriptive than "textTertiary."
+  // ==========================================================
+  static const Color textMuted = textTertiary;
 }

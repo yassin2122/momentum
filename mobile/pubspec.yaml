@@ -17,7 +17,7 @@ dependencies:
   go_router: ^17.3.0
 
   # Backend / auth / storage
-  supabase_flutter: ^2.16.0
+  supabase_flutter: ^2.18.0
 
   # Charts (Dashboard/Statistics — wired now, used starting Phase 2)
   fl_chart: ^0.68.0

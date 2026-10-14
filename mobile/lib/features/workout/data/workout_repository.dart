@@ -1,4 +1,4 @@
-import 'package:gym_app/lib/core/supabase/supabase_client.dart';
+import '../../../main.dart' show supabase;
 import '../../../core/models/exercise.dart';
 import '../../../core/models/workout.dart';
 
