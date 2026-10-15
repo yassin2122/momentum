@@ -1,5 +1,12 @@
 # CLAUDE.md
 
+Your Master Product Instruction currently lives only in the claude.ai Project. Claude Code reads CLAUDE.md automatically every session, so put a short version there:
+
+the three pillars
+the “no social” rule
+the permission-based coach access rule
+append-only migrations
+the folder conventions
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What this is
@@ -23,26 +30,29 @@ Naming is inconsistent across generations of the code: `AppConstants.appName` sa
 | `archive/lib.zip` | snapshot of the full `mobile/lib` tree (~170 files) — the best reference for the intended structure |
 | `node_modules/`, `package.json` | only `@supabase/server`, used for ad-hoc admin scripting; unrelated to the app build |
 
-## Read this before touching anything: the working tree is pruned
+## Current tree state (re-verified this session, supersedes any earlier "pruned tree" note)
 
-The working tree is in the middle of a restructure and **does not compile**. `flutter analyze` reports ~466 issues.
+The restructure described in earlier revisions of this file has been restored: the working
+tree now matches `HEAD` — full `mobile/lib` (93 Dart files), migrations `…01`–`…32` plus
+`20260806000001` all present, `mobile/android/app/build.gradle.kts` present, and `docs/`,
+`app_design/`, `archive/`, `mobile/test/` all exist on disk. **Do not treat the app as
+missing files** — if something looks absent, it's more likely dead/orphaned/duplicated code
+than a deleted file. Check `git log` / `archive/lib.zip` only as a last resort now.
 
-- `mobile/lib` has 9 files on disk; `HEAD` has 171. Surviving files import modules that are gone (`core/routing/app_router.dart`, `core/theme/app_theme.dart`, `core/error/exceptions.dart`, `core/models/*`), so nearly every error is a missing-file cascade, not broken logic.
-- `mobile/android/app/build.gradle*` is deleted (only `src/` remains), so the Android build is also broken.
-- `supabase/migrations/` has only `…26`–`…32` on disk; `01`–`25` exist in `HEAD`.
-- `app_design/`, `archive/docs/` (ARCHITECTURE, DESIGN_SYSTEM, PRODUCT, SETUP, BRAND_GUIDE, MIGRATION_NOTES), `free-exercise-db/`, and `mobile/test/` are deleted on disk but present in `HEAD`.
-- ~2990 deletions are staged-as-unstaged in `git status`. Nothing has been committed since.
+That said, the app is **not healthy**:
 
-So: before concluding a file or symbol doesn't exist, check `HEAD` and `archive/lib.zip`. Restore rather than re-author.
+- `flutter analyze` (from `mobile/`, after `flutter pub get`) reports **276 issues**
+  (verified by re-running it, not just read from a doc).
+- `flutter test` **fails to even load** — `test/widget_test.dart:18` still references
+  `GymApp`; the real widget is `MomentumApp` (`mobile/lib/main.dart:31`).
 
-```bash
-git show HEAD:archive/docs/ARCHITECTURE.md        # read a deleted doc
-git ls-tree -r --name-only HEAD -- mobile/lib     # what the full tree looked like
-git checkout HEAD -- mobile/lib/core/routing      # restore a subtree
-unzip -l archive/lib.zip                          # browse the archived lib snapshot
-```
-
-Note that `archive/docs/ARCHITECTURE.md` predates migration 26 — it still documents the social layer (`posts`, `friendships`, `activities`) that migration 26 dropped. `supabase/SCHEMA.md` is the current source of truth; ARCHITECTURE.md is only reliable for RLS strategy, storage buckets, soft-delete, and performance notes.
+None of this is a missing-file cascade — every error traces back to a known dead,
+duplicated, or orphaned file (unwired `dashboard_page.dart`, two unfinished generations of
+the Progress UI missing `core/models/*.dart`, duplicate `features/workout/` vs
+`features/workouts/`, the orphaned `motra_bottom_nav.dart`, and the `GymApp` rename). Full
+file-by-file detail: **`docs/CLEANUP_AUDIT.md`** — read that before re-deriving any of this
+from scratch. None of it has been fixed as part of adding the skill system in
+`.claude/skills/`; it's tracked for a later cleanup phase, not resolved.
 
 ## Commands
 
@@ -63,9 +73,24 @@ flutter run \
   --dart-define=SUPABASE_URL=https://<ref>.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=<anon key>
 
-# or, since supabase/.env already holds those keys:
-flutter run --dart-define-from-file=../supabase/.env
+# or, since mobile/.env already holds the matching client credentials:
+cd mobile && flutter run --dart-define-from-file=.env
 ```
+
+**Two different `.env` files exist — don't mix them up, it's a 404-producing trap:**
+- `mobile/.env` — client credentials for the Flutter app (`SUPABASE_URL` +
+  publishable `SUPABASE_ANON_KEY`) for the CLI-linked project, ref `lnpraurmeprnfzfervgj`
+  ("gym" — see `supabase/.temp/linked-project.json`). This is the one to pass via
+  `--dart-define-from-file`. Its own header comment ("loaded by flutter_dotenv") is
+  inaccurate — nothing calls `dotenv.load()` (see below); it's meant for dart-define, not
+  dotenv.
+- `supabase/.env` — **server-side only** (seeding scripts, `supabase/scripts/*.js`, local
+  CLI), holds `SUPABASE_SERVICE_ROLE_KEY` and, as of this session, a **stale/different**
+  `SUPABASE_URL` (ref `adskpshwfymknhvqjmlu` — not the linked project). Never pass this file
+  to `flutter run` — a *.supabase.co subdomain for the wrong/nonexistent project ref still
+  resolves (wildcard DNS) but returns an empty-body 404 on every endpoint including
+  `/auth/v1/...`, which is exactly what `gotrue`'s `AuthUnknownException` surfaces as
+  "Received an empty response with status code 404" if someone does this.
 
 Backend (from repo root, CLI already linked — see `supabase/.temp/project-ref`):
 
@@ -123,7 +148,7 @@ lib/
 ```
 
 - **State**: `flutter_riverpod`, `ProviderScope` at the root. Providers live in each feature's `presentation/providers/`.
-- **Navigation**: `go_router`, with a single persistent `ShellRoute` (`MotraShell`) wrapping the bottom-nav tabs so the nav bar isn't rebuilt per navigation. All paths are constants on `AppRoutes` — never a raw path string in a widget. `AppRoutes` currently lacks `achievements`, `roadmap`, and `start`, which `motra_bottom_nav.dart` references; that's part of the pruned state.
+- **Navigation**: `go_router`, with a single persistent shell wrapping the bottom-nav tabs so the nav bar isn't rebuilt per navigation. The shell actually wired into `app_router.dart` is `AppShell` (`core/routing/app_shell.dart`) + `FloatingNavBar`, 5 tabs: dashboard/workouts/exercises/statistics/profile. `shared/widgets/motra_bottom_nav.dart` (`MotraShell`/`MotraBottomNav`, 4 tabs) is a second, **unwired** shell — nothing imports it, and it references `AppRoutes.achievements`/`.roadmap`/`.start`, which don't exist on `AppRoutes`. All paths are constants on `AppRoutes` — never a raw path string in a widget. See Known gaps: neither shell matches the product's actual 3-pillar TRAIN/PROGRESS/CONNECT nav target.
 - **Supabase access**: `main.dart` exports a top-level `final supabase = Supabase.instance.client`, and repositories import it as `import '../../../main.dart' show supabase;`. Auth is the exception — `AuthRemoteDataSource` is the only place that touches `supabase_flutter`'s auth API, and it translates raw Supabase errors into the app's own `AuthException` / `NetworkException` so the repository can map them to domain `Failure`s.
 - **Theme**: dark-only (`themeMode: ThemeMode.dark`; both `theme` and `darkTheme` are `AppTheme.darkTheme`). Every color comes from `AppColors` and every `TextStyle` from `AppTypography` — no widget constructs a `TextStyle` or references `Colors.white`/`Colors.black` directly. `AppTypography._style` requires an explicit line height, so no token can forget one. Timing constants live on `AppConstants` (`animFast`, `animMedium`, …).
 
@@ -131,13 +156,92 @@ lib/
 
 OAuth and password-reset redirects use `io.momentum.app://login-callback/`, defined once as `AppConstants.authRedirectUrl` and registered in `mobile/android/app/src/main/AndroidManifest.xml` (and iOS `Info.plist`). Changing it means changing all three plus the Supabase dashboard redirect allowlist.
 
-## Known gaps (from SCHEMA.md §7)
+## Known gaps
 
-- Assigned-program *completion* isn't automated — only `start_assigned_program` exists.
-- `profiles` is readable by every signed-in user, including birthday, height, and weight. Tighten before launch.
+`SCHEMA.md` §7 was written after migration 30 and is stale on two points — migration `32`
+(`assignment_completion_profile_privacy.sql`) already resolved them:
+
+- **Assigned-program completion**: resolved. `complete_assignment(p_assignment_id)` marks a
+  `program_assignments` row completed and closes the linked `user_program_enrollment`;
+  callable by the athlete, or the coach while the relationship is `active`.
+- **Profile privacy**: resolved. `anon`/`authenticated` can no longer read the full
+  `profiles` row — only a safe column allowlist is granted (`id, username, display_name,
+  avatar_url, bio, role, created_at, updated_at, deleted_at`). Birthday/height/weight/gender
+  are reachable only via `get_my_private_profile()` (owner) or `get_athlete_body_profile
+  (athlete)` (Captain, gated by `coach_can_view(athlete, 'body')`). **Any query against
+  `profiles` must select explicit columns — `select('*')` now errors.** No client code
+  queries `profiles` directly yet (`features/profile/` has no data layer), so there's
+  nothing to fix today, but this is a trap for the first person who adds one.
+
+Still open:
+
 - No payments; `coaching_plans` prices are display-only.
-- Old social values linger in the `notification_type` enum (Postgres can't drop enum values), and the emptied `post-media` storage bucket still needs deleting in the dashboard.
+- Old social values linger in the `notification_type` enum (Postgres can't drop enum
+  values); the emptied `post-media` storage bucket still needs deleting in the Supabase
+  dashboard (dashboard-only, not fixable by a migration).
+- The live nav (`AppShell`, 5 tabs) and the unwired `MotraShell` (4 tabs, broken `AppRoutes`
+  refs) both predate the product's actual target — a 3-tab **TRAIN / PROGRESS / CONNECT**
+  nav. Neither is "the convention" to extend; don't add a tab to either as if it were final.
+  No `features/connect/` folder exists at all yet, despite Connect being fully built in the
+  schema (migrations 27–32) — it's the single largest gap between schema and app.
+- **"Motra"/"MOTRA" naming** predates the app being named Momentum and still appears in:
+  `mobile/lib/shared/widgets/motra_bottom_nav.dart`;
+  `mobile/lib/core/theme/app_typography.dart`, `app_spacing.dart`, `app_radius.dart`,
+  `app_sizing.dart` (doc comments only — the token values themselves are fine);
+  `mobile/lib/features/auth/presentation/screens/login_screen.dart`,
+  `register_screen.dart`, `forgot_password_screen.dart`;
+  `mobile/lib/features/auth/presentation/widgets/wordmark_lockup.dart`,
+  `login_hero_section.dart`;
+  `mobile/lib/features/dashboard/presentation/screens/dashboard_screen.dart`;
+  and the archived `archive/docs/BRAND_GUIDE.md`, `DESIGN_SYSTEM.md`, `MIGRATION_NOTES.md`.
+  Don't introduce "Motra/MOTRA" in new code, skills, or docs — the product name is Momentum.
+- `docs/PRODUCT.md` (recovered from `archive/docs/PRODUCT.md` — see `docs/CLEANUP_AUDIT.md`
+  Finding 0) still describes Connect as a social feed (friends/activity feed/leaderboards/
+  likes/comments), from before the social→coaching pivot (migration 26 removed that layer
+  entirely). This file (CLAUDE.md) and `SCHEMA.md` are current; `PRODUCT.md` needs rewriting
+  before it can be treated as source of truth again.
+- `docs/CLEANUP_AUDIT.md` has the full picture beyond this file: duplicate/orphaned feature
+  code (`dashboard_page.dart` vs `dashboard_screen.dart`, `features/workout/` vs
+  `features/workouts/`, two unfinished Progress-UI generations), the exercises feature
+  querying views/tables that don't exist (`exercise_library_view`,
+  `exercise_library_facets_view`, `favorites`), unused pubspec deps, and more.
+
+## Skill system ground rules
+
+Six skills live in `.claude/skills/` (momentum-ui, flutter-feature, supabase-security,
+momentum-qa, performance-audit, release-check). Rules shared by all of them, so each
+`SKILL.md` can stay focused on its own workflow instead of repeating this:
+
+- **Don't invent.** Never reference a table, column, RPC, package, widget, or route that
+  isn't actually in the repo. If something's unclear or inconsistent, stop and list it as an
+  open question instead of guessing.
+- **Never claim a check passed without actually running it.** Quote the real command output.
+- **Never weaken RLS or add a client-side write to a client-read-only table**
+  (`skill_progress`, `xp_transactions`, `personal_records`, `user_streaks`, or any other
+  tier-3 table — see "Writes to progress data never go through the client" above). Coach
+  access to athlete data stays permission-gated and read-only; never add a coach write
+  policy on an athlete log.
+- **Migrations are append-only.** New file only (`supabase migration new <name>`), never
+  edit an applied one. Treat any RLS/RPC/migration change as high-risk: confirm with the
+  user before running `supabase db push` (hits the linked remote project).
+- **The live nav is not the target nav.** `AppShell` (5 tabs) is what's actually wired today;
+  the product's target is a 3-tab TRAIN/PROGRESS/CONNECT nav (see Known gaps). Don't treat
+  `AppShell`'s current 5 tabs, or `MotraShell`'s 4, as "the convention" to extend.
+- **Small, scoped diffs** over broad rewrites.
+- **Standard verification commands** (run from the stated directory, show real output):
+  - `cd mobile && flutter analyze` — required after any Dart change
+  - `cd mobile && flutter test` — required after any logic change (currently fails to load —
+    see Known gaps / `docs/CLEANUP_AUDIT.md`; don't claim it passes)
+  - `supabase db reset` (repo root) — required after any new migration, before `db push`
+  - `supabase db push` — only with explicit user confirmation
+- **No "Motra/MOTRA"** in new skill content, code, or docs — see Known gaps for where it
+  still lingers. The product name is Momentum.
+- `momentum-qa` and `performance-audit` are **read-only**: report findings, don't edit code
+  unless the user explicitly authorizes fixes afterward.
 
 ## Repo hygiene issue to be aware of
 
 There is no `.gitignore` (it was removed in commit `59164a6`, "Remove gitignore and add all project files"). As a result `node_modules/`, `mobile/build/`, `supabase/.temp/`, and **`supabase/.env` — which contains the `SUPABASE_SERVICE_ROLE_KEY` — are all tracked in git**. The service-role key bypasses RLS entirely. If this repo is or becomes non-private, that key needs rotating in the Supabase dashboard and the file needs removing from history. Flag this rather than silently committing more of the same.
+
+`mobile/.env` is also tracked (same missing-`.gitignore` cause), but lower severity — it only
+holds a `sb_publishable_...` anon key, which is meant to ship inside the client anyway.
