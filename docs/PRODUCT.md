@@ -498,90 +498,53 @@ Years of consistent training are reflected in a beautiful, structured roadmap th
 
 ## Purpose
 
-Fitness is easier when you're surrounded by people chasing similar goals.
+Fitness is better with real expert guidance, not a crowd of strangers cheering from a feed.
 
-Momentum is designed to feel alive.
+Connect is how a user finds and trains under a real coach — a **Captain**.
 
----
-
-## Friends
-
-Add friends.
-
-Compare progress.
-
-See activity.
-
-Celebrate milestones.
+There is no public feed. No posts, likes, or comments. No friends list. No leaderboards. Connect is private, 1:1, and built entirely around real training data — not social performance.
 
 ---
 
-## Activity Feed
+## Finding a Captain
 
-Share
+* Browse the coach directory — specialty, bio, certifications, capacity
+* Request a Captain
+* The coach accepts or declines
 
-* Finished workouts
-* New PRs
-* Skill unlocks
-* Achievements
-* Streaks
-* Photos (future)
+Only one active Captain per athlete at a time.
 
 ---
 
-## Challenges
+## The Captain Relationship
 
-Compete with friends.
-
-Examples
-
-Who trains more this week?
-
-Most pull-ups
-
-Longest streak
-
-Most XP
+* The athlete decides exactly what the Captain can see — workouts, PRs, skill progress, body metrics — each shared independently and revocable at any time
+* Ending the relationship removes the Captain's access immediately
+* Everything the Captain sees is real, unedited training history — never a summary the athlete curated for show
 
 ---
 
-## Leaderboards
+## What a Captain Can Do
 
-Global
-
-Friends
-
-Local gyms (future)
-
-University (future)
-
-Company (future)
+* View whatever the athlete has permitted, nothing else
+* Set goals for the athlete
+* Assign one of their own training programs
+* Leave feedback on a specific workout or skill
+* Keep private coaching notes the athlete never sees
 
 ---
 
-## Community
+## What a Captain Cannot Do
 
-Like posts
-
-Comment
-
-Encourage
-
-Share progress
-
-Celebrate milestones
+* See anything outside the athlete's granted permissions
+* Edit or delete any athlete log, PR, or progress record — a Captain's access is read-only, so training history always stays trustworthy
+* Charge or process payment inside the app (plan pricing is informational only, for now)
 
 ---
 
-## Accountability
+## Design Goal
 
-Workout reminders
-
-Friend nudges
-
-Shared goals
-
-Training partners
+Connect should feel like hiring a real coach, not joining a social network — a quiet, trustworthy line between one athlete and one Captain, built on real data instead of public performance.
 
 ---
 
@@ -598,8 +561,7 @@ Most fitness apps focus on only one area.
 | RPG-inspired progression | ✅     |
 | Achievements          | ✅        |
 | Skill Trees (Galaxies & Planets) | ✅ |
-| Social feed           | ✅        |
-| Community challenges   | ✅        |
+| 1:1 coaching (Captain) | ✅       |
 | Long-term motivation   | ✅        |
 
 Momentum isn't just a tracker.
