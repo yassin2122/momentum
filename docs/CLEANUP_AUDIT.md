@@ -199,4 +199,16 @@ This mirrors your Phase 3 instructions exactly (`features/train/`, `features/pro
 
 ---
 
+## 9. Found by actually running the app (not caught by `flutter analyze`)
+
+Ran the app for real (Chrome, `flutter run -d chrome --dart-define-from-file=../supabase/.env`; Windows desktop build isn't available on this machine — Visual Studio is installed but missing the "Desktop development with C++" workload). Two things turned up that static analysis can't catch:
+
+**A. `login_screen.dart`'s "Continue with Apple"/"Continue with Google" buttons don't do OAuth — they silently start a guest session.** `login_screen.dart:69-80` wires both `SocialAuthRow` callbacks to `_handleSocialAuth`, which unconditionally calls `continueAsGuest()` regardless of which provider was tapped (`:72`). The real `signInWithOAuth()` path exists and works fine in `AuthRemoteDataSource` — it's just never called from the UI. Right now every "social login" tap is actually anonymous guest mode. Confirmed live: tapping where "Continue with Google" renders does trigger a Supabase anonymous session, not a Google redirect.
+
+**B. `lucide_icons_flutter`'s icon file is 14 MB / 134,811 lines (`lucide_icons.dart`, one file, one constant per icon), and debug web builds don't tree-shake it.** This alone is why the web build takes 20–30+ seconds to go from "page loaded" to "first paint" — confirmed by instrumenting the actual network/DDC-module-load timeline while running it. The app only uses a handful of icons from this package across 9 files (`floating_nav_bar.dart` and others). Not a correctness bug, but worth knowing before deciding whether web is a target platform at all, and worth considering a smaller icon set or an explicit subset import if `lucide_icons_flutter` supports one, independent of the rest of this cleanup.
+
+The login screen itself (theme, hero mascot asset, gradient CTA button, layout) renders exactly as designed once past the load time — confirms `features/auth/` really is clean, matching §2's KEEP verdict.
+
+---
+
 Stopping here per your instructions. Waiting for approval on §8 before any deletion happens.
