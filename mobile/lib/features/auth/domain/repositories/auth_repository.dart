@@ -20,6 +20,7 @@ abstract interface class AuthRepository {
   Future<Result<UserEntity>> registerWithEmail({
     required String email,
     required String password,
+    String? displayName,
   });
 
   /// Starts an anonymous session so the user can use the app without an

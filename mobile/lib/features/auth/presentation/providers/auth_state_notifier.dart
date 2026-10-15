@@ -37,11 +37,14 @@ class AuthStateNotifier extends AsyncNotifier<UserEntity?> {
   Future<Failure?> register({
     required String email,
     required String password,
+    String? displayName,
   }) async {
     state = const AsyncLoading();
-    final result = await ref
-        .read(registerWithEmailProvider)
-        .call(email: email, password: password);
+    final result = await ref.read(registerWithEmailProvider).call(
+          email: email,
+          password: password,
+          displayName: displayName,
+        );
     return result.when(
       success: (user) {
         state = AsyncData(user);

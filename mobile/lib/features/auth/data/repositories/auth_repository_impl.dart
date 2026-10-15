@@ -46,11 +46,13 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<UserEntity>> registerWithEmail({
     required String email,
     required String password,
+    String? displayName,
   }) async {
     try {
       final user = await _remoteDataSource.registerWithEmail(
         email: email,
         password: password,
+        displayName: displayName,
       );
       return Result.success(UserModel.fromSupabaseUser(user));
     } on AuthException catch (e) {

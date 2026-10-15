@@ -40,11 +40,13 @@ class AuthRemoteDataSource {
   Future<supabase.User> registerWithEmail({
     required String email,
     required String password,
+    String? displayName,
   }) async {
     try {
       final response = await _client.auth.signUp(
         email: email,
         password: password,
+        data: displayName == null ? null : {'display_name': displayName},
       );
       final user = response.user;
       if (user == null) {

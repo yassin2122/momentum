@@ -5,13 +5,13 @@ import '../../features/auth/presentation/providers/auth_state_notifier.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/exercises/presentation/screens/exercises_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/statistics/presentation/screens/statistics_screen.dart';
 import '../../features/workouts/presentation/screens/workouts_screen.dart';
 import '../constants/app_constants.dart';
-import '../widgets/loading_overlay.dart';
 import 'app_shell.dart';
 
 /// App-wide router, gated by auth state.
@@ -36,6 +36,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.forgotPassword;
 
       if (isLoading) return null; // stay on splash until session resolves
+      // Hold on the splash route until its intro animation has played.
+      if (state.matchedLocation == AppRoutes.splash &&
+          !ref.read(splashCompleteProvider)) {
+        return null;
+      }
       if (!isLoggedIn && !isAuthRoute) return AppRoutes.login;
       if (isLoggedIn &&
           (isAuthRoute || state.matchedLocation == AppRoutes.splash)) {
@@ -47,7 +52,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.splash,
         pageBuilder: (context, state) =>
-            _fadePage(state, const _SplashScreen()),
+            _fadePage(state, const SplashScreen()),
       ),
       GoRoute(
         path: AppRoutes.login,
@@ -145,18 +150,8 @@ CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
 class _AuthRefreshNotifier extends ChangeNotifier {
   _AuthRefreshNotifier(this._ref) {
     _ref.listen(authStateProvider, (_, __) => notifyListeners());
+    _ref.listen(splashCompleteProvider, (_, __) => notifyListeners());
   }
 
   final Ref _ref;
-}
-
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: LoadingOverlay(isLoading: true, child: SizedBox.expand()),
-    );
-  }
 }

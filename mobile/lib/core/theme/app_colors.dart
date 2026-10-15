@@ -297,4 +297,60 @@ abstract final class AppColors {
   // that need a name more descriptive than "textTertiary."
   // ==========================================================
   static const Color textMuted = textTertiary;
+
+  // ==========================================================
+  // Auth / onboarding — Splash, Login, Register (app_design/*.png).
+  // These screens sit on a near-black canvas behind the lit mascot
+  // art, much darker than `background` (#191C21) — on #191C21 the
+  // art's own dark edges would show as a visible box. Everything
+  // else here is tuned against that darker canvas, so the general
+  // tokens (textSecondary, accentLink, ctaGradient*, cardSurface)
+  // read too warm / too bright / wrong hue on it.
+  // ==========================================================
+
+  /// Splash canvas — pure black, matching the splash art's edges.
+  static const Color splashBackground = black;
+
+  /// Login / Register canvas; also the edge stop of the Register radial.
+  static const Color authBackground = Color(0xFF02040A);
+
+  /// Centre stop of the Register screen's radial background.
+  static const Color authBackgroundGlow = Color(0xFF0A1018);
+
+  /// Sky-blue accent: links, "BECOME", progress fill. Lighter and more
+  /// cyan than accentLink (#5B93F5), matching the mascot's scarf.
+  static const Color authSky = Color(0xFF4FB3E8);
+
+  /// Second line of the two-line auth titles (horizontal gradient).
+  static const Color authTitleGradientStart = Color(0xFF6FB6E8);
+  static const Color authTitleGradientEnd = Color(0xFF3F86C4);
+
+  /// Auth CTA button — cool steel-blue, unlike the warm ctaGradient*.
+  static const Color authCtaStart = Color(0xFF5A8FBD);
+  static const Color authCtaMid = Color(0xFF3B6488);
+  static const Color authCtaEnd = Color(0xFF1E3448);
+
+  /// Login form card — opaque, since translucent cardSurface would
+  /// let the mascot art bleed through.
+  static const Color authCardTop = Color(0xFF0A0E14);
+  static const Color authCardBottom = Color(0xFF06090D);
+  static const Color authCardBorder = Color(0x17FFFFFF); // ~9% white
+
+  /// Text inputs and social buttons on the auth screens.
+  static const Color authInputFill = Color(0xFF070A0F);
+  static const Color authInputBorder = Color(0x1CFFFFFF); // ~11% white
+
+  /// Register's circular back button.
+  static const Color authBackButton = Color(0xFF11151B);
+
+  /// Splash loading-bar track (opaque; xpTrack is translucent white).
+  static const Color authProgressTrack = Color(0xFF1A1D21);
+
+  /// Neutral greys for auth copy — cool and unwarmed, unlike the
+  /// textSecondary/textTertiary ramp derived from warm #E8E5DD.
+  static const Color authTextLabel = Color(0xFFC9CBCE); // field labels
+  static const Color authTextSubtitle = Color(0xFFB3B5B8); // title subtitles
+  static const Color authTextHint = Color(0xFFA3A6AA); // tagline, helper text
+  static const Color authTextSoft = Color(0xFF9B9DA0); // splash body copy
+  static const Color authTextFaint = Color(0xFF85878A); // "Loading…" caption
 }

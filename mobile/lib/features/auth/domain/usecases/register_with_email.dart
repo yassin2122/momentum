@@ -11,7 +11,12 @@ class RegisterWithEmail {
   Future<Result<UserEntity>> call({
     required String email,
     required String password,
+    String? displayName,
   }) {
-    return _repository.registerWithEmail(email: email, password: password);
+    return _repository.registerWithEmail(
+      email: email,
+      password: password,
+      displayName: displayName,
+    );
   }
 }
