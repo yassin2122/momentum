@@ -195,11 +195,10 @@ Still open:
   `mobile/lib/features/dashboard/presentation/screens/dashboard_screen.dart`;
   and the archived `archive/docs/BRAND_GUIDE.md`, `DESIGN_SYSTEM.md`, `MIGRATION_NOTES.md`.
   Don't introduce "Motra/MOTRA" in new code, skills, or docs — the product name is Momentum.
-- `docs/PRODUCT.md` (recovered from `archive/docs/PRODUCT.md` — see `docs/CLEANUP_AUDIT.md`
-  Finding 0) still describes Connect as a social feed (friends/activity feed/leaderboards/
-  likes/comments), from before the social→coaching pivot (migration 26 removed that layer
-  entirely). This file (CLAUDE.md) and `SCHEMA.md` are current; `PRODUCT.md` needs rewriting
-  before it can be treated as source of truth again.
+- ~~`docs/PRODUCT.md` describes Connect as a social feed~~ — **resolved** (commit
+  `c574c7c`): it now describes Connect as 1:1 coaching, matching this file and the schema.
+  `archive/docs/PRODUCT.md` still has the old pre-pivot social version — that copy is
+  historical only, don't read it as current.
 - `docs/CLEANUP_AUDIT.md` has the full picture beyond this file: duplicate/orphaned feature
   code (`dashboard_page.dart` vs `dashboard_screen.dart`, `features/workout/` vs
   `features/workouts/`, two unfinished Progress-UI generations), the exercises feature
