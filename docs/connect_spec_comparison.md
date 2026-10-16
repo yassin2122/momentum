@@ -78,7 +78,7 @@ helper: relationship-level, used for coach-authored goals/notes/assignments.)
 
 | # | Rule | Result | Evidence |
 |---|---|---|---|
-| R1 | Captain reads athlete data only when relationship is active AND the matching share flag is on | **PASS** (one gap, G2) | All 15 `coach_read_*` select policies use `coach_can_view(user_id, scope)`, which requires `status = 'active'` and the scope flag. No other non-owner select policy exists on any athlete table. |
+| R1 | Captain reads athlete data only when relationship is active AND the matching share flag is on | **PASS for rows; FAIL for one column** (G11), plus G2 | All 15 `coach_read_*` select policies use `coach_can_view(user_id, scope)`, which requires `status = 'active'` and the scope flag. No other non-owner select policy exists on any athlete table. |
 | R2 | Captain has no insert/update/delete on athlete workout history, sets, PRs | **PASS** | The only write policies on those tables are owner-scoped (`user_id = auth.uid()`). PRs and streaks have no client write policy at all. SECURITY DEFINER functions that write them (`upsert_personal_record`, `check_and_update_personal_record`) aren't executable by `authenticated`. `finish_workout` is security invoker and always writes as the caller. |
 | R3 | Ending removes access immediately | **PASS** | `coach_can_view` reads `status` on every query; `end_coaching` sets `status = 'ended'`. No cached grant or token. Relationship-scoped content stays readable after end (G3). |
 | R4 | Only one active relationship per athlete | **PASS** (stricter) | `uq_one_open_captain` exists live: one pending-or-active row per athlete, enforced by the database, race-free. |
@@ -102,6 +102,7 @@ needed (G1).
 | ID | Severity | Gap |
 |---|---|---|
 | G1 | decision | **`share_goals`**: no athlete-owned goals table exists (§3). Either drop the idea, or define what athlete goals are first (a new table would be a feature, not a permission). |
+| G11 | medium | **Body weight leaks through `share_workouts`.** `20261016000001_train_workout_logging.sql` added `workout_logs.bodyweight_snapshot_kg`. `coach_read_workout_logs` exposes the whole row under `share_workouts`, so a Captain reads the athlete's body weight even with `share_body_metrics` off. Fix options: column-level grant + an RPC, or move the snapshot out of `workout_logs` into a body-scoped read path. |
 | G2 | medium | **Suspended coach keeps access.** `coach_can_view` checks the relationship, not `coach_profiles.status`. If an admin suspends a coach, they still read every active athlete's data until each relationship is ended. Fix: also require `status = 'approved'` in `coach_can_view` / `is_active_coach_of` (small migration, `create or replace function`). |
 | G3 | low / product | **Relationship content after it ends.** `coaching_goals`, `coaching_feedback`, `program_assignments` select via `in_relationship()` (any status), and `coaching_private_notes` stays readable by its author. A former Captain still reads goals/feedback/notes from that relationship. None of it is athlete log data, but confirm it's intended. |
 | G4 | medium | **Capacity can be exceeded.** `choose_captain` counts active athletes then inserts, with no lock (two concurrent requests can both pass), and `respond_to_coaching_request` doesn't re-check `max_athletes` on accept, so accepting several pending requests can exceed it. |
