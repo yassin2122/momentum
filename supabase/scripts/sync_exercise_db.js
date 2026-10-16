@@ -68,9 +68,10 @@ const LEVEL_MAP = {
 
 // ── Equipment normalisation (free-exercise-db → your schema text) ─────────────
 // Your exercises.equipment column is free-text, so we pass through as-is.
-// Normalise null → null.
+// "body only" → "bodyweight"; null (unknown upstream) stays null.
 function normaliseEquipment(eq) {
-  if (!eq || eq === 'body only') return null;
+  if (!eq) return null;
+  if (eq === 'body only') return 'bodyweight';
   return eq;
 }
 
