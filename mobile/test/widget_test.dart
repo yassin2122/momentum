@@ -15,11 +15,15 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       const ProviderScope(
-        child: GymApp(),
+        child: MomentumApp(),
       ),
     );
 
-    // Pump a frame to settle async work triggered by build.
+    // Pump a frame to settle async work triggered by build, then run past
+    // the splash intro (SplashScreen.introDuration) so its timer completes.
     await tester.pump();
+    await tester.pump(const Duration(seconds: 3));
+    // …and let the login screen's entrance animations finish.
+    await tester.pump(const Duration(seconds: 1));
   });
 }

@@ -1,6 +1,6 @@
 # Momentum — SCHEMA.md
 
-Status: after migrations 0001–0030 · Backend: Supabase (Postgres, Auth, RLS, Storage, Realtime)
+Status: after migrations 0001–0030 (+ later TRAIN additions noted inline) · Backend: Supabase (Postgres, Auth, RLS, Storage, Realtime)
 Rule: never edit an applied migration. Add a new one.
 
 ## 1. Migration order
@@ -30,6 +30,14 @@ Rule: never edit an applied migration. Add a new one.
 - Records: `personal_records`, `personal_record_history`
 - Programs: `programs`, `program_days`, `program_day_exercises`, `user_program_enrollment`
 - Analytics foundations: `user_streaks`, `user_aggregate_records`
+- Settings: `user_settings` (`preferred_unit` kg | lb) — migration `20261016000001`
+
+Workout logging (migration `20261016000001_train_workout_logging`):
+- `exercises.tracking_type` (`weight_reps` | `bodyweight_reps` | `weighted_bodyweight` | `assisted_bodyweight` | `duration`), `bw_factor`, `is_custom`. Library rows get `tracking_type` derived on insert when not supplied. Custom exercises are visible only to their creator and are created only via `create_custom_exercise`.
+- `workout_logs` + `status` (`in_progress` | `completed` | `discarded`), `edited_at` (set by trigger on any change to a completed log or its children), `bodyweight_snapshot_kg`. `completed_at` is the end time.
+- `workout_log_exercises` + `replaced_from_exercise_id`. `order_index` is 0-based.
+- `workout_log_sets` + `set_type` (`warmup` | `working` | `drop`), `entered_weight` / `entered_unit` (exactly as typed), `added_kg`, `assist_kg`, `rpe`. `weight_kg` is canonical kg; `set_number` is 1-based.
+- PRs: `check_and_update_personal_record` counts only completed **working** sets — heaviest weight + Epley e1RM (≤ 10 reps) for `weight_reps`, heaviest added weight for `weighted_bodyweight`, most reps for `bodyweight_reps` / `assisted_bodyweight`, longest hold for `duration`. Fires on insert only.
 
 ### PROGRESS
 - Structure: `roadmap_categories` (galaxies) → `skills` (planets) → `skill_stages` → `objectives`; `skill_prerequisites`
@@ -79,6 +87,10 @@ Leftovers: old social values stay inside `notification_type` (Postgres cannot dr
 | `end_coaching(rel)`                     | either  | closes relationship |
 | `assign_program(rel, program, start, notes)` | coach | creates assignment |
 | `start_assigned_program(assignment)`    | athlete | creates enrollment, status in_progress |
+| `finish_workout(p_workout jsonb)`       | athlete | Train: one transaction — log, exercises, completed sets, bodyweight snapshot, template additions, completion. Idempotent on the client-generated id |
+| `create_custom_exercise(name, tracking_type, equipment, bw_factor)` | user | Train: custom exercise, unique name per user (case-insensitive) |
+| `create_template_from_workout(log, name)` | user | Train: "Save as template" from a completed log |
+| `get_last_exercise_performance(exercise)` | user | Train: sets from the caller's last completed session of an exercise |
 | `complete_roadmap_workout(...)`         | athlete | Progress: logs roadmap workout, awards XP |
 | `record_roadmap_personal_best(...)`     | athlete | Progress: roadmap PR upsert |
 

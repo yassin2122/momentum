@@ -10,6 +10,9 @@ import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/exercises/presentation/screens/exercises_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/statistics/presentation/screens/statistics_screen.dart';
+import '../../features/workouts/domain/services/workout_finalizer.dart';
+import '../../features/workouts/presentation/screens/active_workout_screen.dart';
+import '../../features/workouts/presentation/screens/workout_summary_screen.dart';
 import '../../features/workouts/presentation/screens/workouts_screen.dart';
 import '../constants/app_constants.dart';
 import 'app_shell.dart';
@@ -68,6 +71,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.forgotPassword,
         pageBuilder: (context, state) =>
             _fadePage(state, const ForgotPasswordScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.activeWorkout,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const ActiveWorkoutScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.workoutSummary,
+        // The summary only exists in memory; after a reload there's
+        // nothing to show, so fall back to the Workouts tab.
+        redirect: (context, state) =>
+            state.extra is WorkoutSummary ? null : AppRoutes.workouts,
+        pageBuilder: (context, state) => _fadePage(
+          state,
+          WorkoutSummaryScreen(summary: state.extra! as WorkoutSummary),
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

@@ -39,4 +39,8 @@ abstract final class AppRoutes {
   static const String exercises = '/exercises';
   static const String statistics = '/statistics';
   static const String profile = '/profile';
+
+  // TRAIN — full-screen, outside the tab shell
+  static const String activeWorkout = '/workout';
+  static const String workoutSummary = '/workout/summary';
 }
