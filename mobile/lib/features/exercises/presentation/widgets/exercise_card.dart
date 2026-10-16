@@ -36,7 +36,10 @@ class ExerciseCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  '${_capitalize(exercise.primaryMuscle)} · ${exercise.equipmentLabel}',
+                  [
+                    _capitalize(exercise.primaryMuscle),
+                    if (exercise.equipmentLabel case final label?) label,
+                  ].join(' · '),
                   style: AppTypography.caption,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

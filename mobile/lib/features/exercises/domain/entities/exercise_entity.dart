@@ -25,8 +25,8 @@ final class ExerciseEntity {
   final String primaryMuscle;
   final List<String> secondaryMuscles;
 
-  /// One or more pieces of equipment, e.g. ['Barbell', 'Rack'].
-  /// Empty list means bodyweight.
+  /// One or more pieces of equipment, e.g. ['barbell'] or ['bodyweight'].
+  /// Empty list means the equipment is not specified (not bodyweight).
   final List<String> equipment;
   final String exerciseType;
 
@@ -45,9 +45,11 @@ final class ExerciseEntity {
   /// Returns the first image URL or null (for thumbnail display).
   String? get thumbnailUrl => images.isNotEmpty ? images.first : null;
 
-  /// Returns a displayable equipment string, e.g. "Barbell" or "Bodyweight".
-  String get equipmentLabel {
-    if (equipment.isEmpty) return 'Bodyweight';
+  /// Returns a displayable equipment string, e.g. "barbell" or "Bodyweight",
+  /// or null when the equipment is not specified.
+  String? get equipmentLabel {
+    if (equipment.isEmpty) return null;
+    if (equipment.first == 'bodyweight') return 'Bodyweight';
     return equipment.first;
   }
 }
