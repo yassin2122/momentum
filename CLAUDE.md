@@ -85,12 +85,13 @@ cd mobile && flutter run --dart-define-from-file=.env
   inaccurate — nothing calls `dotenv.load()` (see below); it's meant for dart-define, not
   dotenv.
 - `supabase/.env` — **server-side only** (seeding scripts, `supabase/scripts/*.js`, local
-  CLI), holds `SUPABASE_SERVICE_ROLE_KEY` and, as of this session, a **stale/different**
-  `SUPABASE_URL` (ref `adskpshwfymknhvqjmlu` — not the linked project). Never pass this file
-  to `flutter run` — a *.supabase.co subdomain for the wrong/nonexistent project ref still
-  resolves (wildcard DNS) but returns an empty-body 404 on every endpoint including
-  `/auth/v1/...`, which is exactly what `gotrue`'s `AuthUnknownException` surfaces as
-  "Received an empty response with status code 404" if someone does this.
+  CLI), holds `SUPABASE_SERVICE_ROLE_KEY` and a `SUPABASE_URL` that now points at the
+  linked project (ref `lnpraurmeprnfzfervgj`; it used to point at a stale ref,
+  `adskpshwfymknhvqjmlu`). Never pass this file to `flutter run` — it carries the
+  service-role key, which bypasses RLS and must never ship in the client. (If the URL ever
+  drifts to a wrong project ref again: a *.supabase.co subdomain for a nonexistent ref still
+  resolves via wildcard DNS but returns an empty-body 404 on every endpoint, which `gotrue`
+  surfaces as `AuthUnknownException` "Received an empty response with status code 404".)
 
 Backend (from repo root, CLI already linked — see `supabase/.temp/project-ref`):
 
