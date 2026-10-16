@@ -23,6 +23,11 @@ abstract final class AppConstants {
   // Deep-link / OAuth redirect URL registered in AndroidManifest.xml and
   // iOS Info.plist.  Supabase will redirect here after OAuth / magic-link flows.
   static const String authRedirectUrl = 'io.momentum.app://login-callback/';
+
+  // Base URL for exercise images. exercises.images holds paths relative to
+  // free-exercise-db's exercises/ folder (e.g. "Air_Bike/0.jpg").
+  static const String exerciseImageBaseUrl =
+      'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
 }
 
 /// Route path constants, referenced by [AppRouter] and any widget that

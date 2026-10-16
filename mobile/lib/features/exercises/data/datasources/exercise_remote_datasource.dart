@@ -139,10 +139,11 @@ class ExerciseRemoteDataSource {
             .eq('exercise_id', exerciseId);
         return false;
       } else {
+        // ON CONFLICT DO NOTHING — favorites has no update policy.
         await _client.from('favorites').upsert({
           'user_id': userId,
           'exercise_id': exerciseId,
-        });
+        }, ignoreDuplicates: true);
         return true;
       }
     } on supabase.PostgrestException catch (e) {

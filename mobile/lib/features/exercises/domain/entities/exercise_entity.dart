@@ -30,7 +30,8 @@ final class ExerciseEntity {
   final List<String> equipment;
   final String exerciseType;
 
-  /// Ordered image URLs from exercise_images, used by cached_network_image.
+  /// Ordered absolute image URLs (built by ExerciseModel from the relative
+  /// paths in exercises.images), used by cached_network_image.
   final List<String> images;
 
   final String? slug;

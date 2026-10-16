@@ -1,3 +1,4 @@
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/exercise_entity.dart';
 
 /// Maps a raw row from [exercise_library_view] (as returned by
@@ -18,7 +19,8 @@ import '../../domain/entities/exercise_entity.dart';
 ///   primary_muscle     → primaryMuscle  (text, from muscle_groups.name)
 ///   secondary_muscles  → secondaryMuscles (text[])
 ///   equipment          → equipment       (text[])
-///   images             → images          (text[])
+///   images             → images          (text[] of relative paths, resolved
+///                                         against exerciseImageBaseUrl)
 ///   instructions       → instructions
 final class ExerciseModel {
   const ExerciseModel._();
@@ -37,9 +39,15 @@ final class ExerciseModel {
       primaryMuscle: row['primary_muscle'] as String? ?? '',
       secondaryMuscles: _toStringList(row['secondary_muscles']),
       equipment: _toStringList(row['equipment']),
-      images: _toStringList(row['images']),
+      images: _toStringList(row['images']).map(_imageUrl).toList(),
       instructions: row['instructions'] as String?,
     );
+  }
+
+  /// Relative paths get the image base URL; absolute URLs pass through.
+  static String _imageUrl(String path) {
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return '${AppConstants.exerciseImageBaseUrl}$path';
   }
 
   static List<String> _toStringList(dynamic value) {
