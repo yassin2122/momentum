@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
-import '../theme/app_typography.dart';
+import '../theme/app_shadows.dart';
 import '../theme/app_sizing.dart';
+import '../theme/app_typography.dart';
 
 /// Standard primary call-to-action button for the whole app.
+///
+/// The filled variant is the brand pill from the Login "LOG IN" button:
+/// an orange → coral → teal gradient with a soft two-tone glow. The
+/// outlined variant is the same pill shape with a faint stroke.
 ///
 /// Shows a loading spinner in place of the label when [isLoading] is true,
 /// and disables tap handling while loading to prevent double-submits.
@@ -27,45 +32,66 @@ class PrimaryButton extends StatelessWidget {
 
   bool get _canTap => isEnabled && !isLoading && onPressed != null;
 
+  /// The brand CTA gradient, left to right.
+  static const LinearGradient gradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      AppColors.ctaGradientStart,
+      AppColors.ctaGradientMid,
+      AppColors.ctaGradientEnd,
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final isFilled = variant == PrimaryButtonVariant.filled;
+    final radius = BorderRadius.circular(AppRadius.pill);
+    // Dim only when truly disabled; a loading button keeps full colour.
+    final dimmed = !isLoading && !_canTap;
 
-    return SizedBox(
-      height: AppSizing.buttonHeight,
-      child: ElevatedButton(
-        onPressed: _canTap ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isFilled ? AppColors.primary : Colors.transparent,
-          disabledBackgroundColor:
-              isFilled ? AppColors.primaryMuted : Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
-          elevation: 0,
-          side: isFilled
-              ? BorderSide.none
-              : const BorderSide(color: AppColors.stroke),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
+    return Opacity(
+      opacity: dimmed ? 0.5 : 1,
+      child: Container(
+        height: AppSizing.buttonHeight,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          gradient: isFilled ? gradient : null,
+          border: isFilled ? null : Border.all(color: AppColors.stroke),
+          boxShadow: isFilled && !dimmed ? AppShadows.ctaGlow : null,
         ),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: isLoading
-              ? const SizedBox(
-                  key: ValueKey('loading'),
-                  height: 22,
-                  width: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.textPrimary),
-                  ),
-                )
-              : Text(
-                  label,
-                  key: const ValueKey('label'),
-                  style: AppTypography.button,
-                ),
+        child: Material(
+          color: AppColors.transparent,
+          borderRadius: radius,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: _canTap ? onPressed : null,
+            child: Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: isLoading
+                    ? const SizedBox(
+                        key: ValueKey('loading'),
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.textPrimary),
+                        ),
+                      )
+                    : Text(
+                        label,
+                        key: const ValueKey('label'),
+                        style: AppTypography.button.copyWith(
+                          color: AppColors.textPrimary,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+              ),
+            ),
+          ),
         ),
       ),
     );

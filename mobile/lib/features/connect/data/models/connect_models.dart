@@ -1,0 +1,95 @@
+import '../../domain/entities/connect_entities.dart';
+
+/// Row → entity mappers for the CONNECT tables/RPCs. Raw PostgREST rows are
+/// `Map<String, dynamic>` with snake_case keys; nothing outside the data
+/// layer should parse them.
+final class ConnectModels {
+  const ConnectModels._();
+
+  static CoachDirectoryEntry directoryEntry(Map<String, dynamic> row) =>
+      CoachDirectoryEntry(
+        coachId: row['coach_id'] as String,
+        specialties: _strings(row['specialties']),
+        acceptingAthletes: row['accepting_athletes'] as bool? ?? false,
+        athleteCount: (row['athlete_count'] as num?)?.toInt() ?? 0,
+        username: row['username'] as String?,
+        displayName: row['display_name'] as String?,
+        avatarUrl: row['avatar_url'] as String?,
+        headline: row['headline'] as String?,
+        experienceYears: (row['experience_years'] as num?)?.toInt(),
+      );
+
+  static CoachingRelationship relationship(Map<String, dynamic> row) =>
+      CoachingRelationship(
+        id: row['id'] as String,
+        athleteId: row['athlete_id'] as String,
+        coachId: row['coach_id'] as String,
+        status: CoachingStatus.fromDb(row['status'] as String),
+        requestedAt: DateTime.parse(row['requested_at'] as String),
+        planId: row['plan_id'] as String?,
+        startedAt: _date(row['started_at']),
+        endedAt: _date(row['ended_at']),
+        endedBy: row['ended_by'] as String?,
+      );
+
+  static CoachingPermissions permissions(Map<String, dynamic> row) =>
+      CoachingPermissions(
+        relationshipId: row['relationship_id'] as String,
+        shareWorkouts: row['share_workouts'] as bool,
+        sharePrs: row['share_prs'] as bool,
+        shareSkillProgress: row['share_skill_progress'] as bool,
+        shareBodyMetrics: row['share_body_metrics'] as bool,
+        updatedAt: DateTime.parse(row['updated_at'] as String),
+      );
+
+  static CoachingFeedback feedback(Map<String, dynamic> row) =>
+      CoachingFeedback(
+        id: row['id'] as String,
+        relationshipId: row['relationship_id'] as String,
+        authorId: row['author_id'] as String,
+        body: row['body'] as String,
+        createdAt: DateTime.parse(row['created_at'] as String),
+        workoutLogId: row['workout_log_id'] as String?,
+        skillId: row['skill_id'] as String?,
+      );
+
+  static CoachingGoal goal(Map<String, dynamic> row) => CoachingGoal(
+        id: row['id'] as String,
+        relationshipId: row['relationship_id'] as String,
+        title: row['title'] as String,
+        status: row['status'] as String,
+        createdBy: row['created_by'] as String,
+        createdAt: DateTime.parse(row['created_at'] as String),
+        updatedAt: DateTime.parse(row['updated_at'] as String),
+        description: row['description'] as String?,
+        targetDate: _date(row['target_date']),
+      );
+
+  static ProgramAssignment assignment(Map<String, dynamic> row) =>
+      ProgramAssignment(
+        id: row['id'] as String,
+        relationshipId: row['relationship_id'] as String,
+        programId: row['program_id'] as String,
+        assignedBy: row['assigned_by'] as String,
+        startDate: DateTime.parse(row['start_date'] as String),
+        status: AssignmentStatus.fromDb(row['status'] as String),
+        createdAt: DateTime.parse(row['created_at'] as String),
+        instructions: row['instructions'] as String?,
+        enrollmentId: row['enrollment_id'] as String?,
+        completedAt: _date(row['completed_at']),
+      );
+
+  static AthleteBodyProfile bodyProfile(Map<String, dynamic> row) =>
+      AthleteBodyProfile(
+        ageYears: (row['age_years'] as num?)?.toInt(),
+        heightCm: (row['height_cm'] as num?)?.toDouble(),
+        weightKg: (row['weight_kg'] as num?)?.toDouble(),
+        gender: row['gender'] as String?,
+      );
+
+  static DateTime? _date(dynamic value) =>
+      value == null ? null : DateTime.parse(value as String);
+
+  static List<String> _strings(dynamic value) =>
+      value is List ? List<String>.from(value) : const [];
+}

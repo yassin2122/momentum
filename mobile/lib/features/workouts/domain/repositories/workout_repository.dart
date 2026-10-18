@@ -45,6 +45,12 @@ abstract interface class WorkoutRepository {
   /// Sends a finished workout. Returns the server's bodyweight snapshot.
   Future<Result<double?>> finishWorkout(Map<String, dynamic> payload);
 
+  /// Creates a new template from picked exercises. Returns its id.
+  Future<Result<String>> createTemplate({
+    required String name,
+    required List<({String exerciseId, int sets})> exercises,
+  });
+
   Future<Result<String>> saveAsTemplate({
     required String workoutId,
     required String name,

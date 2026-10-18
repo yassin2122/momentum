@@ -51,3 +51,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/auth/
+    - assets/images/hub/
+    - assets/images/planets/
+    - assets/images/phases/
+    - assets/mascot/

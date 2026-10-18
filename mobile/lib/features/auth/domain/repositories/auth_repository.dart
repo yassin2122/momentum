@@ -1,4 +1,5 @@
 import '../../../../core/error/result.dart';
+import '../entities/auth_change.dart';
 import '../entities/user_entity.dart';
 
 /// Contract for all authentication operations.
@@ -11,6 +12,10 @@ abstract interface class AuthRepository {
   /// Returns the current user if a session exists (guest or authenticated),
   /// or null if there is no active session.
   Future<UserEntity?> getCurrentUser();
+
+  /// Session changes from any source — in-app calls, token refresh, and
+  /// deep links (OAuth callback, password-reset link).
+  Stream<AuthChange> watchAuthChanges();
 
   Future<Result<UserEntity>> signInWithEmail({
     required String email,
@@ -28,6 +33,10 @@ abstract interface class AuthRepository {
   Future<Result<UserEntity>> continueAsGuest();
 
   Future<Result<void>> sendPasswordResetEmail(String email);
+
+  /// Sets a new password for the signed-in user (used after opening a
+  /// password-reset link, which grants a recovery session).
+  Future<Result<void>> updatePassword(String newPassword);
 
   Future<Result<void>> signOut();
 }

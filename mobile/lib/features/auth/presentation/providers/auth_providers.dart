@@ -8,6 +8,7 @@ import '../../domain/usecases/register_with_email.dart';
 import '../../domain/usecases/send_password_reset.dart';
 import '../../domain/usecases/sign_in_with_email.dart';
 import '../../domain/usecases/sign_out.dart';
+import '../../domain/usecases/update_password.dart';
 
 /// Dependency injection graph for the Auth feature.
 ///
@@ -41,3 +42,12 @@ final sendPasswordResetProvider = Provider<SendPasswordReset>((ref) {
 final signOutProvider = Provider<SignOut>((ref) {
   return SignOut(ref.watch(authRepositoryProvider));
 });
+
+final updatePasswordProvider = Provider<UpdatePassword>((ref) {
+  return UpdatePassword(ref.watch(authRepositoryProvider));
+});
+
+/// True while the user holds a password-recovery session (they opened a
+/// reset link) and hasn't set a new password yet. The router keeps them
+/// on the reset-password screen until this clears.
+final passwordRecoveryProvider = StateProvider<bool>((ref) => false);

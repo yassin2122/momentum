@@ -1,0 +1,13 @@
+train/exercise-library
+17313af docs: note bodyweight_snapshot_kg exposure under share_workouts
+7af7923 docs: Connect spec comparison and executable RLS tests
+7cbb982 Index coaching_relationships.ended_by (performance advisor)
+b315691 Exercises: only 'bodyweight' shows Bodyweight; unspecified shows nothing
+f0697c3 Set is_hold_based for reviewed library exercises
+a67cdb9 favorites.user_id references profiles(id), like other user-owned tables
+4e39410 Exercises: build image URLs from a single base-URL constant
+74f33d3 Add exercise library views, favorites table, bodyweight equipment
+891bf3c CLAUDE.md: supabase/.env now points at the linked project
+a509489 app sets login update
+origin	https://github.com/yassin2122/momentum (fetch)
+origin	https://github.com/yassin2122/momentum (push)

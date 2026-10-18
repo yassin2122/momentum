@@ -43,5 +43,34 @@ abstract final class AppShadows {
       offset: const Offset(4, 0),
     ),
   ];
-}
 
+  /// Orange bloom behind the centre START orb in the nav bar.
+  static const List<BoxShadow> startOrb = [
+    BoxShadow(color: AppColors.startOrbGlow, blurRadius: 22),
+  ];
+
+  /// Blue bloom for the selected planet, completed nodes and the main
+  /// game CTA.
+  static List<BoxShadow> gameBlueGlow = [
+    BoxShadow(
+      color: AppColors.gameBlue.withValues(alpha: 0.6),
+      blurRadius: 22,
+    ),
+  ];
+
+  /// Gold bloom for the current level node and its callout.
+  static List<BoxShadow> gameGoldGlow = [
+    BoxShadow(
+      color: AppColors.gameGoldDeep.withValues(alpha: 0.75),
+      blurRadius: 26,
+    ),
+  ];
+
+  /// Soft halo around a hub avatar (Profile, Captain profile).
+  static List<BoxShadow> hubAvatarGlow = [
+    BoxShadow(
+      color: AppColors.hubRing.withValues(alpha: 0.33),
+      blurRadius: 28,
+    ),
+  ];
+}

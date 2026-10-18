@@ -72,4 +72,17 @@ abstract final class AppRadius {
   /// Notification bell icon button — 16 px rounded square,
   /// not circular, per spec §5.
   static const double bellButton = 16;
+
+  // ==========================================================
+  // Hub & game screens (design/canvas: ref/*, ach/*).
+  // ==========================================================
+
+  /// Standard hub card (stat, list and info cards) — 16 px.
+  static const double hubCard = 16;
+
+  /// Hero cards (today's workout, Captain card) — 18 px.
+  static const double hubHero = 18;
+
+  /// Bottom sheets and dialogs on the hub/game screens — 28 px top.
+  static const double sheet = xl;
 }

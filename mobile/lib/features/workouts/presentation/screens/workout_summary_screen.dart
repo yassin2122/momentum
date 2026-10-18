@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/hub_ui.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/secondary_button.dart';
 import '../../domain/entities/workout_enums.dart';
@@ -99,59 +100,62 @@ class _WorkoutSummaryScreenState extends ConsumerState<WorkoutSummaryScreen> {
     final s = _summary;
 
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          children: [
-            const SizedBox(height: AppSpacing.lg),
-            Text('Workout complete', style: AppTypography.overline),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(s.title, style: AppTypography.displaySmall),
-            const SizedBox(height: AppSpacing.lg),
-            Row(
+      backgroundColor: AppColors.hubBackgroundBottom,
+      body: HubBackground(
+        child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
               children: [
-                _Stat(label: 'Duration', value: _formatDuration(s.duration)),
-                const SizedBox(width: AppSpacing.sm),
-                _Stat(
-                    label: 'Working sets',
-                    value: '${s.completedWorkingSets}'),
-                const SizedBox(width: AppSpacing.sm),
-                _Stat(
-                  label: 'Volume',
-                  value:
-                      '${WeightUnits.format(WeightUnits.fromKg(s.volumeKg, unit).roundToDouble())} ${unit.dbValue}',
+                const SizedBox(height: AppSpacing.lg),
+                Text('Workout complete', style: AppTypography.overline),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(s.title, style: AppTypography.displaySmall),
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  children: [
+                    _Stat(label: 'Duration', value: _formatDuration(s.duration)),
+                    const SizedBox(width: AppSpacing.sm),
+                    _Stat(
+                        label: 'Working sets',
+                        value: '${s.completedWorkingSets}'),
+                    const SizedBox(width: AppSpacing.sm),
+                    _Stat(
+                      label: 'Volume',
+                      value:
+                          '${WeightUnits.format(WeightUnits.fromKg(s.volumeKg, unit).roundToDouble())} ${unit.dbValue}',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                _SyncStatus(synced: s.synced, onRetry: _retrySync),
+                const SizedBox(height: AppSpacing.lg),
+                Text('Personal records', style: AppTypography.titleLarge),
+                const SizedBox(height: AppSpacing.xs),
+                if (s.newRecords.isEmpty)
+                  Text('No new records this time — keep going.',
+                      style: AppTypography.bodyMedium)
+                else
+                  for (final pr in s.newRecords)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: _PrTile(record: pr, unit: unit),
+                    ),
+                const SizedBox(height: AppSpacing.xl),
+                if (s.synced && !_savedTemplate) ...[
+                  SecondaryButton(
+                    label: 'Save as template',
+                    isLoading: _savingTemplate,
+                    onPressed: _savingTemplate ? null : _saveAsTemplate,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
+                PrimaryButton(
+                  label: 'Done',
+                  onPressed: () => context.go(AppRoutes.train),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.lg),
-            _SyncStatus(synced: s.synced, onRetry: _retrySync),
-            const SizedBox(height: AppSpacing.lg),
-            Text('Personal records', style: AppTypography.titleLarge),
-            const SizedBox(height: AppSpacing.xs),
-            if (s.newRecords.isEmpty)
-              Text('No new records this time — keep going.',
-                  style: AppTypography.bodyMedium)
-            else
-              for (final pr in s.newRecords)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                  child: _PrTile(record: pr, unit: unit),
-                ),
-            const SizedBox(height: AppSpacing.xl),
-            if (s.synced && !_savedTemplate) ...[
-              SecondaryButton(
-                label: 'Save as template',
-                isLoading: _savingTemplate,
-                onPressed: _savingTemplate ? null : _saveAsTemplate,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            PrimaryButton(
-              label: 'Done',
-              onPressed: () => context.go(AppRoutes.workouts),
-            ),
-          ],
-        ),
+          ),
       ),
     );
   }

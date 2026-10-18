@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/error/failure.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -52,7 +53,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
 
     if (!mounted) return;
-    if (failure != null) {
+    if (failure is EmailConfirmationRequiredFailure) {
+      // Account exists but has no session until the email is confirmed.
+      _showError(failure.message);
+      _goToLogin();
+    } else if (failure != null) {
       _showError(failure.message);
     } else {
       context.go(AppRoutes.dashboard);

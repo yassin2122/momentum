@@ -39,7 +39,7 @@ void main() {
               WorkoutSummaryScreen(summary: state.extra! as WorkoutSummary),
         ),
         GoRoute(
-          path: AppRoutes.workouts,
+          path: AppRoutes.train,
           builder: (_, __) => const Text('workouts tab'),
         ),
       ],

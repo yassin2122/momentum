@@ -34,4 +34,9 @@ abstract final class AppSizing {
   // even when the visible icon is much smaller.
   // ==========================================================
   static const double minTouchTarget = 44;
+
+  // ==========================================================
+  // Floating bottom nav bar height (icon + label + padding).
+  // ==========================================================
+  static const double navBarHeight = 64;
 }

@@ -107,6 +107,36 @@ class WorkoutRemoteDataSource {
     return Map<String, dynamic>.from(result as Map);
   }
 
+  /// Creates a template from scratch: the `workout_templates` row, then
+  /// its exercises in order. If the exercises fail to save, the empty
+  /// template is removed again so no half-made template is left behind.
+  Future<String> createTemplate({
+    required String name,
+    required List<({String exerciseId, int sets})> exercises,
+  }) async {
+    final row = await _client
+        .from('workout_templates')
+        .insert({'user_id': _userId, 'name': name})
+        .select('id')
+        .single();
+    final templateId = row['id'] as String;
+    try {
+      await _client.from('workout_template_exercises').insert([
+        for (var i = 0; i < exercises.length; i++)
+          {
+            'template_id': templateId,
+            'exercise_id': exercises[i].exerciseId,
+            'order_index': i,
+            'target_sets': exercises[i].sets,
+          },
+      ]);
+    } catch (_) {
+      await _client.from('workout_templates').delete().eq('id', templateId);
+      rethrow;
+    }
+    return templateId;
+  }
+
   Future<String> createTemplateFromWorkout({
     required String workoutId,
     required String name,

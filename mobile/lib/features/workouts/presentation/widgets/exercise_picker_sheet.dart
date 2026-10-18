@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/hub_ui.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../domain/entities/trackable_exercise.dart';
 import '../providers/workout_providers.dart';
@@ -22,13 +23,19 @@ Future<TrackableExercise?> showExercisePicker(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: AppColors.backgroundElevated,
+      // Same canvas as the dashboard (HubBackground below).
+      backgroundColor: AppColors.hubBackgroundBottom,
+      barrierColor: AppColors.achScrim,
+      clipBehavior: Clip.antiAlias,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.9,
-        child: _ExercisePicker(title: title),
+        child: HubBackground(
+          glowCenter: const Alignment(0.4, -1),
+          child: _ExercisePicker(title: title),
+        ),
       ),
     );
 

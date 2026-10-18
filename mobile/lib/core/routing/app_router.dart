@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../features/auth/presentation/providers/auth_state_notifier.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/achievements/presentation/screens/achievement_unlock_screen.dart';
+import '../../features/achievements/presentation/screens/achievements_screen.dart';
+import '../../features/connect/presentation/screens/captain_profile_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
-import '../../features/exercises/presentation/screens/exercises_screen.dart';
+import '../../features/muscle_map/presentation/screens/muscle_map_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
-import '../../features/statistics/presentation/screens/statistics_screen.dart';
+import '../../features/progress/presentation/screens/planet_screen.dart';
+import '../../features/progress/presentation/screens/skill_screen.dart';
 import '../../features/workouts/domain/services/workout_finalizer.dart';
 import '../../features/workouts/presentation/screens/active_workout_screen.dart';
+import '../../features/workouts/presentation/screens/create_template_screen.dart';
 import '../../features/workouts/presentation/screens/workout_summary_screen.dart';
 import '../../features/workouts/presentation/screens/workouts_screen.dart';
 import '../constants/app_constants.dart';
+import '../widgets/coming_soon_screen.dart';
 import 'app_shell.dart';
 
 /// App-wide router, gated by auth state.
@@ -39,6 +48,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.forgotPassword;
 
       if (isLoading) return null; // stay on splash until session resolves
+
+      // An opened reset link grants a recovery session; hold the user on
+      // the set-new-password screen until they finish or cancel.
+      final isRecovering = isLoggedIn && ref.read(passwordRecoveryProvider);
+      final onResetRoute = state.matchedLocation == AppRoutes.resetPassword;
+      if (isRecovering) return onResetRoute ? null : AppRoutes.resetPassword;
+      if (onResetRoute) return isLoggedIn ? AppRoutes.dashboard : AppRoutes.login;
+
       // Hold on the splash route until its intro animation has played.
       if (state.matchedLocation == AppRoutes.splash &&
           !ref.read(splashCompleteProvider)) {
@@ -54,13 +71,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: AppRoutes.splash,
-        pageBuilder: (context, state) =>
-            _fadePage(state, const SplashScreen()),
+        pageBuilder: (context, state) => _fadePage(state, const SplashScreen()),
       ),
       GoRoute(
         path: AppRoutes.login,
-        pageBuilder: (context, state) =>
-            _fadePage(state, const LoginScreen()),
+        pageBuilder: (context, state) => _fadePage(state, const LoginScreen()),
       ),
       GoRoute(
         path: AppRoutes.register,
@@ -73,16 +88,61 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             _fadePage(state, const ForgotPasswordScreen()),
       ),
       GoRoute(
+        path: AppRoutes.resetPassword,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const ResetPasswordScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.captainProfile,
+        pageBuilder: (context, state) => _fadePage(
+          state,
+          CaptainProfileScreen(coachId: state.pathParameters['coachId']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.planet,
+        pageBuilder: (context, state) => _fadePage(
+          state,
+          PlanetScreen(planetId: state.pathParameters['planetId']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.skill,
+        pageBuilder: (context, state) => _fadePage(
+          state,
+          SkillScreen(skillId: state.pathParameters['skillId']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.achievementUnlock,
+        pageBuilder: (context, state) => _fadePage(
+          state,
+          AchievementUnlockScreen(
+            achievementId: state.pathParameters['achievementId']!,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.muscleMap,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const MuscleMapScreen()),
+      ),
+      GoRoute(
         path: AppRoutes.activeWorkout,
         pageBuilder: (context, state) =>
             _fadePage(state, const ActiveWorkoutScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.createTemplate,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const CreateTemplateScreen()),
       ),
       GoRoute(
         path: AppRoutes.workoutSummary,
         // The summary only exists in memory; after a reload there's
         // nothing to show, so fall back to the Workouts tab.
         redirect: (context, state) =>
-            state.extra is WorkoutSummary ? null : AppRoutes.workouts,
+            state.extra is WorkoutSummary ? null : AppRoutes.train,
         pageBuilder: (context, state) => _fadePage(
           state,
           WorkoutSummaryScreen(summary: state.extra! as WorkoutSummary),
@@ -91,6 +151,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             AppShell(navigationShell: navigationShell),
+        // Order must match MomentumNavBar.items.
         branches: [
           StatefulShellBranch(
             routes: [
@@ -103,8 +164,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
+              // Coach tab — placeholder until the Captain flow is wired.
               GoRoute(
-                path: AppRoutes.workouts,
+                path: AppRoutes.connect,
+                pageBuilder: (context, state) => _fadePage(
+                  state,
+                  const ComingSoonScreen(
+                    icon: LucideIcons.users,
+                    eyebrow: 'Coach',
+                    title: 'Coming soon',
+                    message: 'Find a Captain and train with real coaching.',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.train,
                 pageBuilder: (context, state) =>
                     _fadePage(state, const WorkoutsScreen()),
               ),
@@ -112,19 +190,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
+              // Universe tab — placeholder until the skill galaxies ship.
               GoRoute(
-                path: AppRoutes.exercises,
-                pageBuilder: (context, state) =>
-                    _fadePage(state, const ExercisesScreen()),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.statistics,
-                pageBuilder: (context, state) =>
-                    _fadePage(state, const StatisticsScreen()),
+                path: AppRoutes.progress,
+                pageBuilder: (context, state) => _fadePage(
+                  state,
+                  const ComingSoonScreen(
+                    icon: LucideIcons.orbit,
+                    eyebrow: 'Universe',
+                    title: 'Coming soon',
+                    message: 'Skill galaxies, roadmaps and certifications.',
+                  ),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'achievements',
+                    pageBuilder: (context, state) =>
+                        _fadePage(state, const AchievementsScreen()),
+                  ),
+                ],
               ),
             ],
           ),
@@ -165,11 +249,12 @@ CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
 
 /// Bridges Riverpod's [authStateProvider] to GoRouter's [Listenable]-based
 /// refresh mechanism, so the router re-evaluates `redirect` whenever auth
-/// state changes (login, logout, guest session started, etc.).
+/// state changes (login, logout, guest session started, reset link opened).
 class _AuthRefreshNotifier extends ChangeNotifier {
   _AuthRefreshNotifier(this._ref) {
     _ref.listen(authStateProvider, (_, __) => notifyListeners());
     _ref.listen(splashCompleteProvider, (_, __) => notifyListeners());
+    _ref.listen(passwordRecoveryProvider, (_, __) => notifyListeners());
   }
 
   final Ref _ref;

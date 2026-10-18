@@ -10,6 +10,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/profile_button.dart';
 import '../../../../core/widgets/section_title.dart';
 import '../../domain/entities/active_workout.dart';
 import '../../domain/entities/pending_workout.dart';
@@ -49,8 +50,9 @@ class WorkoutsScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: AppSpacing.lg),
           const SectionTitle(
-            title: 'Workouts',
+            title: 'Train',
             subtitle: 'Log sets, reps and weight',
+            trailing: ProfileButton(),
           ),
           if (active != null)
             _ResumeCard(
@@ -71,7 +73,18 @@ class WorkoutsScreen extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.xl),
-          Text('Templates', style: AppTypography.titleLarge),
+          Row(
+            children: [
+              Expanded(
+                child: Text('Templates', style: AppTypography.titleLarge),
+              ),
+              TextButton.icon(
+                onPressed: () => context.push(AppRoutes.createTemplate),
+                icon: const Icon(LucideIcons.plus, size: 18),
+                label: const Text('New template'),
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.sm),
           templates.when(
             loading: () => const Padding(
@@ -88,8 +101,8 @@ class WorkoutsScreen extends ConsumerWidget {
             ),
             data: (list) => list.isEmpty
                 ? const _Hint(
-                    text: 'No templates yet. Finish a workout and tap '
-                        '"Save as template" to reuse it.',
+                    text: 'No templates yet. Tap "New template" to build '
+                        'one, or finish a workout and save it as a template.',
                   )
                 : Column(
                     children: [

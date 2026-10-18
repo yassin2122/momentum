@@ -9,6 +9,9 @@ append-only migrations
 the folder conventions
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+- UI follows design/motra/. Always use lib/core/theme/ tokens.
+- Never modify business logic or Supabase code when doing UI tasks.
+
 ## What this is
 
 **Momentum** — a Flutter fitness app backed entirely by Supabase (Postgres + Auth + RLS + PostgREST/RPC + Realtime + Storage). There is no custom API server; the Flutter client talks to Postgres through PostgREST and `security definer` RPCs.
@@ -117,7 +120,7 @@ Concretely, in the repository layer:
 - XP moves only via `award_stage_xp` / `award_xp` RPCs.
 - Roadmap completion goes through `complete_roadmap_workout`; roadmap PRs through `record_roadmap_personal_best`.
 - PRs are written by the `check_and_update_personal_record` trigger that fires on `workout_log_sets` insert — just insert the set.
-- Streaks are written by `bump_streak` / `handle_workout_log_completed`, fired when `workout_logs.completed_at` is set. Never compute a streak client-side.
+- Streaks count **app opens**, not workouts (migration `20261018120000`): the client calls `record_app_open(p_local_date)` on dashboard open/resume, which logs a `user_activity_days` row (tier 3, client-read-only) and runs `bump_streak(user, day)` — +1 per new day, survives 1–2 missed days, resets after 3 missed days in a row. The old workout-completion trigger is dropped. Never compute a streak client-side. The dashboard's discipline score comes from `get_discipline_score(p_local_date)` (50% active days + 50% completed workouts vs. templates-per-week plan, 30-day window).
 - Template count is capped at 7 per user by `enforce_max_workout_templates()`. Let the Postgres error surface rather than pre-counting (avoids a race).
 
 If you find yourself writing an `.update()` against a progress table, the answer is an RPC.

@@ -130,6 +130,13 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       });
 
   @override
+  Future<Result<String>> createTemplate({
+    required String name,
+    required List<({String exerciseId, int sets})> exercises,
+  }) =>
+      _guard(() => _remote.createTemplate(name: name, exercises: exercises));
+
+  @override
   Future<Result<String>> saveAsTemplate({
     required String workoutId,
     required String name,

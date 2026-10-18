@@ -171,11 +171,11 @@ abstract final class AppColors {
   // Navigation — floating nav bar background, more opaque than the
   // general glass* tokens since it sits fixed over fast-scrolling
   // content and must stay legible regardless of what's underneath.
-  // Selected/unselected icon colors intentionally NOT duplicated
-  // here — they reference primary/textTertiary directly.
+  // Selected uses primaryBright, not primary: #235768 on the near-black
+  // bar is ~2:1 contrast, too faint to read as "active" for icon+label.
   // ==========================================================
   static const Color navBarBackground = Color(0xF01A1E24); // ~94% opaque
-  static const Color navBarSelected = primary;
+  static const Color navBarSelected = primaryBright;
   static const Color navBarUnselected = textTertiary;
 
   // ==========================================================
@@ -353,4 +353,372 @@ abstract final class AppColors {
   static const Color authTextHint = Color(0xFFA3A6AA); // tagline, helper text
   static const Color authTextSoft = Color(0xFF9B9DA0); // splash body copy
   static const Color authTextFaint = Color(0xFF85878A); // "Loading…" caption
+
+  // ==========================================================
+  // Hub — Dashboard, Coach hub, Captain screens, Profile, Skill.
+  // Same near-black canvas family as the auth screens, with a deep
+  // blue lift at the top and dark slate cards (design/canvas: ref/*).
+  // ==========================================================
+  static const Color hubBackgroundTop = Color(0xFF071624);
+  static const Color hubBackgroundBottom = Color(0xFF01050A);
+  static const Color hubCardTop = Color(0xFF0B1218);
+  static const Color hubCardBottom = Color(0xFF04080C);
+  static const Color hubCardBorder = Color(0x14FFFFFF); // ~8% white
+  static const Color hubCardBorderStrong = Color(0x26FFFFFF); // ~15% white
+  static const Color hubHeroGlow = Color(0xFF0E3550);
+  static const Color hubHeroMid = Color(0xFF08141D);
+  static const Color hubHeroEdge = Color(0xFF060B10);
+  static const Color hubIconButton = Color(0xFF0A1015);
+  static const Color hubEyebrow = authSky;
+  static const Color hubTextBright = Color(0xFFF2F2F2);
+  static const Color hubTextNumber = Color(0xFFF2EFE8);
+  static const Color hubTextBody = Color(0xFFC2C4C7);
+  static const Color hubTextMuted = authTextHint;
+  // Floor for any secondary/caption text on the dark hub canvas.
+  static const Color hubTextFaint = Color(0xFF9AA4B2);
+  static const Color hubTrack = Color(0xFF0E151B);
+  static const Color hubBarStart = Color(0xFF1C5A80);
+  static const Color hubBarEnd = Color(0xFF3C95CC);
+  static const Color hubDayDone = Color(0xFF154A6B);
+  static const Color hubDayEmpty = Color(0xFF1F2830);
+  static const Color hubRing = Color(0xFF2678AD);
+  static const Color hubAvatarRing = Color(0xFF1F6FA0);
+  static const Color hubChipText = Color(0xFFCFE8F7);
+  static const Color hubSkyLight = Color(0xFF8FD0F2);
+  static const Color hubCtaStart = Color(0xFF1F5C82);
+  static const Color hubCtaEnd = Color(0xFF0B2A3E);
+  static const Color hubCtaKnob = Color(0xFF06192A);
+  static const Color hubNote = Color(0xFF0A1520);
+  static const Color hubShareOnFill = Color(0x1A4ADE80); // ~10% success
+  static const Color hubShareOnText = Color(0xFF8EE6AD);
+  static const Color hubShareOffFill = Color(0x0DFFFFFF); // ~5% white
+  static const Color hubWaitFill = Color(0x26FBBF24); // ~15% warning
+  static const Color hubWaitText = Color(0xFFFCD77A);
+  static const Color hubDanger = Color(0xFFFF7A85);
+  static const Color hubStreak = Color(0xFFF4501A);
+
+  // Semantic accents for the hub. Progress = blue (rings, bars, links);
+  // action = the solid orange of the centre START button (primary CTAs).
+  static const Color accentProgress = authSky;
+  static const Color accentAction = Color(0xFFFF5A1F);
+  static const Color accentActionPressed = Color(0xFFE04A12);
+
+  /// Ring / bar track a step brighter than hubTrack, for contrast.
+  static const Color hubTrackStrong = Color(0xFF1C2833);
+
+  /// Rest-day dot on the week strip.
+  static const Color hubRestDay = Color(0xFF141C24);
+
+  // Momentum nav bar with the orange START orb.
+  static const Color hubNavTop = Color(0xFF080D12);
+  static const Color hubNavBottom = Color(0xFF03070A);
+  static const Color hubNavBorder = Color(0x17FFFFFF); // ~9% white
+  // Glass nav bar: a frosted pill, icon-only, with the selected tab in a
+  // filled blue circle.
+  /// Light frost over a slight ink underlay, so icons hold up on bright art.
+  static const Color navGlassTop = Color(0x6619222C); // ~40% slate
+  static const Color navGlassBottom = Color(0x800B1118); // ~50% ink
+  /// Hairline rim and the brighter top-edge highlight.
+  static const Color navGlassRim = Color(0x2EFFFFFF); // ~18% white
+  static const Color navGlassHighlight = Color(0x40FFFFFF); // ~25% white
+  /// Selected-tab circle: light-to-deep blue, with a soft blue bloom.
+  static const Color navSelectedTop = Color(0xFF5CC2F2);
+  static const Color navSelectedBottom = Color(0xFF1F6FA0);
+  static const Color navSelectedGlow = Color(0x734FB3E8); // ~45% sky
+  /// Unselected tab icons.
+  static const Color navIcon = Color(0xFF8FB7D6);
+  static const Color startOrbLight = Color(0xFFFFC46B);
+  static const Color startOrbMid = accentAction;
+  static const Color startOrbDeep = Color(0xFFF03C10);
+  static const Color startOrbGlow = Color(0x8CFF5A1F); // ~55% orange
+  static const Color startOrbCore = Color(0xFF3A0F05);
+
+  // Skill certification tiers (Complete / Master / Legendary).
+  static const Color tierComplete = hubSkyLight;
+  static const Color tierCompleteFill = Color(0xFF071A2A);
+  static const Color tierMaster = Color(0xFFC9B8F2);
+  static const Color tierMasterFillTop = Color(0xFF261A40);
+  static const Color tierMasterFillBottom = Color(0xFF100B1B);
+  static const Color tierMasterBorder = Color(0x887C5CBF);
+  static const Color tierLegendary = Color(0xFFFFA36B);
+  static const Color tierLegendaryFillTop = Color(0xFF3A1A08);
+  static const Color tierLegendaryFillBottom = Color(0xFF160904);
+  static const Color tierLegendaryBorder = Color(0x66F4501A);
+  static const Color tierLockedFill = Color(0xFF070B0F);
+
+  // ==========================================================
+  // Game — Phases, Calisthenics universe, planet level path.
+  // Deep space canvas with nebula washes, HUD capsules, blue
+  // completed nodes, gold "current" node and violet elite trial.
+  // ==========================================================
+  static const Color spaceBase = Color(0xFF03040C);
+  static const Color nebulaViolet = Color(0xFF2A1660);
+  static const Color nebulaTeal = Color(0xFF0B3A5C);
+  static const Color nebulaBlue = Color(0xFF0D2A6B);
+  static const Color nebulaGreen = Color(0xFF0F4A3A);
+  static const Color nebulaIndigo = Color(0xFF1B2A6B);
+  static const Color nebulaDeep = Color(0xFF0D3A7A);
+  static const Color hudFill = Color(0xC7080C1C); // ~78% deep navy
+  static const Color hudBorder = Color(0x1FFFFFFF); // ~12% white
+  static const Color gameTextSubtle = Color(0xFF9FB4D6);
+  static const Color gameTextBody = Color(0xFFB9C6DC);
+  static const Color gameBlue = Color(0xFF3A8DFF);
+  static const Color gameBlueDeep = Color(0xFF2A6FD6);
+  static const Color gameBlueLight = Color(0xFF6CC4FF);
+  static const Color gameBluePale = Color(0xFFBFE6FF);
+  static const Color gamePathDash = Color(0xFF7CC8FF);
+  static const Color gameNodeMid = Color(0xFF0B1F4A);
+  static const Color gameNodeEdge = Color(0xFF050B1C);
+  static const Color gamePanelTop = Color(0xEB0E1A3A); // ~92%
+  static const Color gamePanelBottom = Color(0xF2060A18); // ~95%
+  static const Color gameLabelFill = Color(0xD1060A18); // ~82%
+  static const Color gameGold = Color(0xFFFFC83D);
+  static const Color gameGoldLight = Color(0xFFFFD36B);
+  static const Color gameGoldPale = Color(0xFFFFF1BF);
+  static const Color gameGoldDeep = Color(0xFFF08A1A);
+  static const Color gameGoldDark = Color(0xFF7A3A05);
+  static const Color gameGoldInk = Color(0xFF2A1400);
+  static const Color gameElite = Color(0xFFA48BE0);
+  static const Color gameEliteLight = Color(0xFFD9CBFF);
+  static const Color gameEliteText = Color(0xFFB9A8E8);
+  static const Color gameEliteDeep = Color(0xFF2B1D55);
+  static const Color gameLockedTop = Color(0xFF3A4250);
+  static const Color gameLockedBottom = Color(0xFF151A22);
+  static const Color gameLockedBorder = Color(0xFF556070);
+  static const Color gameLockedText = Color(0xFF9AA4B2);
+  static const Color gameStar = Color(0xFFFFFFFF);
+
+  // Phases — the three galaxies (Origin / Ascension / Singularity).
+  static const Color phaseOrigin = Color(0xFFFF9A3C);
+  static const Color phaseAscension = Color(0xFF7A8CFF);
+  static const Color phaseSingularity = Color(0xFFE8E8EA);
+  static const Color phaseInk = Color(0xFF0B0B0D);
+  static const Color phaseButton = Color(0xFFECECEE);
+  static const Color phaseTextTag = Color(0xFFB4B7BD);
+  static const Color phaseTextBody = Color(0xFFC9CBD0);
+  static const Color phaseTextFaint = Color(0xFF7D8088);
+  static const Color phaseLockFill = Color(0xB308080E); // ~70%
+
+  // ==========================================================
+  // Achievements — neutral graphite sheet the medallions sit on.
+  // Medallion materials live in [AchievementPalette] below.
+  // ==========================================================
+  static const Color achBackgroundTop = Color(0xFF1A1B20);
+  static const Color achBackground = Color(0xFF0B0B0D);
+  static const Color achSurface = Color(0xFF16171A);
+  static const Color achSurfaceLow = Color(0xFF111214);
+  static const Color achSheetTop = Color(0xFF17181B);
+  static const Color achSheet = Color(0xFF141518);
+  static const Color achSheetInset = Color(0xFF0F1012);
+  static const Color achTrack = Color(0xFF24262B);
+  static const Color achHandle = Color(0xFF3A3C42);
+  static const Color achText = Color(0xFFECECEE);
+  static const Color achTextMuted = Color(0xFF9A9DA4);
+  static const Color achTextFaint = Color(0xFF6F727A);
+  static const Color achNewPill = Color(0xFFE8E5DD);
+  static const Color achScrim = Color(0x99050507); // ~60%
+}
+
+/// One medallion material for a rarity tier. Every colour an achievement
+/// badge paints with — frame, bevelled edge, inner plate, glow, ring and
+/// glyph — so a badge never reaches for a raw hex value.
+final class RarityPalette {
+  const RarityPalette({
+    required this.frameTop,
+    required this.frameMid,
+    required this.frameBottom,
+    required this.edgeLight,
+    required this.edgeMid,
+    required this.edgeDark,
+    required this.innerTop,
+    required this.innerBottom,
+    required this.innerEdge,
+    required this.glyph,
+    required this.glow,
+    required this.ring,
+    required this.accent,
+    required this.label,
+    this.glowOpacity = 0,
+    this.ringOpacity = 0,
+    this.outerRingOpacity = 0,
+    this.tickOpacity = 0,
+    this.rimOpacity = 0,
+    this.sweepOpacity = 0,
+    this.edgeWidth = 1.4,
+  });
+
+  final Color frameTop;
+  final Color frameMid;
+  final Color frameBottom;
+  final Color edgeLight;
+  final Color edgeMid;
+  final Color edgeDark;
+  final Color innerTop;
+  final Color innerBottom;
+  final Color innerEdge;
+  final Color glyph;
+  final Color glow;
+  final Color ring;
+
+  /// Progress-ring and metadata colour for this tier.
+  final Color accent;
+
+  /// Text colour for the tier name on the dark sheet.
+  final Color label;
+  final double glowOpacity;
+  final double ringOpacity;
+  final double outerRingOpacity;
+  final double tickOpacity;
+  final double rimOpacity;
+  final double sweepOpacity;
+  final double edgeWidth;
+}
+
+/// Medallion materials, one per rarity (design/canvas: ach/BadgeSystem).
+abstract final class AchievementPalette {
+  static const RarityPalette common = RarityPalette(
+    frameTop: Color(0xFF34373D),
+    frameMid: Color(0xFF24262B),
+    frameBottom: Color(0xFF18191D),
+    edgeLight: Color(0xFF4A4D54),
+    edgeMid: Color(0xFF3A3D43),
+    edgeDark: Color(0xFF2C2E33),
+    innerTop: Color(0xFF1F2125),
+    innerBottom: Color(0xFF141518),
+    innerEdge: Color(0xFF2F3238),
+    glyph: Color(0xFFC9CCD2),
+    glow: Color(0xFF000000),
+    ring: Color(0xFF000000),
+    accent: Color(0xFFA7ABB3),
+    label: Color(0xFFA7ABB3),
+    edgeWidth: 1.5,
+  );
+
+  static const RarityPalette uncommon = RarityPalette(
+    frameTop: Color(0xFFB6BDC6),
+    frameMid: Color(0xFF5F666F),
+    frameBottom: Color(0xFF2F343A),
+    edgeLight: Color(0xFFEEF4FA),
+    edgeMid: Color(0xFF9AA3AD),
+    edgeDark: Color(0xFF5A616A),
+    innerTop: Color(0xFF23282E),
+    innerBottom: Color(0xFF14171B),
+    innerEdge: Color(0xFF4A525B),
+    glyph: Color(0xFFE9EDF2),
+    glow: Color(0xFFC9D8EA),
+    ring: Color(0xFF000000),
+    accent: Color(0xFFC9D3DE),
+    label: Color(0xFFC9D3DE),
+    glowOpacity: 0.08,
+    rimOpacity: 0.6,
+  );
+
+  static const RarityPalette rare = RarityPalette(
+    frameTop: Color(0xFF808D9B),
+    frameMid: Color(0xFF3E4955),
+    frameBottom: Color(0xFF1F262E),
+    edgeLight: Color(0xFFC3D6E8),
+    edgeMid: Color(0xFF6F8396),
+    edgeDark: Color(0xFF3A4653),
+    innerTop: Color(0xFF255C8C),
+    innerBottom: Color(0xFF0D2742),
+    innerEdge: Color(0xFF5384AE),
+    glyph: Color(0xFFEEF5FB),
+    glow: Color(0xFF4F8FCF),
+    ring: Color(0xFFA9C9E6),
+    accent: Color(0xFF6FA8DC),
+    label: Color(0xFF8CBBE6),
+    glowOpacity: 0.22,
+    ringOpacity: 0.75,
+    rimOpacity: 0.45,
+  );
+
+  static const RarityPalette epic = RarityPalette(
+    frameTop: Color(0xFF6C6281),
+    frameMid: Color(0xFF3A3349),
+    frameBottom: Color(0xFF1E1A27),
+    edgeLight: Color(0xFFE2D5FD),
+    edgeMid: Color(0xFF8A74B8),
+    edgeDark: Color(0xFF4A3D63),
+    innerTop: Color(0xFF5D4196),
+    innerBottom: Color(0xFF24163D),
+    innerEdge: Color(0xFF9077C9),
+    glyph: Color(0xFFF4EEFF),
+    glow: Color(0xFF9F80E6),
+    ring: Color(0xFFCDB6F5),
+    accent: Color(0xFFA98BE6),
+    label: Color(0xFFBDA4EE),
+    glowOpacity: 0.4,
+    ringOpacity: 0.8,
+    outerRingOpacity: 0.55,
+    rimOpacity: 0.45,
+  );
+
+  static const RarityPalette legendary = RarityPalette(
+    frameTop: Color(0xFFF3D896),
+    frameMid: Color(0xFFB07D32),
+    frameBottom: Color(0xFF5C3C10),
+    edgeLight: Color(0xFFFFF3CF),
+    edgeMid: Color(0xFFD9AC5A),
+    edgeDark: Color(0xFF7A5218),
+    innerTop: Color(0xFF3A2B13),
+    innerBottom: Color(0xFF150E06),
+    innerEdge: Color(0xFFC9A052),
+    glyph: Color(0xFFF7DF9D),
+    glow: Color(0xFFE3AC4D),
+    ring: Color(0xFFD8B066),
+    accent: Color(0xFFE0B866),
+    label: Color(0xFFE9C983),
+    glowOpacity: 0.28,
+    ringOpacity: 0.7,
+    tickOpacity: 0.75,
+    rimOpacity: 0.65,
+    sweepOpacity: 0.5,
+    edgeWidth: 1.5,
+  );
+
+  static const RarityPalette mythic = RarityPalette(
+    frameTop: Color(0xFF24242E),
+    frameMid: Color(0xFF0E0E14),
+    frameBottom: Color(0xFF050508),
+    edgeLight: Color(0xFFDFE6F0),
+    edgeMid: Color(0xFFC4B4EA),
+    edgeDark: Color(0xFFA3D8D0),
+    innerTop: Color(0xFF13131B),
+    innerBottom: Color(0xFF050507),
+    innerEdge: Color(0xFF3C3F4C),
+    glyph: Color(0xFFF2F4F8),
+    glow: Color(0xFFA9B8DE),
+    ring: Color(0xFFE1E6EE),
+    accent: Color(0xFFD8DDE6),
+    label: Color(0xFFDFE4EC),
+    glowOpacity: 0.2,
+    ringOpacity: 0.6,
+    outerRingOpacity: 0.35,
+    rimOpacity: 0.5,
+    sweepOpacity: 0.32,
+    edgeWidth: 2.2,
+  );
+
+  /// Shared material for locked and in-progress medallions.
+  static const RarityPalette locked = RarityPalette(
+    frameTop: Color(0xFF18191C),
+    frameMid: Color(0xFF121315),
+    frameBottom: Color(0xFF0D0E10),
+    edgeLight: Color(0xFF2F3238),
+    edgeMid: Color(0xFF2A2D33),
+    edgeDark: Color(0xFF25272C),
+    innerTop: Color(0xFF101113),
+    innerBottom: Color(0xFF0B0C0E),
+    innerEdge: Color(0xFF202227),
+    glyph: Color(0xFF767A82),
+    glow: Color(0xFF000000),
+    ring: Color(0xFF000000),
+    accent: Color(0xFF6F727A),
+    label: Color(0xFF6F727A),
+    edgeWidth: 1.5,
+  );
+
+  /// Track behind the progress arc on an in-progress medallion.
+  static const Color progressTrack = Color(0xFF2A2D33);
 }

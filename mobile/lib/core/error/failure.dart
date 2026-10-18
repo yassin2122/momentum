@@ -34,6 +34,13 @@ final class UserNotFoundFailure extends Failure {
   const UserNotFoundFailure() : super('No account found for this email.');
 }
 
+/// Sign-up succeeded but the project requires email confirmation, so no
+/// session exists yet — the user must confirm, then log in.
+final class EmailConfirmationRequiredFailure extends Failure {
+  const EmailConfirmationRequiredFailure()
+      : super('Check your inbox to confirm your email, then log in.');
+}
+
 // ---- General failures ----
 
 final class NetworkFailure extends Failure {

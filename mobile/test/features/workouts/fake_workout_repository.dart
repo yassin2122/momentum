@@ -54,6 +54,11 @@ class FakeWorkoutRepository implements WorkoutRepository {
   Future<Result<WorkoutDefaults>> getWorkoutDefaults() async =>
       const Result.success(WorkoutDefaults(preferredUnit: WeightUnit.kg));
   @override
+  Future<Result<String>> createTemplate(
+          {required String name,
+          required List<({String exerciseId, int sets})> exercises}) =>
+      throw UnimplementedError();
+  @override
   Future<Result<String>> saveAsTemplate(
           {required String workoutId, required String name}) =>
       throw UnimplementedError();

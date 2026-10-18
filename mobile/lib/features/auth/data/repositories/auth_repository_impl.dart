@@ -1,6 +1,8 @@
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/error/result.dart';
+import '../../domain/entities/auth_change.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -20,6 +22,23 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = _remoteDataSource.currentUser;
     if (user == null) return null;
     return UserModel.fromSupabaseUser(user);
+  }
+
+  @override
+  Stream<AuthChange> watchAuthChanges() {
+    return _remoteDataSource.authStateChanges.map((state) {
+      final user = state.session?.user;
+      final entity = user == null ? null : UserModel.fromSupabaseUser(user);
+      if (state.event == supabase.AuthChangeEvent.passwordRecovery) {
+        return AuthChange(AuthChangeKind.passwordRecovery, entity);
+      }
+      // Every other event (initial session, sign-in, token refresh, user
+      // update) is described fully by whether a session exists.
+      return AuthChange(
+        entity == null ? AuthChangeKind.signedOut : AuthChangeKind.signedIn,
+        entity,
+      );
+    });
   }
 
   @override
@@ -91,6 +110,20 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<void>> updatePassword(String newPassword) async {
+    try {
+      await _remoteDataSource.updatePassword(newPassword);
+      return const Result.success(null);
+    } on AuthException catch (e) {
+      return Result.failure(_mapAuthError(e));
+    } on NetworkException {
+      return const Result.failure(NetworkFailure());
+    } catch (_) {
+      return const Result.failure(UnknownFailure());
+    }
+  }
+
+  @override
   Future<Result<void>> signOut() async {
     try {
       await _remoteDataSource.signOut();
@@ -118,6 +151,13 @@ class AuthRepositoryImpl implements AuthRepository {
         return const InvalidEmailFailure();
       case 'user_not_found':
         return const UserNotFoundFailure();
+      case 'confirmation_required':
+      case 'email_not_confirmed':
+        return const EmailConfirmationRequiredFailure();
+      case 'same_password':
+        return const ServerFailure(
+          'Choose a password different from your current one.',
+        );
       default:
         return ServerFailure(e.message);
     }

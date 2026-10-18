@@ -16,6 +16,12 @@ class AuthRemoteDataSource {
 
   supabase.User? get currentUser => _client.auth.currentUser;
 
+  /// Raw Supabase session events. Errors on this stream (e.g. a token
+  /// refresh failing offline, or an expired reset link) are the caller's
+  /// to handle — an unhandled one surfaces as an uncaught exception.
+  Stream<supabase.AuthState> get authStateChanges =>
+      _client.auth.onAuthStateChange;
+
   Future<supabase.User> signInWithEmail({
     required String email,
     required String password,
@@ -42,22 +48,33 @@ class AuthRemoteDataSource {
     required String password,
     String? displayName,
   }) async {
+    final supabase.AuthResponse response;
     try {
-      final response = await _client.auth.signUp(
+      response = await _client.auth.signUp(
         email: email,
         password: password,
         data: displayName == null ? null : {'display_name': displayName},
       );
-      final user = response.user;
-      if (user == null) {
-        throw const AuthException('no_user', 'Registration failed');
-      }
-      return user;
     } on supabase.AuthException catch (e) {
       throw AuthException(e.code ?? 'unknown', e.message);
     } catch (_) {
       throw const NetworkException();
     }
+    // Thrown outside the try so the catch-all above can't rewrite them
+    // as network errors.
+    final user = response.user;
+    if (user == null) {
+      throw const AuthException('no_user', 'Registration failed');
+    }
+    // With email confirmation enabled, sign-up returns a user but no
+    // session — there's nothing to log in with until they confirm.
+    if (response.session == null) {
+      throw const AuthException(
+        'confirmation_required',
+        'Email confirmation required',
+      );
+    }
+    return user;
   }
 
   Future<supabase.User> signInAnonymously() async {
@@ -101,6 +118,19 @@ class AuthRemoteDataSource {
       await _client.auth.resetPasswordForEmail(
         email,
         redirectTo: AppConstants.authRedirectUrl,
+      );
+    } on supabase.AuthException catch (e) {
+      throw AuthException(e.code ?? 'unknown', e.message);
+    } catch (_) {
+      throw const NetworkException();
+    }
+  }
+
+  /// Sets a new password on the current session's user.
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      await _client.auth.updateUser(
+        supabase.UserAttributes(password: newPassword),
       );
     } on supabase.AuthException catch (e) {
       throw AuthException(e.code ?? 'unknown', e.message);

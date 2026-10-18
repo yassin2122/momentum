@@ -52,7 +52,7 @@ class FloatingNavBar extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
-            height: 64,
+            height: AppSizing.navBarHeight,
             decoration: BoxDecoration(
               color: AppColors.navBarBackground,
               borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -92,33 +92,37 @@ class _NavBarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color =
-        isSelected ? AppColors.primary : AppColors.textTertiary;
+        isSelected ? AppColors.navBarSelected : AppColors.navBarUnselected;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.xl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedScale(
-            duration: AppConstants.animInstant,
-            scale: isSelected ? 1.08 : 1.0,
-            child: AnimatedContainer(
+    return Semantics(
+      selected: isSelected,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
               duration: AppConstants.animInstant,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xxs,
+              scale: isSelected ? 1.08 : 1.0,
+              child: AnimatedContainer(
+                duration: AppConstants.animInstant,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xxs,
+                ),
+                child: Icon(item.icon, size: AppSizing.iconMd, color: color),
               ),
-              child: Icon(item.icon, size: AppSizing.iconMd, color: color),
             ),
-          ),
-          const SizedBox(height: 2),
-          AnimatedDefaultTextStyle(
-            duration: AppConstants.animInstant,
-            style: AppTypography.caption.copyWith(color: color),
-            child: Text(item.label),
-          ),
-        ],
+            const SizedBox(height: AppSpacing.xxs),
+            AnimatedDefaultTextStyle(
+              duration: AppConstants.animInstant,
+              style: AppTypography.caption.copyWith(color: color),
+              child: Text(item.label),
+            ),
+          ],
+        ),
       ),
     );
   }

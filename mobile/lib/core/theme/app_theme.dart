@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_radius.dart';
@@ -9,6 +10,18 @@ import './app_sizing.dart';
 ///
 /// The app is dark-mode only — there is intentionally no lightTheme.
 abstract final class AppTheme {
+  /// Light status-bar icons over the dark canvas, and a transparent
+  /// system navigation bar so the floating bottom bar sits edge-to-edge.
+  static const SystemUiOverlayStyle systemOverlay = SystemUiOverlayStyle(
+    statusBarColor: AppColors.transparent,
+    statusBarIconBrightness: Brightness.light, // Android
+    statusBarBrightness: Brightness.dark, // iOS
+    systemNavigationBarColor: AppColors.transparent,
+    systemNavigationBarDividerColor: AppColors.transparent,
+    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarContrastEnforced: false,
+  );
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -23,13 +36,30 @@ abstract final class AppTheme {
         onPrimary: AppColors.textPrimary,
         onSurface: AppColors.textPrimary,
         onError: AppColors.textPrimary,
+        // M3 tints elevated surfaces (sheets, dialogs, menus) with the
+        // primary colour by default; keep them the neutral dark we set.
+        surfaceTint: AppColors.transparent,
       ),
+      // Ripples stay subtle on the dark canvas.
+      splashFactory: InkRipple.splashFactory,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
+        surfaceTintColor: AppColors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
+        systemOverlayStyle: systemOverlay,
         titleTextStyle: AppTypography.headlineMedium,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.achSheet,
+        surfaceTintColor: AppColors.transparent,
+        modalBarrierColor: AppColors.achScrim,
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.surfaceElevated,
+        surfaceTintColor: AppColors.transparent,
       ),
       textTheme: TextTheme(
         displayLarge: AppTypography.displayLarge,

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/primary_button.dart';
 
 /// Shared building blocks for the Splash / Login / Register screens
 /// (app_design/*.png). They sit on the near-black auth canvas, so they
@@ -167,7 +169,8 @@ class _AuthTextFieldState extends State<AuthTextField> {
   }
 }
 
-/// Full-width steel-blue gradient CTA ("LOG IN", "CREATE ACCOUNT").
+/// Full-width brand-gradient CTA ("LOG IN", "CREATE ACCOUNT") — same
+/// orange → coral → teal fill and glow as [PrimaryButton].
 class AuthCtaButton extends StatelessWidget {
   const AuthCtaButton({
     super.key,
@@ -186,15 +189,8 @@ class AuthCtaButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: radius,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.authCtaStart,
-            AppColors.authCtaMid,
-            AppColors.authCtaEnd,
-          ],
-        ),
+        gradient: PrimaryButton.gradient,
+        boxShadow: AppShadows.ctaGlow,
       ),
       child: Material(
         color: AppColors.transparent,

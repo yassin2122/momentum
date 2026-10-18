@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/hub_ui.dart';
 import '../../../../core/widgets/loading_overlay.dart';
 import '../../../../core/widgets/secondary_button.dart';
 import '../../domain/entities/active_workout.dart';
@@ -34,7 +35,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       ref.read(activeWorkoutProvider.notifier);
 
   void _leave() =>
-      context.canPop() ? context.pop() : context.go(AppRoutes.workouts);
+      context.canPop() ? context.pop() : context.go(AppRoutes.train);
 
   void _snack(String message) => ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -111,7 +112,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     );
     if (!ok || !mounted) return;
     await _notifier.discard();
-    if (mounted) context.go(AppRoutes.workouts);
+    if (mounted) context.go(AppRoutes.train);
   }
 
   Future<void> _finish(ActiveWorkout workout) async {
@@ -147,25 +148,35 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
     if (async.isLoading && workout == null) {
       return const Scaffold(
-        body: LoadingOverlay(isLoading: true, child: SizedBox.expand()),
+        backgroundColor: AppColors.hubBackgroundBottom,
+        body: HubBackground(
+          child: LoadingOverlay(isLoading: true, child: SizedBox.expand()),
+        ),
       );
     }
     if (workout == null) {
       return Scaffold(
+        backgroundColor: AppColors.hubBackgroundBottom,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(leading: BackButton(onPressed: _leave)),
-        body: EmptyState(
-          icon: Icons.fitness_center,
-          title: 'No workout in progress',
-          message: 'Start one from the Workouts tab.',
-          actionLabel: 'Go to Workouts',
-          onAction: () => context.go(AppRoutes.workouts),
+        body: HubBackground(
+          child: SafeArea(
+            child: EmptyState(
+              icon: Icons.fitness_center,
+              title: 'No workout in progress',
+              message: 'Start one from the Workouts tab.',
+              actionLabel: 'Go to Workouts',
+              onAction: () => context.go(AppRoutes.train),
+            ),
+          ),
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: AppColors.hubBackgroundBottom,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
         leading: IconButton(
           tooltip: 'Minimise',
           icon: const Icon(Icons.keyboard_arrow_down),
@@ -206,32 +217,37 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           ),
         ],
       ),
-      body: LoadingOverlay(
-        isLoading: _finishing,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenPadding,
-            AppSpacing.sm,
-            AppSpacing.screenPadding,
-            AppSpacing.xl3,
+      body: HubBackground(
+        child: SafeArea(
+          bottom: false,
+          child: LoadingOverlay(
+            isLoading: _finishing,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+                AppSpacing.screenPadding,
+                AppSpacing.xl3,
+              ),
+              children: [
+                if (workout.exercises.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                    child: Text(
+                      'Add your first exercise to start logging sets.',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodyMedium,
+                    ),
+                  ),
+                for (var i = 0; i < workout.exercises.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildExercise(workout, i),
+                  ),
+                SecondaryButton(label: 'Add exercise', onPressed: _addExercise),
+              ],
+            ),
           ),
-          children: [
-            if (workout.exercises.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                child: Text(
-                  'Add your first exercise to start logging sets.',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.bodyMedium,
-                ),
-              ),
-            for (var i = 0; i < workout.exercises.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: _buildExercise(workout, i),
-              ),
-            SecondaryButton(label: 'Add exercise', onPressed: _addExercise),
-          ],
         ),
       ),
     );
