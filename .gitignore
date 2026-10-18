@@ -40,3 +40,8 @@ supabase/.branches/
 # OS cruft
 .DS_Store
 Thumbs.db
+
+# Local diagnostics, editor settings, machine-specific helper scripts
+mobile/_diag/
+.idea/
+mobile/momentum_*.bat
