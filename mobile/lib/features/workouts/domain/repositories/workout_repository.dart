@@ -27,7 +27,21 @@ final class WorkoutDefaults {
 
 abstract interface class WorkoutRepository {
   // ── Remote ──────────────────────────────────────────────────────────────
-  Future<Result<List<TrackableExercise>>> searchExercises(String query);
+  /// A–Z search over the library and the user's custom exercises.
+  /// [muscleGroups] (library names) keeps exercises whose primary muscle is
+  /// one of them.
+  Future<Result<List<TrackableExercise>>> searchExercises(
+    String query, {
+    List<String> muscleGroups = const [],
+    int offset = 0,
+    int limit = 50,
+  });
+
+  /// Exercises for the given library slugs (missing slugs are skipped).
+  Future<Result<List<TrackableExercise>>> exercisesBySlugs(List<String> slugs);
+
+  /// Exercises from the user's recent workouts, most recent first.
+  Future<Result<List<TrackableExercise>>> recentExercises({int limit = 8});
 
   Future<Result<TrackableExercise>> createCustomExercise({
     required String name,
@@ -50,6 +64,10 @@ abstract interface class WorkoutRepository {
     required String name,
     required List<({String exerciseId, int sets})> exercises,
   });
+
+  /// Removes a template from the user's list (soft delete; workout
+  /// history is untouched).
+  Future<Result<void>> deleteTemplate(String templateId);
 
   Future<Result<String>> saveAsTemplate({
     required String workoutId,

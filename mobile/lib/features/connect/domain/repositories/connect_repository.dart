@@ -32,7 +32,28 @@ abstract interface class ConnectRepository {
   /// `null` when the scope is off or the caller is not the active Captain.
   Future<Result<AthleteBodyProfile?>> getAthleteBodyProfile(String athleteId);
 
+  /// `get_coach_card` — one approved coach, listed or not. `null` when the
+  /// coach isn't approved (or doesn't exist).
+  Future<Result<CoachDirectoryEntry?>> getCoachCard(String coachId);
+
+  /// `get_captain_hub` — `null` when the caller has never applied.
+  Future<Result<CaptainHub?>> getCaptainHub();
+
+  /// `get_client_workouts` — empty unless the caller is the athlete, or
+  /// their active approved Captain with the workouts scope on.
+  Future<Result<List<ClientWorkout>>> getClientWorkouts(String athleteId,
+      {int? limit});
+
   // ---- Writes allowed by RLS ----
+
+  /// Creates ([isNew]) or updates the caller's own Captain profile. New
+  /// profiles start `pending` until an admin approves them. [userId] must
+  /// be the signed-in user's id.
+  Future<Result<void>> saveCoachProfile({
+    required String userId,
+    required CaptainProfileDraft draft,
+    required bool isNew,
+  });
 
   /// Athlete-only (RLS). Only the non-null flags are changed. Fails if the
   /// update touched no row (caller is not the athlete).
@@ -88,4 +109,27 @@ abstract interface class ConnectRepository {
 
   /// Athlete, or the coach while active: `complete_assignment`.
   Future<Result<void>> completeAssignment(String assignmentId);
+
+  // ---- Invitations (RPC-only) ----
+
+  /// Captain: `create_coaching_invitation`. The full code is only ever
+  /// returned here.
+  Future<Result<CreatedInvite>> createInvite({String? note, int? validDays});
+
+  /// Captain: `revoke_coaching_invitation`.
+  Future<Result<void>> revokeInvite(String invitationId);
+
+  /// Athlete: `preview_coaching_invitation` — who sent [code].
+  Future<Result<InvitePreview>> previewInvite(String code);
+
+  /// Athlete: `accept_coaching_invitation` — returns the relationship id.
+  /// The relationship starts active. Omitted flags use the database
+  /// defaults (workouts/prs/progress on, body off).
+  Future<Result<String>> acceptInvite(
+    String code, {
+    bool? shareWorkouts,
+    bool? sharePrs,
+    bool? shareSkillProgress,
+    bool? shareBodyMetrics,
+  });
 }

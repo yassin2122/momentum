@@ -143,8 +143,9 @@ class _CaptainProfileScreenState extends ConsumerState<CaptainProfileScreen> {
                   const SizedBox(height: AppSpacing.md),
                   const HubMessageCard(
                     icon: LucideIcons.userRound,
-                    title: 'Coach not listed',
-                    message: 'This coach isn\'t in the directory right now.',
+                    title: 'Coach not available',
+                    message: 'This coach isn\'t taking athletes on Grit '
+                        'right now.',
                   ),
                 ]
               : _content(c, name, isMine ? mine : null),
@@ -235,9 +236,11 @@ class _CaptainProfileScreenState extends ConsumerState<CaptainProfileScreen> {
             const HubEyebrow('About'),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              c.headline?.isNotEmpty ?? false
-                  ? c.headline!
-                  : '$name hasn\'t written a bio yet.',
+              c.bio?.isNotEmpty ?? false
+                  ? c.bio!
+                  : c.headline?.isNotEmpty ?? false
+                      ? c.headline!
+                      : '$name hasn\'t written a bio yet.',
               style: AppTypography.bodyMedium
                   .copyWith(color: AppColors.hubTextBody),
             ),

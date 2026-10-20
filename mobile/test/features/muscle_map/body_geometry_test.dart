@@ -157,6 +157,43 @@ void main() {
       );
     });
 
+    test('focus frame zooms onto the lit muscles, both sides in shot', () {
+      final g = views[BodyView.front]!;
+      final f = g.focusFrame({Muscle.chest: 1}, aspect: 1);
+      final chest = g.regionPath(Muscle.chest)!.getBounds();
+      final body = g.bodyBounds;
+      expect(f.height, lessThan(body.height * 0.5)); // zoomed in
+      expect(f.inflate(1).contains(chest.topLeft), isTrue);
+      expect(f.inflate(1).contains(chest.bottomRight), isTrue);
+      expect(f.center.dx, closeTo(body.center.dx, 1)); // symmetric
+      expect(f.width / f.height, closeTo(1, 0.001)); // widget's shape
+    });
+
+    test('focus frame follows the brightest muscles only', () {
+      final g = views[BodyView.front]!;
+      final calves = g.regionPath(Muscle.calves)!.getBounds();
+      // Chest primary, calves faint context: calves stay out of the frame.
+      final f = g.focusFrame({Muscle.chest: 1, Muscle.calves: 0.25},
+          aspect: 1);
+      expect(f.contains(calves.center), isFalse);
+    });
+
+    test('focus frame falls back to the whole body', () {
+      final g = views[BodyView.front]!;
+      expect(g.focusFrame(const {}, aspect: 1), g.bodyFrame);
+      // Lit only on the other side (rear delts aren't drawn in front).
+      expect(g.focusFrame({Muscle.deltPosterior: 1}, aspect: 1), g.bodyFrame);
+    });
+
+    test('focus frame never shrinks below a minimum and stays on the body',
+        () {
+      final g = views[BodyView.back]!;
+      final f = g.focusFrame({Muscle.calves: 1}, aspect: 1);
+      expect(f.height, greaterThanOrEqualTo(g.bodyBounds.height * 0.32 - 0.01));
+      expect(f.bottom,
+          lessThanOrEqualTo(g.bodyBounds.bottom + g.bodyBounds.height * 0.02 + 0.01));
+    });
+
     test('fit keeps aspect ratio and centres', () {
       final g = views[BodyView.front]!;
       final fit = g.fit(Size(g.viewBox.width * 2, g.viewBox.height));

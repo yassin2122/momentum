@@ -65,6 +65,7 @@ class ConnectScreen extends ConsumerWidget {
           _Header(onFind: () => context.go(AppRoutes.findCaptain)),
           const SizedBox(height: AppSpacing.sm),
           for (final w in body) ...[w, const SizedBox(height: AppSpacing.sm)],
+          if (!isGuest) const _CaptainHubEntry(),
         ],
       ),
     );
@@ -148,6 +149,83 @@ class _NoCaptainCard extends StatelessWidget {
               label: 'Find a Coach',
               onPressed: () => context.go(AppRoutes.findCaptain),
             ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: HubOutlineButton(
+              label: 'Have an invite code?',
+              onPressed: () => showRedeemInviteSheet(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottom of the Coach tab: the way into the Captain Hub for users who
+/// coach (or want to). A user can be an athlete and a Captain at once.
+class _CaptainHubEntry extends ConsumerWidget {
+  const _CaptainHubEntry();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // While loading or on error, show the generic entry rather than
+    // nothing — the hub screen itself handles the error state.
+    final hub = ref.watch(captainHubProvider).valueOrNull;
+    final String title;
+    final String subtitle;
+    if (hub == null) {
+      title = 'Are you a coach?';
+      subtitle = 'Become a Captain and coach athletes on Grit';
+    } else if (hub.status == CoachStatus.pending) {
+      title = 'Captain Hub';
+      subtitle = 'Your Captain profile is under review';
+    } else {
+      final n = hub.clients.length;
+      final r = hub.requests.length;
+      title = 'Captain Hub';
+      subtitle = [
+        '$n athlete${n == 1 ? '' : 's'}',
+        if (r > 0) '$r new request${r == 1 ? '' : 's'}',
+      ].join(' · ');
+    }
+
+    return HubCard(
+      onTap: () => context.go(AppRoutes.captainHub),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
+        children: [
+          const Icon(
+            LucideIcons.clipboardList,
+            size: AppSizing.iconMd,
+            color: AppColors.hubEyebrow,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.hubTextBright,
+                    fontWeight: AppTypography.bold,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTypography.labelMedium
+                      .copyWith(color: AppColors.hubTextMuted),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            LucideIcons.chevronRight,
+            size: AppSizing.iconSm,
+            color: AppColors.hubTextFaint,
           ),
         ],
       ),

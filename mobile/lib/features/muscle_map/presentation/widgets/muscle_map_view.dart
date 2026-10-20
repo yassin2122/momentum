@@ -50,6 +50,10 @@ class MuscleLook {
 /// is its own set of vector paths, so highlights never recolour the body.
 /// Changes animate (instantly with reduced motion). With [onMuscleTap] set,
 /// a tap resolves to the topmost muscle under the finger, or null.
+///
+/// With [zoomToHighlight] the camera frames the most-lit muscles (see
+/// [BodyGeometry.focusFrame]) and glides when they change — use it for
+/// small or exercise-specific maps; leave it off to show the whole body.
 class MuscleMapView extends ConsumerStatefulWidget {
   const MuscleMapView({
     required this.view,
@@ -57,9 +61,11 @@ class MuscleMapView extends ConsumerStatefulWidget {
     this.selected,
     this.onMuscleTap,
     this.semanticLabel,
+    this.zoomToHighlight = false,
     super.key,
   });
 
+  final bool zoomToHighlight;
   final BodyView view;
   final Map<Muscle, double> intensities;
   final Muscle? selected;
@@ -148,8 +154,20 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
     super.dispose();
   }
 
+  /// The frame currently on screen (mid-glide included), for hit tests.
+  Rect? _shownFrame;
+
+  Rect _targetFrame(BodyGeometry geometry, Size size) {
+    if (!widget.zoomToHighlight || size.isEmpty) return geometry.bodyFrame;
+    final lit = {
+      ...widget.intensities,
+      if (widget.selected != null) widget.selected!: 1.0,
+    };
+    return geometry.focusFrame(lit, aspect: size.width / size.height);
+  }
+
   void _onTapUp(TapUpDetails details, Size size, BodyGeometry geometry) {
-    final fit = geometry.fit(size);
+    final fit = geometry.fit(size, frame: _shownFrame);
     final local = (details.localPosition - fit.offset) / fit.scale;
     widget.onMuscleTap!(geometry.hitTest(local));
   }
@@ -166,13 +184,27 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
           // Assets load once at startup-time speed; keep the space quiet
           // until then rather than flashing a spinner.
           if (geometry == null) return SizedBox.fromSize(size: size);
+          final reduceMotion =
+              MediaQuery.maybeDisableAnimationsOf(context) ?? false;
           final paint = RepaintBoundary(
-            child: AnimatedBuilder(
-              animation: _anim,
-              builder: (context, _) => CustomPaint(
-                size: size,
-                painter: _HologramPainter(geometry: geometry, looks: _current),
-              ),
+            child: TweenAnimationBuilder<Rect?>(
+              tween: RectTween(end: _targetFrame(geometry, size)),
+              duration: reduceMotion ? Duration.zero : AppConstants.animSlow,
+              curve: Curves.easeInOutCubic,
+              builder: (context, frame, _) {
+                _shownFrame = frame;
+                return AnimatedBuilder(
+                  animation: _anim,
+                  builder: (context, _) => CustomPaint(
+                    size: size,
+                    painter: _HologramPainter(
+                      geometry: geometry,
+                      looks: _current,
+                      frame: frame,
+                    ),
+                  ),
+                );
+              },
             ),
           );
           if (widget.onMuscleTap == null) return paint;
@@ -188,19 +220,28 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
 }
 
 class _HologramPainter extends CustomPainter {
-  _HologramPainter({required this.geometry, required this.looks});
+  _HologramPainter({
+    required this.geometry,
+    required this.looks,
+    required this.frame,
+  });
 
   final BodyGeometry geometry;
   final Map<Muscle, MuscleLook> looks;
+  final Rect? frame;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final fit = geometry.fit(size);
+    final fit = geometry.fit(size, frame: frame);
     canvas
       ..save()
+      ..clipRect(Offset.zero & size)
       ..translate(fit.offset.dx, fit.offset.dy)
       ..scale(fit.scale);
     final hair = 1 / fit.scale; // one logical pixel in view-box units
+    // Very small renders: drop the finest line work (face, fibres) — at
+    // that size it only reads as noise.
+    final tiny = fit.scale < 0.2;
 
     canvas.drawPath(geometry.silhouette, Paint()..color = AppColors.anatomyBody);
 
@@ -212,6 +253,7 @@ class _HologramPainter extends CustomPainter {
     // Paint order matters: later shapes cover earlier ones, as in the art.
     for (final part in geometry.parts) {
       if (part.isLine) {
+        if (tiny) continue;
         canvas.drawPath(
           part.path,
           stroke
@@ -229,8 +271,8 @@ class _HologramPainter extends CustomPainter {
           stroke
             ..strokeWidth = (0.6 + 0.4 * lit) * hair
             ..color = Color.lerp(
-              AppColors.anatomyLine
-                  .withValues(alpha: part.muscle == null ? 0.28 : 0.5),
+              AppColors.anatomyLine.withValues(
+                  alpha: part.muscle == null ? (tiny ? 0.16 : 0.28) : 0.5),
               AppColors.anatomyCyanBright,
               lit,
             )!,
@@ -263,5 +305,7 @@ class _HologramPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_HologramPainter old) =>
-      !identical(old.geometry, geometry) || !identical(old.looks, looks);
+      !identical(old.geometry, geometry) ||
+      !identical(old.looks, looks) ||
+      old.frame != frame;
 }

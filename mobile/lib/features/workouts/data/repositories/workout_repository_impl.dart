@@ -39,11 +39,45 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
-  Future<Result<List<TrackableExercise>>> searchExercises(String query) =>
+  Future<Result<List<TrackableExercise>>> searchExercises(
+    String query, {
+    List<String> muscleGroups = const [],
+    int offset = 0,
+    int limit = 50,
+  }) =>
       _guard(() async => [
-            for (final row in await _remote.searchExercises(query))
+            for (final row in await _remote.searchExercises(
+              query,
+              muscleGroups: muscleGroups,
+              offset: offset,
+              limit: limit,
+            ))
               TrackableExercise.fromJson(row),
           ]);
+
+  @override
+  Future<Result<List<TrackableExercise>>> exercisesBySlugs(
+          List<String> slugs) =>
+      _guard(() async => [
+            for (final row in await _remote.exercisesBySlugs(slugs))
+              TrackableExercise.fromJson(row),
+          ]);
+
+  @override
+  Future<Result<List<TrackableExercise>>> recentExercises({int limit = 8}) =>
+      _guard(() async {
+        final ids = (await _remote.recentExerciseIds()).take(limit).toList();
+        final byId = {
+          for (final row in await _remote.exercisesByIds(ids))
+            row['id'] as String: TrackableExercise.fromJson(row),
+        };
+        // Keep recency order; drop exercises no longer visible.
+        return [for (final id in ids) if (byId[id] != null) byId[id]!];
+      });
+
+  @override
+  Future<Result<void>> deleteTemplate(String templateId) =>
+      _guard(() => _remote.deleteTemplate(templateId));
 
   @override
   Future<Result<TrackableExercise>> createCustomExercise({

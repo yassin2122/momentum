@@ -11,7 +11,12 @@ import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/achievements/presentation/screens/achievement_unlock_screen.dart';
 import '../../features/achievements/presentation/screens/achievements_screen.dart';
+import '../../features/connect/presentation/screens/captain_hub_screen.dart';
+import '../../features/connect/presentation/screens/captain_profile_editor_screen.dart';
 import '../../features/connect/presentation/screens/captain_profile_screen.dart';
+import '../../features/connect/presentation/screens/client_detail_screen.dart';
+import '../../features/connect/presentation/screens/connect_screen.dart';
+import '../../features/connect/presentation/screens/find_captain_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/exercises/presentation/screens/exercises_screen.dart';
 import '../../features/muscle_map/presentation/screens/muscle_map_screen.dart';
@@ -170,18 +175,41 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              // Coach tab — placeholder until the Captain flow is wired.
+              // Coach tab — the athlete's Captain, plus the Captain Hub
+              // for users who coach. Sub-routes keep the nav bar.
               GoRoute(
                 path: AppRoutes.connect,
-                pageBuilder: (context, state) => _fadePage(
-                  state,
-                  const ComingSoonScreen(
-                    icon: LucideIcons.users,
-                    eyebrow: 'Coach',
-                    title: 'Coming soon',
-                    message: 'Find a Captain and train with real coaching.',
+                pageBuilder: (context, state) =>
+                    _fadePage(state, const ConnectScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'find',
+                    pageBuilder: (context, state) =>
+                        _fadePage(state, const FindCaptainScreen()),
                   ),
-                ),
+                  GoRoute(
+                    path: 'hub',
+                    pageBuilder: (context, state) =>
+                        _fadePage(state, const CaptainHubScreen()),
+                    routes: [
+                      GoRoute(
+                        path: 'profile',
+                        pageBuilder: (context, state) => _fadePage(
+                            state, const CaptainProfileEditorScreen()),
+                      ),
+                      GoRoute(
+                        path: 'client/:relationshipId',
+                        pageBuilder: (context, state) => _fadePage(
+                          state,
+                          ClientDetailScreen(
+                            relationshipId:
+                                state.pathParameters['relationshipId']!,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

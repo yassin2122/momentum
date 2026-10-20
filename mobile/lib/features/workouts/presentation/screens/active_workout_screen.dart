@@ -929,6 +929,7 @@ class _ExerciseStrip extends StatelessWidget {
                           child: MuscleMapView(
                             view: _bestView(muscles),
                             intensities: muscles,
+                            zoomToHighlight: true,
                           ),
                         ),
                       ),
@@ -1036,13 +1037,13 @@ class _FocusedExercise extends StatelessWidget {
       children: [
         // Muscle map hero; tap the pill to see the other side.
         SizedBox(
-          height: 250,
+          height: 290,
           child: Stack(
             alignment: Alignment.center,
             children: [
               Container(
-                width: 230,
-                height: 230,
+                width: 260,
+                height: 260,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
@@ -1058,6 +1059,7 @@ class _FocusedExercise extends StatelessWidget {
                 child: MuscleMapView(
                   view: view,
                   intensities: muscles,
+                  zoomToHighlight: true,
                   semanticLabel: muscles.isEmpty
                       ? null
                       : 'Works ${muscles.keys.map((m) => m.label).join(', ')}',

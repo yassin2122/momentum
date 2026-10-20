@@ -3,7 +3,8 @@ import '../../../../core/error/exceptions.dart';
 
 /// The only place in the connect feature that talks to Supabase. Returns raw
 /// rows; RLS (migrations 28–29) decides what is visible, and lifecycle
-/// changes go through the RPCs from migrations 30–32.
+/// changes go through the RPCs from migrations 30–32 and the Captain Hub
+/// migration (20261020200000).
 ///
 /// Every table query selects explicit columns — never `select('*')`.
 class ConnectRemoteDataSource {
@@ -82,7 +83,53 @@ class ConnectRemoteDataSource {
         return rows.isEmpty ? null : rows.first;
       });
 
+  /// `get_coach_card(p_coach_id)` — null when not an approved coach.
+  Future<Map<String, dynamic>?> fetchCoachCard(String coachId) =>
+      _guard(() async {
+        final rows = _rows(await _client
+            .rpc('get_coach_card', params: {'p_coach_id': coachId}));
+        return rows.isEmpty ? null : rows.first;
+      });
+
+  /// `get_captain_hub()` — null when the caller has no Captain profile.
+  Future<Map<String, dynamic>?> fetchCaptainHub() => _guard(() async {
+        final json = await _client.rpc('get_captain_hub');
+        return json == null ? null : Map<String, dynamic>.from(json as Map);
+      });
+
+  /// `get_client_workouts(p_athlete, p_limit)` — 0 rows unless the caller
+  /// is the athlete or their active Captain with workouts shared.
+  Future<List<Map<String, dynamic>>> fetchClientWorkouts(
+    String athleteId, {
+    int? limit,
+  }) =>
+      _guard(() async => _rows(await _client.rpc('get_client_workouts', params: {
+            'p_athlete': athleteId,
+            if (limit != null) 'p_limit': limit,
+          })));
+
+  /// Set-returning RPC → its rows (create / preview invite).
+  Future<List<Map<String, dynamic>>> callRowsRpc(
+          String name, Map<String, dynamic> params) =>
+      _guard(() async => _rows(await _client.rpc(name, params: params)));
+
   // ---- Writes allowed by RLS ----
+
+  /// New Captain profile. RLS requires `id = auth.uid()` and lets the row
+  /// in only as `status = 'pending'` (the column default).
+  Future<void> insertCoachProfile(
+          String userId, Map<String, dynamic> columns) =>
+      _guard(() async {
+        await _client.from('coach_profiles').insert({'id': userId, ...columns});
+      });
+
+  /// Own Captain profile. A trigger rejects any `status` change by a
+  /// non-admin, so [columns] never carries it.
+  Future<void> updateCoachProfile(
+          String userId, Map<String, dynamic> columns) =>
+      _guard(() async {
+        await _client.from('coach_profiles').update(columns).eq('id', userId);
+      });
 
   /// Returns the number of rows updated — 0 means RLS filtered the row out.
   Future<int> updatePermissions(

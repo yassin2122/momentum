@@ -42,15 +42,13 @@ final coachDirectoryProvider = FutureProvider.autoDispose
   return _unwrap(await repo.getCoachDirectory(specialty: specialty));
 });
 
-/// One coach's directory card, looked up by id. Null when the coach isn't
-/// listed (not approved, or not in the directory any more).
+/// One coach's public card (`get_coach_card`), listed or not — an invited
+/// athlete's Captain can be hidden from the directory. Null when the coach
+/// isn't approved.
 final coachByIdProvider = FutureProvider.autoDispose
     .family<CoachDirectoryEntry?, String>((ref, coachId) async {
-  final all = await ref.watch(coachDirectoryProvider(null).future);
-  for (final c in all) {
-    if (c.coachId == coachId) return c;
-  }
-  return null;
+  final repo = ref.watch(connectRepositoryProvider);
+  return _unwrap(await repo.getCoachCard(coachId));
 });
 
 /// Everything the Coach hub shows about the athlete's current Captain.
@@ -120,23 +118,46 @@ final myCaptainProvider =
   final rel = pick(CoachingStatus.active) ?? pick(CoachingStatus.pending);
   if (rel == null) return null;
 
-  final (permissions, feedback, assignments, directory) = await (
+  final (permissions, feedback, assignments, card) = await (
     repo.getPermissions(rel.id),
     repo.getFeedback(rel.id),
     repo.getAssignments(rel.id),
-    repo.getCoachDirectory(),
+    repo.getCoachCard(rel.coachId),
   ).wait;
-
-  CoachDirectoryEntry? coach;
-  for (final c in directory.valueOrNull ?? const <CoachDirectoryEntry>[]) {
-    if (c.coachId == rel.coachId) coach = c;
-  }
 
   return CaptainOverview(
     relationship: rel,
-    coach: coach,
+    coach: card.valueOrNull,
     permissions: permissions.valueOrNull,
     feedback: feedback.valueOrNull ?? const [],
     assignments: assignments.valueOrNull ?? const [],
   );
+});
+
+// ---------------------------------------------------------------------------
+// Captain Hub (the coach's side)
+// ---------------------------------------------------------------------------
+
+/// The signed-in user's Captain Hub, or null when they have never applied
+/// to be a Captain. Guests never have one.
+final captainHubProvider = FutureProvider.autoDispose<CaptainHub?>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null || user.isGuest) return null;
+  final repo = ref.watch(connectRepositoryProvider);
+  return _unwrap(await repo.getCaptainHub());
+});
+
+/// Recent completed workouts of one athlete, as their Captain sees them.
+/// Empty when the athlete has workouts sharing off.
+final clientWorkoutsProvider = FutureProvider.autoDispose
+    .family<List<ClientWorkout>, String>((ref, athleteId) async {
+  final repo = ref.watch(connectRepositoryProvider);
+  return _unwrap(await repo.getClientWorkouts(athleteId, limit: 20));
+});
+
+/// Feedback thread for one relationship, newest first.
+final relationshipFeedbackProvider = FutureProvider.autoDispose
+    .family<List<CoachingFeedback>, String>((ref, relationshipId) async {
+  final repo = ref.watch(connectRepositoryProvider);
+  return _unwrap(await repo.getFeedback(relationshipId));
 });

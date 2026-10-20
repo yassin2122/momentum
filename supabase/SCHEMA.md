@@ -1,6 +1,6 @@
 # Grit — SCHEMA.md
 
-Status: after migrations 0001–0030 (+ later TRAIN additions noted inline) · Backend: Supabase (Postgres, Auth, RLS, Storage, Realtime)
+Status: after migrations 0001–0032 (+ later TRAIN additions noted inline, + Captain Hub `20261020200000`) · Backend: Supabase (Postgres, Auth, RLS, Storage, Realtime)
 Rule: never edit an applied migration. Add a new one.
 
 ## 1. Migration order
@@ -14,6 +14,9 @@ Rule: never edit an applied migration. Add a new one.
 | 28      | `connect_core`            | coaching tables, helper functions, RLS               |
 | 29      | `connect_data_access`     | permission-gated coach read access, coach programs   |
 | 30      | `connect_rpcs`            | RPCs, notification triggers, realtime                |
+| 31      | `security_hardening`      | function EXECUTE grants, pinned search_path          |
+| 32      | `assignment_completion_profile_privacy` | `complete_assignment`, private profile columns |
+| 20261020200000 | `captain_hub_invitations` | invites, Captain Hub RPCs, listing toggle, suspension + capacity fixes |
 
 ## 2. Table map by pillar
 
@@ -51,9 +54,10 @@ Workout logging (migration `20261016000001_train_workout_logging`):
 ### CONNECT (coaching) — new
 | Table                    | Purpose                                              | Written by |
 |--------------------------|------------------------------------------------------|------------|
-| `coach_profiles`         | coach bio, specialties, certs, capacity, `status` (pending/approved/suspended) | coach (admin approves) |
+| `coach_profiles`         | coach bio, specialties, certs, capacity, `status` (pending/approved/suspended), `is_listed` (shown in directory) | coach (admin approves) |
 | `coaching_plans`         | coach plan options, display-only price               | coach |
-| `coaching_relationships` | athlete ↔ coach; pending/active/ended/declined; one open Captain per athlete | RPCs only |
+| `coaching_relationships` | athlete ↔ coach; pending/active/ended/declined; one open Captain per athlete; `source` (`directory` / `invite`), `invitation_id` | RPCs only |
+| `coaching_invitations`   | single-use invite codes from a Captain; only `sha256(code)` + last 4 chars stored; expires in 1–30 days | RPCs only (Captain reads own) |
 | `coaching_permissions`   | athlete consent: workouts, prs, skill progress, body metrics | RPC create, athlete update |
 | `coaching_goals`         | goals set by the Captain                             | coach |
 | `coaching_feedback`      | append-only messages on workouts/skills              | either party |
@@ -65,7 +69,7 @@ Workout logging (migration `20261016000001_train_workout_logging`):
 Leftovers: old social values stay inside `notification_type` (Postgres cannot drop enum values). Delete the empty `post-media` bucket in the dashboard.
 
 ## 4. Access model (Connect)
-- Captain reads athlete data only when the relationship is `active` AND the matching permission is on.
+- Captain reads athlete data only when the relationship is `active` AND the matching permission is on AND the Captain is `approved` (suspension cuts access immediately — `20261020200000`).
 - Scopes → tables:
   - `workouts`: `workout_logs`, `workout_log_exercises`, `workout_log_sets`, `user_streaks`
   - `prs`: `personal_records`, `personal_record_history`, `roadmap_personal_bests`
@@ -76,17 +80,25 @@ Leftovers: old social values stay inside `notification_type` (Postgres cannot dr
 - Coach programs are `is_official = false`, visible only to the coach and assigned athletes.
 
 ## 5. Helper functions
-`is_admin()`, `is_coach()`, `in_relationship(rel)`, `is_active_coach_of(rel)`, `coach_can_view(athlete, scope)`, `can_view_program(program)`
+`is_admin()`, `is_coach()`, `in_relationship(rel)`, `is_active_coach_of(rel)`, `coach_can_view(athlete, scope)`, `can_view_program(program)`. `is_active_coach_of` and `coach_can_view` require an approved Captain. `invite_code_hash(code)` is internal (no client EXECUTE).
 
 ## 6. RPCs
 | RPC | Caller | Effect |
 |-----|--------|--------|
-| `get_coach_directory(specialty, limit)` | any user | approved coaches + athlete count |
+| `get_coach_directory(specialty, limit)` | any user | approved, listed coaches + athlete count |
+| `get_coach_card(coach)`                 | any user | one approved coach's public card (listed or not), incl. bio/approach/certifications |
 | `choose_captain(coach, plan, share_*)`  | athlete | creates pending relationship + permissions |
-| `respond_to_coaching_request(rel, accept)` | coach | pending → active / declined |
+| `respond_to_coaching_request(rel, accept)` | coach | pending → active / declined; accept re-checks `max_athletes` and needs an approved Captain |
+| `create_coaching_invitation(note, valid_days)` | approved coach | returns the plain code once (`XXXXX-XXXXX`); max 20 open |
+| `revoke_coaching_invitation(invitation)` | coach | closes an open invite |
+| `preview_coaching_invitation(code)`     | athlete | who sent the code (public card fields); same error for invalid/expired/used |
+| `accept_coaching_invitation(code, share_*)` | athlete | creates an **active** relationship (or completes a pending request to the same coach); checks capacity; consumes the code |
+| `get_captain_hub()`                     | coach | jsonb: profile, pending requests, active clients (+ workout stats only if shared), open invites, invites used. Null if no Captain profile |
+| `get_client_workouts(athlete, limit)`   | athlete / coach | completed-workout summaries; coach needs `coach_can_view(athlete,'workouts')` |
 | `end_coaching(rel)`                     | either  | closes relationship |
 | `assign_program(rel, program, start, notes)` | coach | creates assignment |
 | `start_assigned_program(assignment)`    | athlete | creates enrollment, status in_progress |
+| `complete_assignment(assignment)`       | athlete / active coach | marks completed, closes the enrollment |
 | `finish_workout(p_workout jsonb)`       | athlete | Train: one transaction — log, exercises, completed sets, bodyweight snapshot, template additions, completion. Idempotent on the client-generated id |
 | `create_custom_exercise(name, tracking_type, equipment, bw_factor)` | user | Train: custom exercise, unique name per user (case-insensitive) |
 | `create_template_from_workout(log, name)` | user | Train: "Save as template" from a completed log |
@@ -95,7 +107,9 @@ Leftovers: old social values stay inside `notification_type` (Postgres cannot dr
 | `record_roadmap_personal_best(...)`     | athlete | Progress: roadmap PR upsert |
 
 ## 7. Known gaps
-- Assigned program completion is not automated (only start).
-- `profiles` is readable by all signed-in users (includes birthday, height, weight). Tighten before launch.
+- ~~Assigned program completion~~ — resolved in 32 (`complete_assignment`).
+- ~~Private profile fields~~ — resolved in 32 (column allowlist + `get_my_private_profile` / `get_athlete_body_profile`).
+- Approving / suspending a Captain: edit `coach_profiles.status` in the Supabase dashboard (allowed since `20261020200000`; app users still need `is_admin()`).
+- No program builder for Captains yet, so `assign_program` has no UI.
 - No payments; plan prices are display only.
 - Certification (Complete/Master/Legendary) lives in skill structure, not a dedicated table.

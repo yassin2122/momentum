@@ -97,6 +97,27 @@ void main() {
     expect(_state(t).lookOf(Muscle.quadriceps), MuscleMapView.targetLook(1));
   });
 
+  testWidgets('zoom mode frames the lit muscles and glides on change',
+      (t) async {
+    await t.pumpWidget(_host(const MuscleMapView(
+      view: BodyView.front,
+      intensities: {Muscle.chest: 1},
+      zoomToHighlight: true,
+    )));
+    await t.pumpAndSettle();
+    // Still renders and settles; geometry maths is covered in
+    // body_geometry_test. Switching the exercise animates, then settles.
+    await t.pumpWidget(_host(const MuscleMapView(
+      view: BodyView.front,
+      intensities: {Muscle.quadriceps: 1},
+      zoomToHighlight: true,
+    )));
+    await t.pump(const Duration(milliseconds: 100));
+    expect(t.binding.hasScheduledFrame, isTrue);
+    await t.pumpAndSettle();
+    expect(_state(t).lookOf(Muscle.quadriceps), MuscleMapView.targetLook(1));
+  });
+
   testWidgets('a tap resolves to the muscle under the finger', (t) async {
     final taps = <Muscle?>[];
     await t.pumpWidget(_host(MuscleMapView(
@@ -105,7 +126,7 @@ void main() {
     )));
 
     final g = _atlas[BodyView.front];
-    final fit = g.fit(_size);
+    final fit = g.fit(_size, frame: g.bodyFrame); // whole-body mode
     final origin = t.getTopLeft(find.byType(MuscleMapView));
     Offset toScreen(Offset p) => origin + fit.offset + p * fit.scale;
 

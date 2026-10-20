@@ -155,18 +155,85 @@ final class BodyGeometry {
     return null;
   }
 
-  /// Fits the view box into [size], centred, keeping its aspect ratio.
-  ({double scale, Offset offset}) fit(Size size) {
-    final sx = size.width / viewBox.width;
-    final sy = size.height / viewBox.height;
+  /// The body's bounds (view-box units).
+  late final Rect bodyBounds = silhouette.getBounds();
+
+  /// The whole body with a little breathing room.
+  Rect get bodyFrame => bodyBounds.inflate(bodyBounds.height * 0.02);
+
+  /// Fits [frame] (default: the whole view box) into [size], centred,
+  /// keeping its aspect ratio. Content outside the frame may still be
+  /// drawn — callers clip to [size].
+  ({double scale, Offset offset}) fit(Size size, {Rect? frame}) {
+    final f = frame ?? Offset.zero & viewBox;
+    final sx = size.width / f.width;
+    final sy = size.height / f.height;
     final scale = sx < sy ? sx : sy;
     return (
       scale: scale,
       offset: Offset(
-        (size.width - viewBox.width * scale) / 2,
-        (size.height - viewBox.height * scale) / 2,
+        size.width / 2 - f.center.dx * scale,
+        size.height / 2 - f.center.dy * scale,
       ),
     );
+  }
+
+  /// A camera frame around the most-lit muscles drawn in this view, so a
+  /// small widget shows the worked muscles large instead of a tiny whole
+  /// body. Muscles at ≥ half the top intensity count; the frame is
+  /// symmetric about the body's centre line (both sides stay in shot),
+  /// padded, at least [minHeightFraction] of the body tall, shaped to
+  /// [aspect] (width / height), and kept on the body where possible.
+  /// Falls back to [bodyFrame] when nothing here is lit.
+  Rect focusFrame(
+    Map<Muscle, double> intensities, {
+    required double aspect,
+    double padding = 0.12,
+    double minHeightFraction = 0.32,
+  }) {
+    final drawn = {
+      for (final e in intensities.entries)
+        if (e.value > 0 && muscles.contains(e.key)) e.key: e.value,
+    };
+    if (drawn.isEmpty || !aspect.isFinite || aspect <= 0) return bodyFrame;
+    final top = drawn.values.reduce((a, b) => a > b ? a : b);
+
+    Rect? lit;
+    drawn.forEach((m, v) {
+      if (v < top * 0.5) return;
+      final b = regionPath(m)!.getBounds();
+      lit = lit == null ? b : lit!.expandToInclude(b);
+    });
+    var r = lit!;
+
+    final body = bodyBounds;
+    final cx = body.center.dx;
+    final half = [cx - r.left, r.right - cx].reduce((a, b) => a > b ? a : b);
+    r = Rect.fromLTRB(cx - half, r.top, cx + half, r.bottom);
+    r = r.inflate(padding * (r.width > r.height ? r.width : r.height));
+
+    final minH = body.height * minHeightFraction;
+    if (r.height < minH) {
+      r = Rect.fromCenter(center: r.center, width: r.width, height: minH);
+    }
+    // Match the widget's shape by growing the short side.
+    if (r.width / r.height < aspect) {
+      r = Rect.fromCenter(
+          center: r.center, width: r.height * aspect, height: r.height);
+    } else {
+      r = Rect.fromCenter(
+          center: r.center, width: r.width, height: r.width / aspect);
+    }
+    // Slide (don't shrink) back onto the body vertically.
+    final margin = body.height * 0.02;
+    if (r.height >= body.height + 2 * margin) {
+      r = r.translate(0, body.center.dy - r.center.dy);
+    } else if (r.top < body.top - margin) {
+      r = r.translate(0, body.top - margin - r.top);
+    } else if (r.bottom > body.bottom + margin) {
+      r = r.translate(0, body.bottom + margin - r.bottom);
+    }
+    return r;
   }
 }
 

@@ -65,7 +65,40 @@ class ConnectRepositoryImpl implements ConnectRepository {
         return row == null ? null : ConnectModels.bodyProfile(row);
       });
 
+  @override
+  Future<Result<CoachDirectoryEntry?>> getCoachCard(String coachId) =>
+      _run(() async {
+        final row = await _remote.fetchCoachCard(coachId);
+        return row == null ? null : ConnectModels.directoryEntry(row);
+      });
+
+  @override
+  Future<Result<CaptainHub?>> getCaptainHub() => _run(() async {
+        final json = await _remote.fetchCaptainHub();
+        return json == null ? null : ConnectModels.captainHub(json);
+      });
+
+  @override
+  Future<Result<List<ClientWorkout>>> getClientWorkouts(String athleteId,
+          {int? limit}) =>
+      _run(() async =>
+          (await _remote.fetchClientWorkouts(athleteId, limit: limit))
+              .map(ConnectModels.clientWorkout)
+              .toList());
+
   // ---- Writes allowed by RLS ----
+
+  @override
+  Future<Result<void>> saveCoachProfile({
+    required String userId,
+    required CaptainProfileDraft draft,
+    required bool isNew,
+  }) {
+    final columns = ConnectModels.coachProfileColumns(draft);
+    return _run(() => isNew
+        ? _remote.insertCoachProfile(userId, columns)
+        : _remote.updateCoachProfile(userId, columns));
+  }
 
   @override
   Future<Result<void>> updatePermissions(
@@ -169,6 +202,47 @@ class ConnectRepositoryImpl implements ConnectRepository {
   Future<Result<void>> completeAssignment(String assignmentId) =>
       _run(() => _remote
           .callRpc('complete_assignment', {'p_assignment_id': assignmentId}));
+
+  // ---- Invitations ----
+
+  @override
+  Future<Result<CreatedInvite>> createInvite({String? note, int? validDays}) =>
+      _run(() async {
+        final rows = await _remote.callRowsRpc('create_coaching_invitation', {
+          if (note != null) 'p_note': note,
+          if (validDays != null) 'p_valid_days': validDays,
+        });
+        return ConnectModels.createdInvite(rows.single);
+      });
+
+  @override
+  Future<Result<void>> revokeInvite(String invitationId) => _run(() => _remote
+      .callRpc('revoke_coaching_invitation', {'p_invitation_id': invitationId}));
+
+  @override
+  Future<Result<InvitePreview>> previewInvite(String code) => _run(() async {
+        final rows = await _remote
+            .callRowsRpc('preview_coaching_invitation', {'p_code': code});
+        return ConnectModels.invitePreview(rows.single);
+      });
+
+  @override
+  Future<Result<String>> acceptInvite(
+    String code, {
+    bool? shareWorkouts,
+    bool? sharePrs,
+    bool? shareSkillProgress,
+    bool? shareBodyMetrics,
+  }) =>
+      _run(() async => await _remote.callRpc('accept_coaching_invitation', {
+            'p_code': code,
+            if (shareWorkouts != null) 'p_share_workouts': shareWorkouts,
+            if (sharePrs != null) 'p_share_prs': sharePrs,
+            if (shareSkillProgress != null)
+              'p_share_skill_progress': shareSkillProgress,
+            if (shareBodyMetrics != null)
+              'p_share_body_metrics': shareBodyMetrics,
+          }) as String);
 
   // ---- Helpers ----
 

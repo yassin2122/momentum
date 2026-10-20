@@ -12,7 +12,16 @@ class WorkoutRemoteDataSource {
   final SupabaseClient _client;
 
   static const exerciseColumns =
-      'id, name, tracking_type, bw_factor, equipment, is_custom';
+      'id, name, tracking_type, bw_factor, equipment, is_custom, slug, images';
+
+  /// Adds each exercise's muscle links so the picker can show the primary
+  /// muscle. RLS: both tables are public-read.
+  static const _withMuscles =
+      '$exerciseColumns, exercise_muscle_groups(is_primary, muscle_groups(name))';
+
+  /// Same, but as an inner join so it can filter by primary muscle group.
+  static const _withMusclesInner = '$exerciseColumns, '
+      'exercise_muscle_groups!inner(is_primary, muscle_groups!inner(name))';
 
   String get _userId {
     final user = _client.auth.currentUser;
@@ -22,16 +31,74 @@ class WorkoutRemoteDataSource {
     return user.id;
   }
 
-  Future<List<Map<String, dynamic>>> searchExercises(String query) async {
+  /// Library + own custom exercises (RLS), A–Z. [muscleGroups] keeps only
+  /// exercises whose PRIMARY muscle group is one of them.
+  Future<List<Map<String, dynamic>>> searchExercises(
+    String query, {
+    List<String> muscleGroups = const [],
+    int offset = 0,
+    int limit = 50,
+  }) async {
     // Strip PostgREST pattern/syntax characters from user input.
     final term = query.replaceAll(RegExp(r'[%_,()*\\]'), ' ').trim();
-    var request = _client.from('exercises').select(exerciseColumns);
+    var request = _client
+        .from('exercises')
+        .select(muscleGroups.isEmpty ? _withMuscles : _withMusclesInner);
     if (term.isNotEmpty) request = request.ilike('name', '%$term%');
+    if (muscleGroups.isNotEmpty) {
+      request = request
+          .eq('exercise_muscle_groups.is_primary', true)
+          .inFilter('exercise_muscle_groups.muscle_groups.name', muscleGroups);
+    }
     final rows = await request
         .order('is_custom', ascending: false)
         .order('name')
-        .limit(50);
+        .range(offset, offset + limit - 1);
     return List<Map<String, dynamic>>.from(rows);
+  }
+
+  /// Exercises by library slug (order not guaranteed).
+  Future<List<Map<String, dynamic>>> exercisesBySlugs(List<String> slugs) async {
+    if (slugs.isEmpty) return const [];
+    final rows = await _client
+        .from('exercises')
+        .select(_withMuscles)
+        .inFilter('slug', slugs);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  /// Exercises by id (order not guaranteed).
+  Future<List<Map<String, dynamic>>> exercisesByIds(List<String> ids) async {
+    if (ids.isEmpty) return const [];
+    final rows = await _client
+        .from('exercises')
+        .select(_withMuscles)
+        .inFilter('id', ids);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  /// Exercise ids from the user's most recent workouts, newest first,
+  /// without duplicates.
+  Future<List<String>> recentExerciseIds({int workouts = 8}) async {
+    final rows = await _client
+        .from('workout_logs')
+        .select('started_at, workout_log_exercises(exercise_id, order_index)')
+        .eq('user_id', _userId)
+        .order('started_at', ascending: false)
+        .limit(workouts);
+    final ids = <String>[];
+    for (final w in rows) {
+      final items = [
+        for (final e in (w['workout_log_exercises'] as List? ?? const []))
+          Map<String, dynamic>.from(e as Map),
+      ]..sort((a, b) => ((a['order_index'] as num?) ?? 0)
+          .compareTo((b['order_index'] as num?) ?? 0));
+      for (final e in items) {
+        final id = e['exercise_id'] as String?;
+        if (id != null && !ids.contains(id)) ids.add(id);
+      }
+    }
+    return ids;
   }
 
   Future<Map<String, dynamic>> createCustomExercise({
@@ -58,6 +125,17 @@ class WorkoutRemoteDataSource {
         .isFilter('deleted_at', null)
         .order('updated_at', ascending: false);
     return List<Map<String, dynamic>>.from(rows);
+  }
+
+  /// Soft-deletes a template (sets `deleted_at`). Past workouts keep their
+  /// link, and `finish_workout` already ignores a template deleted
+  /// mid-workout. RLS: owner-only.
+  Future<void> deleteTemplate(String templateId) async {
+    await _client
+        .from('workout_templates')
+        .update({'deleted_at': DateTime.now().toUtc().toIso8601String()})
+        .eq('id', templateId)
+        .eq('user_id', _userId);
   }
 
   Future<List<Map<String, dynamic>>> lastPerformance(String exerciseId) async {

@@ -52,9 +52,19 @@ abstract final class AppRoutes {
   /// The centre START button opens the Train branch.
   static const String start = train;
 
-  // CONNECT — inside the Coach tab. Not routed while the Coach tab is a
-  // "Coming soon" placeholder; kept so the connect feature still compiles.
+  // CONNECT — inside the Coach tab (the nav bar stays visible).
   static const String findCaptain = '/connect/find';
+
+  /// The coach's side: requests, clients, invites, own profile.
+  static const String captainHub = '/connect/hub';
+
+  /// Create or edit the signed-in user's Captain profile.
+  static const String captainHubProfile = '/connect/hub/profile';
+
+  /// One coached athlete, by coaching relationship id.
+  static const String captainClient = '/connect/hub/client/:relationshipId';
+  static String captainClientPath(String relationshipId) =>
+      '/connect/hub/client/$relationshipId';
 
   // CONNECT — full-screen
   static const String captainProfile = '/captain/:coachId';

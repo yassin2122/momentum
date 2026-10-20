@@ -17,6 +17,9 @@ final class ConnectModels {
         avatarUrl: row['avatar_url'] as String?,
         headline: row['headline'] as String?,
         experienceYears: (row['experience_years'] as num?)?.toInt(),
+        bio: row['bio'] as String?,
+        approach: row['approach'] as String?,
+        certifications: _strings(row['certifications']),
       );
 
   static CoachingRelationship relationship(Map<String, dynamic> row) =>
@@ -86,6 +89,112 @@ final class ConnectModels {
         weightKg: (row['weight_kg'] as num?)?.toDouble(),
         gender: row['gender'] as String?,
       );
+
+  // ---- Captain Hub ----
+
+  /// `get_captain_hub()` jsonb → [CaptainHub].
+  static CaptainHub captainHub(Map<String, dynamic> json) {
+    final p = Map<String, dynamic>.from(json['profile'] as Map);
+    return CaptainHub(
+      status: CoachStatus.fromDb(p['status'] as String),
+      profile: CaptainProfileDraft(
+        headline: p['headline'] as String?,
+        bio: p['bio'] as String?,
+        approach: p['approach'] as String?,
+        specialties: _strings(p['specialties']),
+        certifications: _strings(p['certifications']),
+        experienceYears: (p['experience_years'] as num?)?.toInt(),
+        maxAthletes: (p['max_athletes'] as num?)?.toInt(),
+        acceptingAthletes: p['accepting_athletes'] as bool? ?? true,
+        isListed: p['is_listed'] as bool? ?? true,
+      ),
+      requests: _maps(json['requests'])
+          .map((r) => HubRequest(
+                relationshipId: r['relationship_id'] as String,
+                athleteId: r['athlete_id'] as String,
+                requestedAt: DateTime.parse(r['requested_at'] as String),
+                displayName: r['display_name'] as String?,
+                username: r['username'] as String?,
+                avatarUrl: r['avatar_url'] as String?,
+              ))
+          .toList(),
+      clients: _maps(json['clients'])
+          .map((r) => HubClient(
+                relationshipId: r['relationship_id'] as String,
+                athleteId: r['athlete_id'] as String,
+                startedAt: DateTime.parse(r['started_at'] as String),
+                fromInvite: r['source'] == 'invite',
+                sharesWorkouts: r['share_workouts'] as bool? ?? false,
+                openAssignments: (r['open_assignments'] as num?)?.toInt() ?? 0,
+                displayName: r['display_name'] as String?,
+                username: r['username'] as String?,
+                avatarUrl: r['avatar_url'] as String?,
+                lastWorkoutAt: _date(r['last_workout_at']),
+                workoutsLast7Days: (r['workouts_last_7_days'] as num?)?.toInt(),
+              ))
+          .toList(),
+      invitations: _maps(json['invitations'])
+          .map((r) => HubInvite(
+                id: r['id'] as String,
+                codeHint: r['code_hint'] as String,
+                expiresAt: DateTime.parse(r['expires_at'] as String),
+                createdAt: DateTime.parse(r['created_at'] as String),
+                note: r['note'] as String?,
+              ))
+          .toList(),
+      invitesAccepted: (json['invites_accepted'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  static CreatedInvite createdInvite(Map<String, dynamic> row) => CreatedInvite(
+        invitationId: row['invitation_id'] as String,
+        code: row['code'] as String,
+        expiresAt: DateTime.parse(row['expires_at'] as String),
+      );
+
+  static InvitePreview invitePreview(Map<String, dynamic> row) => InvitePreview(
+        coachId: row['coach_id'] as String,
+        specialties: _strings(row['specialties']),
+        expiresAt: DateTime.parse(row['expires_at'] as String),
+        username: row['username'] as String?,
+        displayName: row['display_name'] as String?,
+        avatarUrl: row['avatar_url'] as String?,
+        headline: row['headline'] as String?,
+        experienceYears: (row['experience_years'] as num?)?.toInt(),
+      );
+
+  static ClientWorkout clientWorkout(Map<String, dynamic> row) => ClientWorkout(
+        workoutLogId: row['workout_log_id'] as String,
+        startedAt: DateTime.parse(row['started_at'] as String),
+        exerciseCount: (row['exercise_count'] as num?)?.toInt() ?? 0,
+        workingSets: (row['working_sets'] as num?)?.toInt() ?? 0,
+        volumeKg: (row['volume_kg'] as num?)?.toDouble() ?? 0,
+        exerciseNames: _strings(row['exercise_names']),
+        completedAt: _date(row['completed_at']),
+        durationSeconds: (row['duration_seconds'] as num?)?.toInt(),
+      );
+
+  /// [CaptainProfileDraft] → `coach_profiles` columns (never `status`).
+  static Map<String, dynamic> coachProfileColumns(CaptainProfileDraft d) => {
+        'headline': _blankToNull(d.headline),
+        'bio': _blankToNull(d.bio),
+        'approach': _blankToNull(d.approach),
+        'specialties': d.specialties,
+        'certifications': d.certifications,
+        'experience_years': d.experienceYears,
+        'max_athletes': d.maxAthletes,
+        'accepting_athletes': d.acceptingAthletes,
+        'is_listed': d.isListed,
+      };
+
+  static String? _blankToNull(String? value) {
+    final v = value?.trim();
+    return v == null || v.isEmpty ? null : v;
+  }
+
+  static List<Map<String, dynamic>> _maps(dynamic value) => value is List
+      ? [for (final m in value) Map<String, dynamic>.from(m as Map)]
+      : const [];
 
   static DateTime? _date(dynamic value) =>
       value == null ? null : DateTime.parse(value as String);

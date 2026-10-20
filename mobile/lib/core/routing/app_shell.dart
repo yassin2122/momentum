@@ -12,7 +12,8 @@ import '../widgets/grit_nav_bar.dart';
 /// preserves each tab's own navigation stack and scroll position when
 /// switching away and back.
 ///
-/// Coach and Universe are "Coming soon" placeholders for now.
+/// Universe is a "Coming soon" placeholder for now. Coach hosts the
+/// athlete's Captain and, for users who coach, the Captain Hub.
 ///
 /// The centre START button opens a sheet instead of switching tabs:
 /// today's recommended template first, the other templates under it, plus

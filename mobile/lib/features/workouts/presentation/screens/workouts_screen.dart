@@ -37,6 +37,47 @@ class WorkoutsScreen extends ConsumerWidget {
     if (context.mounted) context.push(AppRoutes.activeWorkout);
   }
 
+  Future<void> _deleteTemplate(
+    BuildContext context,
+    WidgetRef ref,
+    WorkoutTemplate template,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.achSheet,
+        title: Text('Delete "${template.name}"?',
+            style: AppTypography.titleLarge),
+        content: Text(
+          'The template is removed from your list. Workouts you already '
+          'logged with it stay in your history.',
+          style: AppTypography.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final result =
+        await ref.read(workoutRepositoryProvider).deleteTemplate(template.id);
+    if (!context.mounted) return;
+    ref.invalidate(workoutTemplatesProvider);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(result.isSuccess
+          ? 'Deleted "${template.name}".'
+          : result.failureOrNull!.message),
+    ));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final active = ref.watch(activeWorkoutProvider).valueOrNull;
@@ -116,6 +157,7 @@ class WorkoutsScreen extends ConsumerWidget {
                             template: t,
                             enabled: active == null,
                             onStart: () => _start(context, ref, template: t),
+                            onDelete: () => _deleteTemplate(context, ref, t),
                           ),
                         ),
                     ],
@@ -231,11 +273,13 @@ class _TemplateCard extends StatelessWidget {
     required this.template,
     required this.enabled,
     required this.onStart,
+    required this.onDelete,
   });
 
   final WorkoutTemplate template;
   final bool enabled;
   final VoidCallback onStart;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +308,28 @@ class _TemplateCard extends StatelessWidget {
           Icon(
             Icons.play_arrow_rounded,
             color: enabled ? AppColors.textPrimary : AppColors.textDisabled,
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'Template options',
+            color: AppColors.achSheet,
+            icon: const Icon(LucideIcons.ellipsisVertical,
+                color: AppColors.textSecondary),
+            onSelected: (_) => onDelete(),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    const Icon(Icons.delete_outline,
+                        size: 18, color: AppColors.error),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text('Delete template',
+                        style: AppTypography.bodyLarge
+                            .copyWith(color: AppColors.error)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -63,6 +63,24 @@ class FakeWorkoutRepository implements WorkoutRepository {
           {required String workoutId, required String name}) =>
       throw UnimplementedError();
   @override
-  Future<Result<List<TrackableExercise>>> searchExercises(String query) =>
-      throw UnimplementedError();
+  Future<Result<List<TrackableExercise>>> searchExercises(String query,
+          {List<String> muscleGroups = const [],
+          int offset = 0,
+          int limit = 50}) async =>
+      const Result.success([]);
+  @override
+  Future<Result<List<TrackableExercise>>> exercisesBySlugs(
+          List<String> slugs) async =>
+      const Result.success([]);
+  @override
+  Future<Result<List<TrackableExercise>>> recentExercises(
+          {int limit = 8}) async =>
+      const Result.success([]);
+
+  final deletedTemplates = <String>[];
+  @override
+  Future<Result<void>> deleteTemplate(String templateId) async {
+    deletedTemplates.add(templateId);
+    return const Result.success(null);
+  }
 }
