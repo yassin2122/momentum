@@ -1,4 +1,4 @@
--- Momentum — remove legacy social layer
+-- Grit — remove legacy social layer
 -- Connect = online coaching (Captain). No feed, posts, likes, comments,
 -- friends, blocks, friend challenges, or leaderboards.
 -- Forward-only: earlier migrations are NOT edited.

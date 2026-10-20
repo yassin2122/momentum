@@ -1,7 +1,7 @@
 /// App-wide constant values. Anything that could otherwise be a magic
 /// number/string scattered across the codebase belongs here.
 abstract final class AppConstants {
-  static const String appName = 'Gym App';
+  static const String appName = 'Grit';
 
   // Standard animation timing — see DESIGN_SYSTEM.md's canonical table.
   static const Duration animInstant = Duration(milliseconds: 100);
@@ -22,7 +22,7 @@ abstract final class AppConstants {
 
   // Deep-link / OAuth redirect URL registered in AndroidManifest.xml and
   // iOS Info.plist.  Supabase will redirect here after OAuth / magic-link flows.
-  static const String authRedirectUrl = 'io.momentum.app://login-callback/';
+  static const String authRedirectUrl = 'io.grit.app://login-callback/';
 
   // Base URL for exercise images. exercises.images holds paths relative to
   // free-exercise-db's exercises/ folder (e.g. "Air_Bike/0.jpg").
@@ -83,6 +83,9 @@ abstract final class AppRoutes {
   /// Full-screen muscle activity map (opened from the Dashboard).
   static const String muscleMap = '/muscles';
   static const String workoutSummary = '/workout/summary';
+
+  /// Searchable, filterable exercise library (opened from the Train tab).
+  static const String exercises = '/exercises';
 
   /// Build a new workout template from scratch.
   static const String createTemplate = '/templates/new';

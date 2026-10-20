@@ -1,4 +1,4 @@
-# Momentum — SCHEMA.md
+# Grit — SCHEMA.md
 
 Status: after migrations 0001–0030 (+ later TRAIN additions noted inline) · Backend: Supabase (Postgres, Auth, RLS, Storage, Realtime)
 Rule: never edit an applied migration. Add a new one.

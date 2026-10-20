@@ -126,7 +126,7 @@ class _Wordmark extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.sm),
             Text(
-              'MOMENTUM',
+              'GRIT',
               style: AppTypography.titleMedium.copyWith(
                 color: AppColors.phaseSingularity,
                 fontWeight: AppTypography.regular,

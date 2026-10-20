@@ -1,4 +1,4 @@
-/// MOTRA's sizing token system.
+/// GRIT's sizing token system.
 ///
 /// Every concrete pixel measurement used for icon sizes, control
 /// heights, and minimum hit-targets anywhere in the app must come from

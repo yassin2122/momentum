@@ -1,4 +1,4 @@
-# MOTRA — Brand Guide
+# GRIT — Brand Guide
 
 **Version:** 1.0  
 **Status:** Phase 0 baseline  
@@ -9,11 +9,11 @@
 ## 1. Brand Overview
 
 ### Brand name
-**MOTRA**
+**GRIT**
 
 ### Name usage
-- Always write the product name as **MOTRA** in primary brand applications.
-- Use **Motra** in sentences where all-caps feels too aggressive.
+- Always write the product name as **GRIT** in primary brand applications.
+- Use **Grit** in sentences where all-caps feels too aggressive.
 - Do not shorten the name.
 - Do not add spaces, punctuation, or alternate spelling.
 
@@ -30,20 +30,20 @@ Help people train with purpose, make real progress, and master meaningful physic
 Turn long-term fitness progress into a visible journey of training, mastery, and personal growth without reducing real achievement to meaningless points or fantasy rewards.
 
 ### Brand promise
-MOTRA makes every workout feel connected to a larger goal.
+GRIT makes every workout feel connected to a larger goal.
 
 ---
 
 ## 2. Brand Positioning
 
-### MOTRA is
+### GRIT is
 - A premium workout companion
 - A structured skill-progression system
 - A fitness tracker for strength and calisthenics
 - A long-term motivation platform
 - A calm, intelligent coach-like experience
 
-### MOTRA is not
+### GRIT is not
 - A childish game
 - A fantasy RPG
 - A loud bodybuilding brand
@@ -52,7 +52,7 @@ MOTRA makes every workout feel connected to a larger goal.
 - A replacement for real coaching or medical advice
 
 ### Primary difference
-Most fitness apps record what the user did. MOTRA shows what the user is becoming.
+Most fitness apps record what the user did. GRIT shows what the user is becoming.
 
 ### Product pillars
 1. **Train** — complete high-quality workouts and track performance.
@@ -77,7 +77,7 @@ The social pillar may exist later, but it is not the primary focus of the curren
 - Users returning to training after inconsistency
 
 ### Audience mindset
-The MOTRA user wants to feel:
+The GRIT user wants to feel:
 - Focused rather than distracted
 - Guided rather than controlled
 - Challenged rather than judged
@@ -97,7 +97,7 @@ The MOTRA user wants to feel:
 - **Loyal** — the companion stays with the user through progress and setbacks
 
 ### Personality spectrum
-| MOTRA should feel | MOTRA should not feel |
+| GRIT should feel | GRIT should not feel |
 |---|---|
 | Confident | Arrogant |
 | Friendly | Childish |
@@ -112,9 +112,9 @@ The MOTRA user wants to feel:
 ## 5. Mascot Identity
 
 ### Mascot name
-**Motra**
+**Grit**
 
-The mascot and product share the same name. Motra is the living expression of the app: a small training companion that grows alongside the user.
+The mascot and product share the same name. Grit is the living expression of the app: a small training companion that grows alongside the user.
 
 ### Role
 - Training companion
@@ -135,7 +135,7 @@ A small black droplet-like figure with large white eyes, a soft rounded silhouet
 - Growth
 
 ### Character behavior
-Motra:
+Grit:
 - Celebrates genuine progress
 - Encourages effort
 - Respects rest days
@@ -143,7 +143,7 @@ Motra:
 - Shows concern without shaming
 - Reacts to milestones, streaks, PRs, and skill unlocks
 
-Motra never:
+Grit never:
 - Mocks the user
 - Uses humiliation as motivation
 - Acts superior
@@ -208,20 +208,20 @@ During normal app use, the mascot should generally occupy no more than 15% of th
 ## 6. Logo System
 
 ### Primary wordmark
-The MOTRA wordmark uses a bold, geometric, uppercase sans-serif treatment with wide tracking.
+The GRIT wordmark uses a bold, geometric, uppercase sans-serif treatment with wide tracking.
 
 ### Primary mark
-The primary symbol is the simplified Motra droplet silhouette.
+The primary symbol is the simplified Grit droplet silhouette.
 
 ### Approved logo configurations
-1. Symbol + MOTRA wordmark
-2. MOTRA wordmark only
-3. Motra symbol only
+1. Symbol + GRIT wordmark
+2. GRIT wordmark only
+3. Grit symbol only
 4. App icon variant
 5. Monochrome mark
 
 ### Clear space
-Maintain clear space around the logo equal to the height of the letter **O** in the MOTRA wordmark.
+Maintain clear space around the logo equal to the height of the letter **O** in the GRIT wordmark.
 
 ### Minimum size
 - Full logo: 96 px digital width minimum
@@ -249,7 +249,7 @@ Maintain clear space around the logo equal to the height of the letter **O** in 
 | Deep Current | `#23576B` | Primary brand blue, scarf, selected states |
 | Steel Blue | `#496575` | Secondary blue, supporting surfaces, charts |
 | Warm Bone | `#E8E5DD` | Primary light text and light-mode background |
-| Momentum Orange | `#FF6B3D` | PRs, highlights, urgent celebration moments |
+| Grit Orange | `#FF6B3D` | PRs, highlights, urgent celebration moments |
 
 ### Extended neutral palette
 | Token | Hex | Use |
@@ -337,7 +337,7 @@ The wordmark is custom and should not be recreated with standard text in product
 - Use one icon per action.
 - Do not mix icon families.
 - Pair ambiguous icons with text.
-- Use custom icons for skill categories, achievements, and the Motra mark.
+- Use custom icons for skill categories, achievements, and the Grit mark.
 - Avoid overly detailed fitness icons at small sizes.
 
 ---
@@ -371,7 +371,7 @@ The wordmark is custom and should not be recreated with standard text in product
 ## 11. Voice and Tone
 
 ### Core voice
-MOTRA sounds like a calm training partner who understands effort.
+GRIT sounds like a calm training partner who understands effort.
 
 ### Voice traits
 - Direct
@@ -422,8 +422,8 @@ MOTRA sounds like a calm training partner who understands effort.
 - Idle motion should remain nearly invisible.
 
 ### Brand moments
-- App launch: Motra forms from a droplet, scarf settles, eyes open.
-- Workout start: Motra shifts into a focused stance.
+- App launch: Grit forms from a droplet, scarf settles, eyes open.
+- Workout start: Grit shifts into a focused stance.
 - PR: short jump with orange accent marks.
 - Streak: scarf movement and controlled energetic pose.
 - Rest day: sleeping pose with slow breathing.
@@ -449,14 +449,14 @@ MOTRA sounds like a calm training partner who understands effort.
 - App Store visual system
 
 ### App icon direction
-The app icon should use a simplified Motra silhouette with large white eyes and a minimal blue scarf shape. Avoid using the full body or detailed pose.
+The app icon should use a simplified Grit silhouette with large white eyes and a minimal blue scarf shape. Avoid using the full body or detailed pose.
 
 ---
 
 ## 14. Brand Governance Checklist
 
 Before approving any branded asset, confirm:
-- Is the Motra silhouette recognizable?
+- Is the Grit silhouette recognizable?
 - Is the interface calm and premium?
 - Is blue the main accent rather than orange?
 - Is orange used only for a meaningful reason?
@@ -469,4 +469,4 @@ Before approving any branded asset, confirm:
 
 ## 15. Official Brand Summary
 
-**MOTRA** is a premium fitness progression platform represented by a small, disciplined training companion. Its identity combines obsidian black, deep blue, warm neutral tones, restrained orange energy, minimal typography, and calm motion. The brand celebrates real work, measurable progress, recovery, and long-term mastery.
+**GRIT** is a premium fitness progression platform represented by a small, disciplined training companion. Its identity combines obsidian black, deep blue, warm neutral tones, restrained orange energy, minimal typography, and calm motion. The brand celebrates real work, measurable progress, recovery, and long-term mastery.

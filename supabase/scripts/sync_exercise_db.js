@@ -115,7 +115,7 @@ if (LIMIT < Infinity) {
 
 console.log(`
 ╔══════════════════════════════════════════════════════════════════════╗
-║         MOMENTUM — Exercise DB Sync                                  ║
+║         GRIT — Exercise DB Sync                                  ║
 ╚══════════════════════════════════════════════════════════════════════╝
   Mode      : ${DRY_RUN ? '🔍 DRY RUN (no writes)' : '🚀 LIVE'}
   Source    : ${files.length > 0 ? EXERCISES_DIR : DIST_JSON}

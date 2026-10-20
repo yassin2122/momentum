@@ -249,6 +249,15 @@ abstract final class AppColors {
   static const Color heatmapActiveStart = Color(0xFF235768);
   static const Color heatmapActiveEnd = Color(0xFF3DDDC2);
 
+  // Anatomy hologram (muscle map): white line art on a near-black body,
+  // trained/targeted muscles in electric cyan. Fills are opaque so the
+  // art's paint order hides covered shapes.
+  static const Color anatomyBody = Color(0xFF05080C);
+  static const Color anatomyLine = Color(0xFFFFFFFF);
+  static const Color anatomyCyanDeep = Color(0xFF0B5E7A);
+  static const Color anatomyCyan = Color(0xFF22D3EE);
+  static const Color anatomyCyanBright = Color(0xFFA5F3FC);
+
   // ==========================================================
   // Skill violet — roadmap skill-tree accent hue.
   // ==========================================================
@@ -409,7 +418,7 @@ abstract final class AppColors {
   /// Rest-day dot on the week strip.
   static const Color hubRestDay = Color(0xFF141C24);
 
-  // Momentum nav bar with the orange START orb.
+  // Grit nav bar with the orange START orb.
   static const Color hubNavTop = Color(0xFF080D12);
   static const Color hubNavBottom = Color(0xFF03070A);
   static const Color hubNavBorder = Color(0x17FFFFFF); // ~9% white

@@ -164,7 +164,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       const AuthTwoLineTitle(
         firstLine: 'Create',
         secondLine: 'your account',
-        subtitle: 'Join Momentum and start\nyour transformation.',
+        subtitle: 'Join Grit and start\nyour transformation.',
       ),
       const SizedBox(height: AppSpacing.lg),
       AuthTextField(

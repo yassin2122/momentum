@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Static hero visual for the auth screen — vertical background
-/// gradient plus the MOTRA mascot illustration, anchored bottom-right
+/// gradient plus the GRIT mascot illustration, anchored bottom-right
 /// with its glow baked into the source asset.
 ///
 /// Deliberately dumb/static: headline copy ("Start your journey" vs

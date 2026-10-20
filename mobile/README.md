@@ -1,4 +1,4 @@
-# Gym App — Mobile (Flutter)
+# Grit — Mobile (Flutter)
 
 ## Setup
 

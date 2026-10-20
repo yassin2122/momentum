@@ -7,8 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 //
 // The skill roadmap repositories (`features/roadmap/data/`) aren't wired
 // yet, so the Progress screens (Phases → Universe → Planet → Skill) and
-// the Dashboard's streak/momentum/skill cards read from this file. Every
-// value here is placeholder content from the Momentum canvas designs.
+// the Dashboard's streak/grit/skill cards read from this file. Every
+// value here is placeholder content from the Grit canvas designs.
 //
 // To go live, replace these constants with providers backed by the
 // roadmap repositories — the screens only depend on the view types
@@ -45,7 +45,7 @@ final class ProgressHud {
     required this.bestStreakDays,
     required this.xp,
     required this.stars,
-    required this.momentum,
+    required this.grit,
     required this.weekDone,
     required this.todayIndex,
   });
@@ -55,8 +55,8 @@ final class ProgressHud {
   final int xp;
   final int stars;
 
-  /// 0–1 weekly consistency score shown as "Momentum".
-  final double momentum;
+  /// 0–1 weekly consistency score shown as "Grit".
+  final double grit;
 
   /// Mon→Sun: whether a workout was logged that day.
   final List<bool> weekDone;
@@ -70,7 +70,7 @@ const ProgressHud sampleHud = ProgressHud(
   bestStreakDays: 18,
   xp: 3420,
   stars: 31,
-  momentum: 0.82,
+  grit: 0.82,
   weekDone: [true, true, true, true, false, false, false],
   todayIndex: 4,
 );

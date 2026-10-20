@@ -7,7 +7,7 @@ Read-only. Nothing in `mobile/` or `supabase/` was changed to produce this; the 
 `docs/PRODUCT.md` is not on disk and not in git at that path. The only document with that name anywhere in history is `archive/docs/PRODUCT.md` (deleted from the working tree, recovered from `HEAD` and placed at `docs/PRODUCT.md` so I had something to read). It describes **Connect as a social feed**: Friends, Activity Feed, Challenges, Leaderboards, Community likes/comments — the opposite of your brief ("Connect = online coaching, NOT a social feed").
 
 The schema confirms your brief is the current, correct direction, not the old doc:
-- Migrations 1–25 build the social layer described in that `PRODUCT.md` (`posts`, `friendships`, `activities`, `user_challenges`, leaderboard RPCs — see migration `21_momentum_connect_additions.sql`).
+- Migrations 1–25 build the social layer described in that `PRODUCT.md` (`posts`, `friendships`, `activities`, `user_challenges`, leaderboard RPCs — see migration `21_grit_connect_additions.sql`).
 - Migration `26_remove_social.sql` deletes all of it.
 - Migrations `27`–`32` build a *different* Connect: coach/athlete relationships, permission-gated read access, program assignment — matching your brief exactly.
 
@@ -54,7 +54,7 @@ So: **this document is stale by one full pivot** and should not be used as sourc
 | `features/statistics/` | Train | FIX | Only a bare screen exists (`statistics_screen.dart`), wired into router; `data/`/`domain/` are empty stubs. No PR/analytics data layer behind it yet (matches `PRODUCT.md`'s "Analytics" feature list, which is unbuilt). |
 | `features/profile/` | shared | FIX | Only a bare screen exists, wired, no data layer. No social refs found. |
 | `features/history/` | Train | UNSURE | 100% empty `.gitkeep` scaffold, no screen at all, not routed. Either an intentional placeholder for "workout history" (a named `PRODUCT.md` Train feature) or dead scaffolding — your call whether to keep the folder or let it get recreated when the feature is actually built. |
-| `shared/widgets/motra_bottom_nav.dart` | — | ORPHAN | A complete, self-consistent 4-tab nav (Dashboard/Achievements/Roadmap/Profile — note: still not the 3-pillar TRAIN/PROGRESS/CONNECT shape your brief wants) with its own `MotraShell`. **Nothing imports it.** It references `AppRoutes.achievements`, `.roadmap`, `.start`, none of which exist on `AppRoutes`. This reads like an abandoned attempt to replace `app_shell.dart` that was never finished or wired in. |
+| `shared/widgets/grit_bottom_nav.dart` | — | ORPHAN | A complete, self-consistent 4-tab nav (Dashboard/Achievements/Roadmap/Profile — note: still not the 3-pillar TRAIN/PROGRESS/CONNECT shape your brief wants) with its own `GritShell`. **Nothing imports it.** It references `AppRoutes.achievements`, `.roadmap`, `.start`, none of which exist on `AppRoutes`. This reads like an abandoned attempt to replace `app_shell.dart` that was never finished or wired in. |
 
 No feature folder currently represents **Connect** at all — there's no `features/connect/` or `features/coaching/` directory, no screen, no repository, despite Connect being a fully-built, well-designed pillar in the Postgres schema (migrations 27–32, RLS, RPCs — see §7). This is the single largest gap between schema and app.
 
@@ -88,9 +88,9 @@ Everything below conflicts with your brief ("remove all social features: FYP, ph
 `workout_repository.dart:2-3` → `core/models/exercise.dart`, `core/models/workout.dart`; `roadmap_repository.dart:2` → `core/models/roadmap.dart`; `achievements_repository.dart:2` → `core/models/achievement.dart`. `git log --all` shows `core/models/` has **never existed** in this repo's history — not deleted, never created. Unlike finding A, the *table names and columns these repositories query are correct* (`workout_logs`, `roadmap_categories`, `skills`, `skill_progress`, `achievements`, etc. all match current migrations exactly). This is pure missing-plumbing, not a schema disagreement — the fix is writing the four model files, not rethinking the queries.
 
 **C. `AppRoutes` is missing routes that other files assume exist.**
-`motra_bottom_nav.dart` and the orphaned `roadmap/presentation/pages/*` reference `AppRoutes.achievements`, `.roadmap`, `.start`, `.templates`, and methods `.galaxyFor(id)` / `.planetFor(id)` that don't exist on `AppRoutes` (`app_constants.dart:30-42` only has splash/login/register/forgotPassword/dashboard/workouts/exercises/statistics/profile). Not a database-schema mismatch, but the same "written against a future version of the app that was never finished" pattern.
+`grit_bottom_nav.dart` and the orphaned `roadmap/presentation/pages/*` reference `AppRoutes.achievements`, `.roadmap`, `.start`, `.templates`, and methods `.galaxyFor(id)` / `.planetFor(id)` that don't exist on `AppRoutes` (`app_constants.dart:30-42` only has splash/login/register/forgotPassword/dashboard/workouts/exercises/statistics/profile). Not a database-schema mismatch, but the same "written against a future version of the app that was never finished" pattern.
 
-**D. `test/widget_test.dart:18` references `GymApp()`** — the actual exported widget in `main.dart:31` is `MomentumApp`. One-line rename mismatch, not a deep issue, but it's why `flutter test` currently fails outright (see §6).
+**D. `test/widget_test.dart:18` referenced a different root widget name than `main.dart`** — now resolved: both use `GritApp`. One-line rename mismatch, not a deep issue, but it's why `flutter test` currently fails outright (see §6).
 
 I did not find any surviving reference to the "galaxies/planets/planet_nodes" or flat "training_logs" naming you described from the old React port — `core/models/` (where that would have lived) was never committed, so that layer seems to have been deleted before this repo's first commit rather than left behind. The closest surviving trace is finding A (a view-based schema assumption that doesn't match the real tables) and the orphaned `application/`-layer imports in finding C's neighborhood — same symptom (code written against a schema/layer that doesn't exist), different specifics.
 
@@ -99,7 +99,7 @@ I did not find any surviving reference to the "galaxies/planets/planet_nodes" or
 ## 5. Dead code & duplicated systems
 
 **Duplicate dashboard implementations** (`features/dashboard/presentation/`):
-- `pages/dashboard_page.dart` — **not imported by the router at all** (`app_router.dart` only imports `screens/dashboard_screen.dart`). It's also independently broken: it imports `package:gym_app/lib/core/theme/app_colors.dart` (note the stray `/lib/` segment — not how Dart package imports work, so this is a guaranteed-broken import even if the target existed) plus four more missing files (`shared/widgets/progress_ring_widget.dart`, `shared/widgets/week_chain_widget.dart`, `roadmap/application/roadmap_providers.dart`, `dashboard/application/dashboard_providers.dart`). Pure dead weight — 30 of the 276 `flutter analyze` errors trace to this one unreachable file.
+- `pages/dashboard_page.dart` — **not imported by the router at all** (`app_router.dart` only imports `screens/dashboard_screen.dart`). It's also independently broken: it imports `package:grit/lib/core/theme/app_colors.dart` (note the stray `/lib/` segment — not how Dart package imports work, so this is a guaranteed-broken import even if the target existed) plus four more missing files (`shared/widgets/progress_ring_widget.dart`, `shared/widgets/week_chain_widget.dart`, `roadmap/application/roadmap_providers.dart`, `dashboard/application/dashboard_providers.dart`). Pure dead weight — 30 of the 276 `flutter analyze` errors trace to this one unreachable file.
 - `screens/dashboard_screen.dart` — the real one, wired, compiles, but pulls in the social `community_feed_section.dart` (§3).
 
 Recommend deleting `pages/dashboard_page.dart` and its exclusive dependents outright in Phase 2 (it's unreachable and nothing links to it), keeping `screens/dashboard_screen.dart` as the base to fix in Phase 4.
@@ -108,7 +108,7 @@ Recommend deleting `pages/dashboard_page.dart` and its exclusive dependents outr
 
 **Duplicate roadmap implementations**: see §2 — a schema-correct-but-unwired `data/` layer vs. an unwired, schema-era-mismatched `presentation/pages/` layer, neither connected to the other or to the router. These were very likely written at different times against different plans for the `application/` provider layer; recommend picking one direction in Phase 3 rather than trying to reconcile both.
 
-**Orphaned nav shell**: `shared/widgets/motra_bottom_nav.dart` (`MotraShell`/`MotraBottomNav`) — unreferenced anywhere, broken `AppRoutes` references. Given your brief wants exactly a 3-tab TRAIN/PROGRESS/CONNECT nav and neither this file (4 tabs, no Connect) nor `app_shell.dart` (5 tabs, no Progress/Connect) matches that, recommend treating both as reference material for Phase 3 rather than trying to repair either in place.
+**Orphaned nav shell**: `shared/widgets/grit_bottom_nav.dart` (`GritShell`/`GritBottomNav`) — unreferenced anywhere, broken `AppRoutes` references. Given your brief wants exactly a 3-tab TRAIN/PROGRESS/CONNECT nav and neither this file (4 tabs, no Connect) nor `app_shell.dart` (5 tabs, no Progress/Connect) matches that, recommend treating both as reference material for Phase 3 rather than trying to repair either in place.
 
 **Unused pubspec dependencies** (zero imports anywhere in `lib/`, checked via grep):
 - `flutter_dotenv` — nothing calls `dotenv.load()` or reads `dotenv.env`; `main.dart` gets its Supabase credentials from `--dart-define` instead (`main.dart:16-17`).
@@ -135,11 +135,11 @@ Recommend removing the first four in Phase 2 unless you know of planned near-ter
 | `features/roadmap/presentation/pages/{galaxy,planet,roadmap,achievements}_page.dart` | ~130 | missing `core/models/roadmap.dart`, `core/models/achievement.dart`, `core/logic/planet_logic.dart`, and a whole missing `application/` provider layer (§4B/C) |
 | `features/roadmap/data/{roadmap,achievements}_repository.dart` | ~16 | missing `core/models/roadmap.dart`, `core/models/achievement.dart` (§4B) |
 | `features/workout/data/workout_repository.dart` | ~16 | missing `core/models/exercise.dart`, `core/models/workout.dart` (§4B) |
-| `shared/widgets/motra_bottom_nav.dart` | ~6 | missing `AppRoutes` members (§4C) |
-| `test/widget_test.dart` | 2 | `GymApp` vs `MomentumApp` (§4D) |
+| `shared/widgets/grit_bottom_nav.dart` | ~6 | missing `AppRoutes` members (§4C) |
+| `test/widget_test.dart` | 2 | root widget name mismatch (§4D, resolved by the Grit rename) |
 | everywhere else | ~4 `info`-level lints | `prefer_const_constructors`, one `withOpacity`/`anonKey` deprecation each, one `unused_element` each in two of the orphan files above |
 
-**`flutter test`**: **fails to even load** — `test/widget_test.dart:18` compile error (`GymApp` undefined, §4D). This is the project's only test file; there is currently no passing test in the repo.
+**`flutter test`**: **fails to even load** — `test/widget_test.dart:18` compile error (root widget name mismatch, §4D — now resolved). This is the project's only test file; there is currently no passing test in the repo.
 
 ---
 
@@ -166,7 +166,7 @@ Recommend removing the first four in Phase 2 unless you know of planned near-ter
 5. `mobile/lib/features/dashboard/presentation/pages/dashboard_page.dart` (and nothing else depends on it, so no knock-on deletions needed).
 6. `mobile/lib/features/dashboard/presentation/widgets/community_feed_section.dart` — once its import is removed from `dashboard_screen.dart`.
 7. Unused pubspec deps: `flutter_dotenv`, `google_fonts`, `intl`, `cupertino_icons` (keep `fl_chart`).
-8. `mobile/lib/shared/widgets/motra_bottom_nav.dart` — orphaned, superseded-by-plan nav shell (recommend treating as reference, not reviving).
+8. `mobile/lib/shared/widgets/grit_bottom_nav.dart` — orphaned, superseded-by-plan nav shell (recommend treating as reference, not reviving).
 
 **Needs a product decision, not just a cleanup one — not proposing removal yet:**
 - `archive/docs/*.md` (ARCHITECTURE/BRAND_GUIDE/DESIGN_SYSTEM/MIGRATION_NOTES/SETUP/PRODUCT) — recommend keeping under `archive/` for historical reasoning, revisit once `docs/PRODUCT.md` is rewritten.

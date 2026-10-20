@@ -15,9 +15,9 @@ import '../widgets/gradient_pill_button.dart';
 import '../widgets/labeled_text_field.dart';
 import '../widgets/wordmark_lockup.dart';
 
-/// MOTRA Forgot / Reset Password Screen.
+/// GRIT Forgot / Reset Password Screen.
 ///
-/// Shares the MOTRA visual identity, dark background gradient, glass inputs,
+/// Shares the GRIT visual identity, dark background gradient, glass inputs,
 /// and gradient CTA.
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});

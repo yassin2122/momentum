@@ -6,9 +6,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/constants/app_constants.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/muscle_map/presentation/body/anatomy_license.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerAnatomyLicense();
 
   // Draw behind the status and system navigation bars (dark-only app).
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -32,7 +34,7 @@ Future<void> main() async {
 
   runApp(
     const ProviderScope(
-      child: MomentumApp(),
+      child: GritApp(),
     ),
   );
 }
@@ -41,8 +43,8 @@ Future<void> main() async {
 /// etc. anywhere in the app without reaching for `Supabase.instance.client`.
 final supabase = Supabase.instance.client;
 
-class MomentumApp extends ConsumerWidget {
-  const MomentumApp({super.key});
+class GritApp extends ConsumerWidget {
+  const GritApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

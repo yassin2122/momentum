@@ -1,4 +1,4 @@
-/// MOTRA's corner radius token system.
+/// GRIT's corner radius token system.
 ///
 /// Every `BorderRadius`/`Radius` anywhere in the app must come from one
 /// of these tokens — no widget should ever write `BorderRadius.circular(

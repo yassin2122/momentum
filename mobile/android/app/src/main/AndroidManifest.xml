@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="gym_app"
+        android:label="Grit"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -25,13 +25,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Deep-link / OAuth callback — matches io.momentum.app://login-callback/ -->
+            <!-- Deep-link / OAuth callback — matches io.grit.app://login-callback/ -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
-                    android:scheme="io.momentum.app"
+                    android:scheme="io.grit.app"
                     android:host="login-callback"/>
             </intent-filter>
         </activity>

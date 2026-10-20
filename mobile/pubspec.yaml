@@ -1,4 +1,4 @@
-name: gym_app
+name: grit
 description: A premium gym workout tracking application.
 publish_to: 'none'
 version: 0.1.0
@@ -55,3 +55,6 @@ flutter:
     - assets/images/planets/
     - assets/images/phases/
     - assets/mascot/
+    # Muscle-map anatomy (CC BY 4.0, see assets/anatomy/ATTRIBUTION.md)
+    - assets/anatomy/body_front.svg
+    - assets/anatomy/body_back.svg

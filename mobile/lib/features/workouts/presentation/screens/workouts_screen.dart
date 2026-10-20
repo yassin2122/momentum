@@ -72,6 +72,8 @@ class WorkoutsScreen extends ConsumerWidget {
                   ref.read(pendingWorkoutsProvider.notifier).retry(),
             ),
           ],
+          const SizedBox(height: AppSpacing.md),
+          _LibraryCard(onTap: () => context.push(AppRoutes.exercises)),
           const SizedBox(height: AppSpacing.xl),
           Row(
             children: [
@@ -119,6 +121,40 @@ class WorkoutsScreen extends ConsumerWidget {
                     ],
                   ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Entry point to the searchable Exercise Library.
+class _LibraryCard extends StatelessWidget {
+  const _LibraryCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      onTap: onTap,
+      child: Row(
+        children: [
+          const Icon(LucideIcons.dumbbell, color: AppColors.primaryBright),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Exercise library', style: AppTypography.titleMedium),
+                const SizedBox(height: 2),
+                Text(
+                  'Search and filter by muscle, equipment and level',
+                  style: AppTypography.caption,
+                ),
+              ],
+            ),
+          ),
+          const Icon(LucideIcons.chevronRight, color: AppColors.textTertiary),
         ],
       ),
     );

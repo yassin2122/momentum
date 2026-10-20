@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_app/core/error/failure.dart';
-import 'package:gym_app/features/workouts/domain/entities/active_workout.dart';
-import 'package:gym_app/features/workouts/domain/usecases/finish_workout.dart';
-import 'package:gym_app/features/workouts/domain/usecases/sync_pending_workouts.dart';
+import 'package:grit/core/error/failure.dart';
+import 'package:grit/features/workouts/domain/entities/active_workout.dart';
+import 'package:grit/features/workouts/domain/usecases/finish_workout.dart';
+import 'package:grit/features/workouts/domain/usecases/sync_pending_workouts.dart';
 
 import 'fake_workout_repository.dart';
 import 'fixtures.dart';

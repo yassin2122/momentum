@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_app/features/muscle_map/data/repositories/muscle_map_repository_impl.dart';
-import 'package:gym_app/features/muscle_map/domain/entities/muscle.dart';
-import 'package:gym_app/features/muscle_map/domain/entities/muscle_activity.dart';
-import 'package:gym_app/features/muscle_map/domain/services/muscle_activity_calculator.dart';
-import 'package:gym_app/features/muscle_map/domain/services/muscle_mapping.dart';
+import 'package:grit/features/muscle_map/data/repositories/muscle_map_repository_impl.dart';
+import 'package:grit/features/muscle_map/domain/entities/muscle.dart';
+import 'package:grit/features/muscle_map/domain/entities/muscle_activity.dart';
+import 'package:grit/features/muscle_map/domain/services/muscle_activity_calculator.dart';
+import 'package:grit/features/muscle_map/domain/services/muscle_mapping.dart';
 
 void main() {
   final now = DateTime(2026, 10, 18, 12);

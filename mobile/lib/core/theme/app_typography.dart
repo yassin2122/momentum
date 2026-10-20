@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// MOTRA's typography token system.
+/// GRIT's typography token system.
 ///
 /// Every `TextStyle` used anywhere in the app must come from this file —
 /// no widget should ever construct `TextStyle(...)` directly. This is
@@ -17,7 +17,7 @@ import 'app_colors.dart';
 abstract final class AppTypography {
   // ==========================================================
   // Font family — the one and only place "SF Pro Display" (or
-  // whatever MOTRA's brand typeface ends up being) is written. If the
+  // whatever GRIT's brand typeface ends up being) is written. If the
   // typeface ever changes, this is the only line that needs to.
   // ==========================================================
   static const String fontFamily = 'SF Pro Display';

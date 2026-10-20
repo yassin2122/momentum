@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gym_app/core/constants/app_constants.dart';
-import 'package:gym_app/core/theme/app_theme.dart';
-import 'package:gym_app/features/workouts/domain/entities/logged_set.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_enums.dart';
-import 'package:gym_app/features/workouts/domain/services/workout_finalizer.dart';
-import 'package:gym_app/features/workouts/presentation/providers/workout_providers.dart';
-import 'package:gym_app/features/workouts/presentation/screens/active_workout_screen.dart';
-import 'package:gym_app/features/workouts/presentation/screens/workout_summary_screen.dart';
+import 'package:grit/core/constants/app_constants.dart';
+import 'package:grit/core/theme/app_theme.dart';
+import 'package:grit/features/muscle_map/presentation/providers/muscle_map_providers.dart';
+import 'package:grit/features/workouts/domain/entities/logged_set.dart';
+import 'package:grit/features/workouts/domain/entities/workout_enums.dart';
+import 'package:grit/features/workouts/domain/services/workout_finalizer.dart';
+import 'package:grit/features/workouts/presentation/providers/workout_providers.dart';
+import 'package:grit/features/workouts/presentation/screens/active_workout_screen.dart';
+import 'package:grit/features/workouts/presentation/screens/workout_summary_screen.dart';
 
 import 'fake_workout_repository.dart';
 import 'fixtures.dart';
+
+/// The round ✓ buttons, in row order.
+final checks = find.byWidgetPredicate((w) =>
+    w.key is ValueKey<String> &&
+    (w.key! as ValueKey<String>).value.startsWith('check-'));
 
 void main() {
   testWidgets('log a set in lb, add a pre-filled set, change its category, '
@@ -49,6 +55,8 @@ void main() {
       overrides: [
         currentUserIdProvider.overrideWithValue('user-1'),
         workoutRepositoryProvider.overrideWithValue(repo),
+        // No Supabase in tests: exercises just show an unlit muscle map.
+        exerciseMuscleLinksProvider.overrideWith((ref, key) async => const {}),
       ],
       child: MaterialApp.router(
         theme: AppTheme.darkTheme,
@@ -60,13 +68,17 @@ void main() {
 
     expect(find.text('Bench Press'), findsOneWidget);
 
-    // Switch this exercise to lb and log 135 lb × 8.
-    await tester.tap(find.text('lb'));
-    await tester.pump();
+    // Switch this exercise to lb (exercise menu) and log 135 lb × 8.
+    await tester.tap(find.byTooltip('Exercise options'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Use lb'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
     await tester.enterText(find.byType(TextField).at(0), '135');
     await tester.enterText(find.byType(TextField).at(1), '8');
-    await tester.tap(find.byType(Checkbox).first);
+    await tester.tap(checks.first);
     await tester.pump();
+    // Checking a set starts the rest timer.
+    expect(find.text('Rest'), findsOneWidget);
 
     var set = repo.active!.exercises.single.sets.single;
     expect(set.completed, isTrue);
@@ -75,14 +87,14 @@ void main() {
     expect(set.loadKg, 61.23);
 
     // Add set: pre-filled from the previous set, as a working set.
-    await tester.tap(find.text('Add set'));
+    await tester.tap(find.byKey(const ValueKey('add-set')));
     await tester.pump();
     expect(find.text('135'), findsNWidgets(2));
     expect(find.text('2'), findsOneWidget); // second working set badge
 
     // An incomplete set can't be checked off without values.
     await tester.enterText(find.byType(TextField).at(3), '');
-    await tester.tap(find.byType(Checkbox).at(1));
+    await tester.tap(checks.at(1));
     await tester.pump();
     expect(find.text('Fill in this set before checking it off.'),
         findsOneWidget);
@@ -95,7 +107,7 @@ void main() {
         .tap(find.widgetWithText(CheckedPopupMenuItem<Object>, 'Drop set'));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
     expect(find.text('D'), findsOneWidget);
-    await tester.tap(find.byType(Checkbox).at(1));
+    await tester.tap(checks.at(1));
     await tester.pump();
 
     set = repo.active!.exercises.single.sets[1];
@@ -103,7 +115,7 @@ void main() {
     expect(set.completed, isTrue);
 
     // Finish → confirm → summary.
-    await tester.tap(find.widgetWithText(FilledButton, 'Finish'));
+    await tester.tap(find.byKey(const ValueKey('finish-workout')));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
     await tester.tap(find.widgetWithText(TextButton, 'Finish'));
     await tester.pump();

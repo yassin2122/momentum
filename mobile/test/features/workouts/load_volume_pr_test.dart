@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_app/features/workouts/domain/entities/logged_set.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_enums.dart';
-import 'package:gym_app/features/workouts/domain/services/effective_load.dart';
-import 'package:gym_app/features/workouts/domain/services/pr_detector.dart';
-import 'package:gym_app/features/workouts/domain/services/volume_calculator.dart';
+import 'package:grit/features/workouts/domain/entities/logged_set.dart';
+import 'package:grit/features/workouts/domain/entities/workout_enums.dart';
+import 'package:grit/features/workouts/domain/services/effective_load.dart';
+import 'package:grit/features/workouts/domain/services/pr_detector.dart';
+import 'package:grit/features/workouts/domain/services/volume_calculator.dart';
 
 import 'fixtures.dart';
 

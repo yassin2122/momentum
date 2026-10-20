@@ -1,6 +1,6 @@
 {
-    "name": "gym_app",
-    "short_name": "gym_app",
+    "name": "Grit",
+    "short_name": "Grit",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

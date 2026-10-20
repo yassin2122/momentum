@@ -1,4 +1,4 @@
-# MOTRA — Design System
+# GRIT — Design System
 
 **Version:** 1.0  
 **Platform:** Flutter mobile app  
@@ -24,7 +24,7 @@ Primary actions should remain reachable near the bottom half of the screen.
 Use layered near-black surfaces, subtle borders, restrained highlights, and material depth.
 
 ### 6. Character with restraint
-Motra adds emotion and identity but never competes with workout information.
+Grit adds emotion and identity but never competes with workout information.
 
 ### 7. Consistency over novelty
 Components should behave the same everywhere.
@@ -379,7 +379,7 @@ Use red only when the consequence is destructive.
 Used for Today’s Workout, current skill, or weekly progress.
 - Radius: 24 px
 - Padding: 20–24 px
-- May include Motra illustration
+- May include Grit illustration
 - One primary action only
 
 ---
@@ -535,7 +535,7 @@ Avoid using dialogs for normal navigation or routine information.
 ## 5.13 Empty States
 
 Include:
-- Small Motra illustration
+- Small Grit illustration
 - Clear title
 - One short explanation
 - One action
@@ -569,10 +569,10 @@ Use only for app launch, major initialization, or branded empty/loading moments.
 - L: 180–280 px — onboarding or achievement
 
 ### Interaction rules
-- Motra may point toward one important action.
-- Motra should not overlap text or touch targets.
+- Grit may point toward one important action.
+- Grit should not overlap text or touch targets.
 - Avoid constant looping animation.
-- During workout logging, Motra should be static or absent.
+- During workout logging, Grit should be static or absent.
 - Major milestone animation should be dismissible and under 2 seconds before controls become available.
 
 ---

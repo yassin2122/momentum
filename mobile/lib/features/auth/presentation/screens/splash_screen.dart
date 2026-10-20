@@ -89,7 +89,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       children: [
         FittedBox(
           child: Text(
-            'MOMENTUM',
+            'GRIT',
             style: AppTypography.displayLarge.copyWith(
               color: AppColors.white,
               fontSize: 52,

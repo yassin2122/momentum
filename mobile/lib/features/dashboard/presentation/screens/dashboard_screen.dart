@@ -26,7 +26,7 @@ import '../../domain/entities/discipline_score.dart';
 import '../../domain/entities/streak_status.dart';
 import '../providers/dashboard_providers.dart';
 
-/// DASHBOARD tab: avatar, mascot, greeting and the Streak / Momentum
+/// DASHBOARD tab: avatar, mascot, greeting and the Streak / Grit
 /// cards on top, then "Your Plan" — the user's own workout templates as
 /// big swipeable cards, each lighting the muscles its exercises work.
 /// "View" previews a template and starts it through the existing workout
@@ -279,8 +279,8 @@ String _greeting() {
 
 /// The top of the Dashboard: avatar with the bell and stats buttons, the
 /// mascot floating between them, the greeting and headline, then the
-/// Streak and Momentum cards. Streak is the server's app-open streak;
-/// Momentum is the discipline score (tap for how it's worked out). Both
+/// Streak and Grit cards. Streak is the server's app-open streak;
+/// Grit is the discipline score (tap for how it's worked out). Both
 /// show a dash until loaded (or offline / signed out) rather than a
 /// made-up number.
 class _TopSection extends StatelessWidget {
@@ -378,7 +378,7 @@ class _TopSection extends StatelessWidget {
               Expanded(child: _StreakCard(streak: streak)),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: _MomentumCard(score: discipline, onTap: onDiscipline),
+                child: _GritCard(score: discipline, onTap: onDiscipline),
               ),
             ],
           ),
@@ -405,7 +405,7 @@ class _Mascot extends StatelessWidget {
         child: Image.asset(
           'assets/images/hub/dash-mascot.jpg',
           fit: BoxFit.contain,
-          semanticLabel: 'Momentum mascot',
+          semanticLabel: 'Grit mascot',
           errorBuilder: (_, __, ___) => const SizedBox.shrink(),
         ),
       ),
@@ -539,8 +539,8 @@ class _StreakCard extends StatelessWidget {
   }
 }
 
-class _MomentumCard extends StatelessWidget {
-  const _MomentumCard({required this.score, required this.onTap});
+class _GritCard extends StatelessWidget {
+  const _GritCard({required this.score, required this.onTap});
 
   final DisciplineScore? score;
   final VoidCallback? onTap;
@@ -548,7 +548,7 @@ class _MomentumCard extends StatelessWidget {
   String get _caption {
     final v = score?.score;
     if (v == null) return 'Shows up after your first day.';
-    if (v >= 80) return 'Train today to keep your momentum.';
+    if (v >= 80) return 'Train today to keep your grit.';
     if (v >= 50) return 'A session today pushes this up.';
     return 'Show up today to rebuild it.';
   }
@@ -557,11 +557,11 @@ class _MomentumCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final v = score?.score;
     return _StatCard(
-      eyebrow: 'MOMENTUM',
+      eyebrow: 'GRIT',
       onTap: onTap,
       semanticLabel: v == null
-          ? 'Momentum loading'
-          : 'Momentum $v percent. $_caption',
+          ? 'Grit loading'
+          : 'Grit $v percent. $_caption',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -667,7 +667,7 @@ class _DisciplineSheet extends StatelessWidget {
     final planned = score.plannedWorkouts;
     final rows = <(String, String)>[
       (
-        'Days you opened Momentum',
+        'Days you opened Grit',
         '${score.activeDays} of ${score.windowDays}',
       ),
       (

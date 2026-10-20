@@ -123,6 +123,10 @@ class ActiveWorkoutNotifier extends AsyncNotifier<ActiveWorkout?> {
   void setUnit(String entryId, WeightUnit unit) =>
       _edit((w) => _editor.setUnit(w, entryId, unit));
 
+  /// Free-text note for one exercise in this workout (null clears it).
+  void setNotes(String entryId, String? notes) => _edit((w) => _editor
+      .setNotes(w, entryId, (notes?.trim().isEmpty ?? true) ? null : notes!.trim()));
+
   Future<void> _loadHistory(String entryId, String exerciseId) async {
     final result =
         await ref.read(workoutRepositoryProvider).getExerciseHistory(exerciseId);

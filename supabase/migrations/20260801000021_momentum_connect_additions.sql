@@ -1,4 +1,4 @@
--- Momentum v1.1 patch — Connect pillar additions
+-- Grit v1.1 patch — Connect pillar additions
 -- Resolves the activity-feed conflict from PRODUCT.md: the auto-generated
 -- feed (workouts, PRs, unlocks, achievements, streaks) and user photo posts
 -- BOTH ship in v1, side by side. This file wires the feed events that were

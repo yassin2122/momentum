@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------
-# Momentum — root .gitignore
+# Grit — root .gitignore
 # -----------------------------------------------------------------
 
 # Node (ad-hoc admin scripting only — see package.json)
@@ -44,4 +44,4 @@ Thumbs.db
 # Local diagnostics, editor settings, machine-specific helper scripts
 mobile/_diag/
 .idea/
-mobile/momentum_*.bat
+mobile/grit_*.bat

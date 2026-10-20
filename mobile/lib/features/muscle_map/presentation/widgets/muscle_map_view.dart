@@ -1,32 +1,56 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/muscle.dart';
 import '../body/body_geometry.dart';
+import '../providers/muscle_map_providers.dart';
 
 /// How one muscle is drawn at a moment in time.
 @immutable
-class _MuscleLook {
-  const _MuscleLook(this.fill, this.glow);
+class MuscleLook {
+  const MuscleLook(this.fill, this.glow);
 
+  /// Opaque fill (opaque so the art's paint order hides covered shapes).
   final Color fill;
 
-  /// 0 = no bloom, 1 = full bloom.
+  /// 0 = unlit, 1 = full cyan halo.
   final double glow;
 
-  static _MuscleLook lerp(_MuscleLook a, _MuscleLook b, double t) =>
-      _MuscleLook(Color.lerp(a.fill, b.fill, t)!, lerpDouble(a.glow, b.glow, t)!);
+  static const idle = MuscleLook(AppColors.anatomyBody, 0);
+
+  /// Exact at the ends, so a settled transition equals its target.
+  static MuscleLook lerp(MuscleLook a, MuscleLook b, double t) {
+    if (t <= 0) return a;
+    if (t >= 1) return b;
+    return MuscleLook(
+      Color.lerp(a.fill, b.fill, t)!,
+      lerpDouble(a.glow, b.glow, t)!,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is MuscleLook && other.fill == fill && other.glow == glow;
+
+  @override
+  int get hashCode => Object.hash(fill, glow);
+
+  @override
+  String toString() => 'MuscleLook($fill, glow: $glow)';
 }
 
-/// The body map: a dark silhouette with every muscle as its own vector
-/// region, lit cyan/blue by [intensities] (0–1) and [selected].
+/// The anatomy hologram: white line art on a near-black body, with each
+/// muscle region lit electric cyan by [intensities] (0–1) and [selected].
 ///
-/// Colour changes animate. With [onMuscleTap] set, taps resolve to the
-/// topmost muscle under the finger (null on empty space).
-class MuscleMapView extends StatefulWidget {
+/// Geometry comes from the SVG assets via [bodyAtlasProvider]; every muscle
+/// is its own set of vector paths, so highlights never recolour the body.
+/// Changes animate (instantly with reduced motion). With [onMuscleTap] set,
+/// a tap resolves to the topmost muscle under the finger, or null.
+class MuscleMapView extends ConsumerStatefulWidget {
   const MuscleMapView({
     required this.view,
     this.intensities = const {},
@@ -42,41 +66,60 @@ class MuscleMapView extends StatefulWidget {
   final ValueChanged<Muscle?>? onMuscleTap;
   final String? semanticLabel;
 
+  /// The look a muscle settles on for [intensity] (0–1) or when selected.
+  static MuscleLook targetLook(double intensity, {bool selected = false}) {
+    if (selected) {
+      return MuscleLook(
+        Color.alphaBlend(
+          AppColors.anatomyCyanBright.withValues(alpha: 0.85),
+          AppColors.anatomyBody,
+        ),
+        1,
+      );
+    }
+    final t = intensity.clamp(0.0, 1.0);
+    if (t <= 0) return MuscleLook.idle;
+    final hue = Color.lerp(AppColors.anatomyCyanDeep, AppColors.anatomyCyan, t)!;
+    return MuscleLook(
+      Color.alphaBlend(hue.withValues(alpha: 0.45 + 0.5 * t), AppColors.anatomyBody),
+      0.3 + 0.6 * t,
+    );
+  }
+
   @override
-  State<MuscleMapView> createState() => _MuscleMapViewState();
+  ConsumerState<MuscleMapView> createState() => MuscleMapViewState();
 }
 
-class _MuscleMapViewState extends State<MuscleMapView>
+class MuscleMapViewState extends ConsumerState<MuscleMapView>
     with SingleTickerProviderStateMixin {
   late final AnimationController _anim = AnimationController(
     vsync: this,
     duration: AppConstants.animMedium,
     value: 1,
   );
-  late Map<Muscle, _MuscleLook> _from = _targetLooks();
-  late Map<Muscle, _MuscleLook> _to = _from;
+  late Map<Muscle, MuscleLook> _from = _targetLooks();
+  late Map<Muscle, MuscleLook> _to = _from;
 
-  static final _idle = _MuscleLook(AppColors.white.withValues(alpha: 0.05), 0);
-
-  Map<Muscle, _MuscleLook> _targetLooks() => {
-        for (final m in Muscle.values) m: _lookFor(m),
-      };
-
-  _MuscleLook _lookFor(Muscle m) {
-    if (m == widget.selected) {
-      return const _MuscleLook(AppColors.hubSkyLight, 1);
-    }
-    final t = (widget.intensities[m] ?? 0).clamp(0.0, 1.0);
-    if (t <= 0) return _idle;
-    final hue = Color.lerp(
-        AppColors.heatmapActiveStart, AppColors.heatmapActiveEnd, t)!;
-    return _MuscleLook(hue.withValues(alpha: 0.45 + 0.55 * t), 0.35 + 0.5 * t);
-  }
-
-  Map<Muscle, _MuscleLook> get _current => {
+  Map<Muscle, MuscleLook> _targetLooks() => {
         for (final m in Muscle.values)
-          m: _MuscleLook.lerp(_from[m]!, _to[m]!, _anim.value),
+          m: MuscleMapView.targetLook(
+            widget.intensities[m] ?? 0,
+            selected: m == widget.selected,
+          ),
       };
+
+  Map<Muscle, MuscleLook> get _current => {
+        for (final m in Muscle.values)
+          m: MuscleLook.lerp(
+            _from[m]!,
+            _to[m]!,
+            Curves.easeOutCubic.transform(_anim.value),
+          ),
+      };
+
+  /// What [muscle] looks like right now (mid-transition included).
+  @visibleForTesting
+  MuscleLook lookOf(Muscle muscle) => _current[muscle]!;
 
   @override
   void didUpdateWidget(MuscleMapView old) {
@@ -85,6 +128,8 @@ class _MuscleMapViewState extends State<MuscleMapView>
         !_sameIntensities(old.intensities, widget.intensities)) {
       _from = _current;
       _to = _targetLooks();
+      final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+      _anim.duration = reduceMotion ? Duration.zero : AppConstants.animMedium;
       _anim.forward(from: 0);
     }
   }
@@ -103,31 +148,37 @@ class _MuscleMapViewState extends State<MuscleMapView>
     super.dispose();
   }
 
-  void _onTapUp(TapUpDetails details, Size size) {
-    final fit = BodyGeometry.fit(size);
+  void _onTapUp(TapUpDetails details, Size size, BodyGeometry geometry) {
+    final fit = geometry.fit(size);
     final local = (details.localPosition - fit.offset) / fit.scale;
-    widget.onMuscleTap!(BodyGeometry.hitTest(widget.view, local));
+    widget.onMuscleTap!(geometry.hitTest(local));
   }
 
   @override
   Widget build(BuildContext context) {
+    final geometry = ref.watch(bodyAtlasProvider).valueOrNull?[widget.view];
     return Semantics(
       label: widget.semanticLabel,
       image: widget.onMuscleTap == null,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final size = constraints.biggest;
-          final paint = AnimatedBuilder(
-            animation: _anim,
-            builder: (context, _) => CustomPaint(
-              size: size,
-              painter: _BodyPainter(view: widget.view, looks: _current),
+          // Assets load once at startup-time speed; keep the space quiet
+          // until then rather than flashing a spinner.
+          if (geometry == null) return SizedBox.fromSize(size: size);
+          final paint = RepaintBoundary(
+            child: AnimatedBuilder(
+              animation: _anim,
+              builder: (context, _) => CustomPaint(
+                size: size,
+                painter: _HologramPainter(geometry: geometry, looks: _current),
+              ),
             ),
           );
           if (widget.onMuscleTap == null) return paint;
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTapUp: (d) => _onTapUp(d, size),
+            onTapUp: (d) => _onTapUp(d, size, geometry),
             child: paint,
           );
         },
@@ -136,58 +187,81 @@ class _MuscleMapViewState extends State<MuscleMapView>
   }
 }
 
-class _BodyPainter extends CustomPainter {
-  _BodyPainter({required this.view, required this.looks});
+class _HologramPainter extends CustomPainter {
+  _HologramPainter({required this.geometry, required this.looks});
 
-  final BodyView view;
-  final Map<Muscle, _MuscleLook> looks;
+  final BodyGeometry geometry;
+  final Map<Muscle, MuscleLook> looks;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final fit = BodyGeometry.fit(size);
+    final fit = geometry.fit(size);
     canvas
       ..save()
       ..translate(fit.offset.dx, fit.offset.dy)
       ..scale(fit.scale);
-    final hair = 1 / fit.scale; // 1 device-independent pixel
+    final hair = 1 / fit.scale; // one logical pixel in view-box units
 
-    canvas.drawPath(
-      BodyGeometry.silhouette,
-      Paint()..color = AppColors.hubCardTop.withValues(alpha: 0.85),
-    );
+    canvas.drawPath(geometry.silhouette, Paint()..color = AppColors.anatomyBody);
 
-    for (final shape in BodyGeometry.shapes(view)) {
-      final look = looks[shape.muscle]!;
-      if (look.glow > 0.01) {
+    final fill = Paint();
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.round;
+
+    // Paint order matters: later shapes cover earlier ones, as in the art.
+    for (final part in geometry.parts) {
+      if (part.isLine) {
         canvas.drawPath(
-          shape.path,
-          Paint()
-            ..color = look.fill.withValues(alpha: 0.55 * look.glow)
-            ..maskFilter = MaskFilter.blur(BlurStyle.normal, 6 * hair),
+          part.path,
+          stroke
+            ..strokeWidth = 0.6 * hair
+            ..color = AppColors.anatomyLine.withValues(alpha: 0.3),
         );
+        continue;
       }
+      final look = part.muscle == null ? null : looks[part.muscle];
+      final lit = look?.glow ?? 0;
       canvas
-        ..drawPath(shape.path, Paint()..color = look.fill)
+        ..drawPath(part.path, fill..color = look?.fill ?? AppColors.anatomyBody)
         ..drawPath(
-          shape.path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.8 * hair
-            ..color = AppColors.white.withValues(alpha: 0.12 + 0.3 * look.glow),
+          part.path,
+          stroke
+            ..strokeWidth = (0.6 + 0.4 * lit) * hair
+            ..color = Color.lerp(
+              AppColors.anatomyLine
+                  .withValues(alpha: part.muscle == null ? 0.28 : 0.5),
+              AppColors.anatomyCyanBright,
+              lit,
+            )!,
         );
     }
 
+    // A thin cyan halo around lit regions — subtle, one blur per region.
+    for (final muscle in geometry.muscles) {
+      final glow = looks[muscle]?.glow ?? 0;
+      if (glow < 0.02) continue;
+      canvas.drawPath(
+        geometry.regionPath(muscle)!,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2 * hair
+          ..color = AppColors.anatomyCyan.withValues(alpha: 0.45 * glow)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3 * hair),
+      );
+    }
+
     canvas.drawPath(
-      BodyGeometry.silhouette,
+      geometry.silhouette,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2 * hair
-        ..color = AppColors.heatmapWireframe,
+        ..strokeWidth = 1.1 * hair
+        ..color = AppColors.anatomyLine.withValues(alpha: 0.85),
     );
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(_BodyPainter old) =>
-      old.view != view || !identical(old.looks, looks);
+  bool shouldRepaint(_HologramPainter old) =>
+      !identical(old.geometry, geometry) || !identical(old.looks, looks);
 }

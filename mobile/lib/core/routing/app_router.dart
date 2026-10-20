@@ -13,6 +13,7 @@ import '../../features/achievements/presentation/screens/achievement_unlock_scre
 import '../../features/achievements/presentation/screens/achievements_screen.dart';
 import '../../features/connect/presentation/screens/captain_profile_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/exercises/presentation/screens/exercises_screen.dart';
 import '../../features/muscle_map/presentation/screens/muscle_map_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/progress/presentation/screens/planet_screen.dart';
@@ -133,6 +134,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             _fadePage(state, const ActiveWorkoutScreen()),
       ),
       GoRoute(
+        path: AppRoutes.exercises,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const ExercisesScreen()),
+      ),
+      GoRoute(
         path: AppRoutes.createTemplate,
         pageBuilder: (context, state) =>
             _fadePage(state, const CreateTemplateScreen()),
@@ -151,7 +157,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             AppShell(navigationShell: navigationShell),
-        // Order must match MomentumNavBar.items.
+        // Order must match GritNavBar.items.
         branches: [
           StatefulShellBranch(
             routes: [

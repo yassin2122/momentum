@@ -1,11 +1,11 @@
-import 'package:gym_app/core/error/failure.dart';
-import 'package:gym_app/core/error/result.dart';
-import 'package:gym_app/features/workouts/domain/entities/active_workout.dart';
-import 'package:gym_app/features/workouts/domain/entities/pending_workout.dart';
-import 'package:gym_app/features/workouts/domain/entities/trackable_exercise.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_enums.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_template.dart';
-import 'package:gym_app/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:grit/core/error/failure.dart';
+import 'package:grit/core/error/result.dart';
+import 'package:grit/features/workouts/domain/entities/active_workout.dart';
+import 'package:grit/features/workouts/domain/entities/pending_workout.dart';
+import 'package:grit/features/workouts/domain/entities/trackable_exercise.dart';
+import 'package:grit/features/workouts/domain/entities/workout_enums.dart';
+import 'package:grit/features/workouts/domain/entities/workout_template.dart';
+import 'package:grit/features/workouts/domain/repositories/workout_repository.dart';
 
 /// In-memory repository; [online] decides whether finishWorkout succeeds.
 class FakeWorkoutRepository implements WorkoutRepository {

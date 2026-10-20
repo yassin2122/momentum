@@ -1,4 +1,4 @@
--- Momentum v1.1 patch — Train pillar additions
+-- Grit v1.1 patch — Train pillar additions
 
 -- ----------------------------------------------------------------------------
 -- 1. Programs (PPL, Upper/Lower, Full Body, Beginner plans, etc.)

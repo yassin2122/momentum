@@ -1,4 +1,4 @@
-# Momentum Mobile — Data Layer Rewrite: Migration Notes
+# Grit Mobile — Data Layer Rewrite: Migration Notes
 
 ## What this drop actually is
 Everything in this app except auth (`auth_repository.dart`,
@@ -25,7 +25,7 @@ lib/features/roadmap/application/roadmap_providers.dart    (REWRITTEN — now as
 lib/features/roadmap/application/achievements_providers.dart (REWRITTEN — now async)
 lib/features/dashboard/application/dashboard_providers.dart  (REWRITTEN — now async)
 lib/core/router/app_router.dart       (REWRITTEN — friends route removed)
-lib/shared/widgets/motra_bottom_nav.dart (REWRITTEN — Friends tab swapped for Achievements)
+lib/shared/widgets/grit_bottom_nav.dart (REWRITTEN — Friends tab swapped for Achievements)
 ```
 
 ## Delete these — superseded, no longer referenced by anything above

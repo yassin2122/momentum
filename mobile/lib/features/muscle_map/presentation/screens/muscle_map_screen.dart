@@ -11,6 +11,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/hub_ui.dart';
 import '../../domain/entities/muscle.dart';
 import '../../domain/entities/muscle_activity.dart';
+import '../../domain/services/muscle_highlight.dart';
 import '../providers/muscle_map_providers.dart';
 import '../widgets/muscle_detail_sheet.dart';
 import '../widgets/muscle_map_view.dart';
@@ -31,7 +32,10 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
   Future<void> _open(Muscle muscle, MuscleActivityReport report) async {
     setState(() {
       _selected = muscle;
-      if (!muscle.views.contains(_view)) _view = muscle.views.first;
+      // Lower back has no drawn region; keep the current side for it.
+      if (muscle.views.isNotEmpty && !muscle.views.contains(_view)) {
+        _view = muscle.views.first;
+      }
     });
     await showModalBottomSheet<void>(
       context: context,
@@ -264,8 +268,8 @@ class _Footer extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadius.pill),
                 gradient: const LinearGradient(colors: [
-                  AppColors.heatmapActiveStart,
-                  AppColors.heatmapActiveEnd,
+                  AppColors.anatomyCyanDeep,
+                  AppColors.anatomyCyan,
                 ]),
               ),
             ),
@@ -308,6 +312,16 @@ class _Footer extends StatelessWidget {
             ),
           ),
         ],
+        if (r != null &&
+            MuscleHighlight.undrawn(r.intensities).isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Not drawn on the map: '
+            '${MuscleHighlight.undrawn(r.intensities).map((m) => m.label).join(', ')}'
+            ' — tap its chip above for details.',
+            style: AppTypography.caption.copyWith(color: AppColors.hubTextFaint),
+          ),
+        ],
         if (r != null && r.unmappedExercises.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xs),
           Text(
@@ -317,6 +331,12 @@ class _Footer extends StatelessWidget {
             style: AppTypography.caption.copyWith(color: AppColors.hubTextFaint),
           ),
         ],
+        const SizedBox(height: AppSpacing.xs),
+        // Required by the art's CC BY 4.0 licence.
+        Text(
+          'Anatomy illustration © Ryan Graves, CC BY 4.0',
+          style: AppTypography.labelSmall.copyWith(color: AppColors.hubTextFaint),
+        ),
       ],
     );
   }

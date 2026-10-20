@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/dashboard/presentation/widgets/start_workout_actions.dart';
 import '../constants/app_constants.dart';
 import '../theme/app_colors.dart';
-import '../widgets/momentum_nav_bar.dart';
+import '../widgets/grit_nav_bar.dart';
 
 /// Root shell for the five tabs — Dashboard, Coach, START (Train),
 /// Universe, Profile. Wraps GoRouter's [StatefulNavigationShell], which
@@ -33,7 +33,7 @@ class AppShell extends ConsumerWidget {
 
   void _onTap(BuildContext context, WidgetRef ref, int index) {
     HapticFeedback.selectionClick();
-    if (index != MomentumNavBar.startIndex) {
+    if (index != GritNavBar.startIndex) {
       _goBranch(index);
       return;
     }
@@ -54,7 +54,7 @@ class AppShell extends ConsumerWidget {
       backgroundColor: AppColors.hubBackgroundBottom,
       extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: MomentumNavBar(
+      bottomNavigationBar: GritNavBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) => _onTap(context, ref, index),
       ),

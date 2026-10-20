@@ -4,7 +4,7 @@ import '../../../../core/theme/app_typography.dart';
 
 /// Brand wordmark + tagline stacked lockup, centred.
 ///
-/// "MOTRA" is rendered as tracked-out bold caps — a logotype treatment,
+/// "GRIT" is rendered as tracked-out bold caps — a logotype treatment,
 /// not a headline — per §3 of the spec.  The tagline below uses
 /// [AppColors.textSecondary] at a quieter weight so it reads as a brand
 /// promise rather than a UI label.
@@ -23,7 +23,7 @@ class WordmarkLockup extends StatelessWidget {
         // displayMedium (34 px, 700) + aggressive letter-spacing matches
         // "32–34 px / Bold / +6–8%" from spec §3.
         Text(
-          'MOTRA',
+          'GRIT',
           style: AppTypography.displayMedium.copyWith(
             letterSpacing: 34 * 0.07, // 7% of fontSize ≈ 2.38 px
             color: AppColors.textPrimary,

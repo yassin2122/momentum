@@ -11,7 +11,7 @@ import '../theme/app_typography.dart';
 
 /// Shared chrome for the hub screens (Dashboard, Coach, Captain, Profile,
 /// Skill): the deep near-black canvas, slate cards, eyebrows, pills and
-/// buttons from the Momentum canvas designs. Presentation only.
+/// buttons from the Grit canvas designs. Presentation only.
 
 /// Bottom padding a tab screen needs so its last card clears the
 /// floating nav bar and the raised START orb.

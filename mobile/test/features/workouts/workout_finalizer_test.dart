@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_app/features/workouts/domain/entities/active_workout.dart';
-import 'package:gym_app/features/workouts/domain/entities/logged_set.dart';
-import 'package:gym_app/features/workouts/domain/entities/workout_enums.dart';
-import 'package:gym_app/features/workouts/domain/services/workout_finalizer.dart';
+import 'package:grit/features/workouts/domain/entities/active_workout.dart';
+import 'package:grit/features/workouts/domain/entities/logged_set.dart';
+import 'package:grit/features/workouts/domain/entities/workout_enums.dart';
+import 'package:grit/features/workouts/domain/services/workout_finalizer.dart';
 
 import 'fixtures.dart';
 

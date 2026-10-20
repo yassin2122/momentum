@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/supabase_client_provider.dart';
@@ -8,7 +9,14 @@ import '../../domain/entities/muscle.dart';
 import '../../domain/entities/muscle_activity.dart';
 import '../../domain/repositories/muscle_map_repository.dart';
 import '../../domain/services/muscle_activity_calculator.dart';
+import '../../domain/services/muscle_highlight.dart';
 import '../../domain/services/muscle_mapping.dart';
+import '../body/body_geometry.dart';
+
+/// Front/back anatomy parsed from `assets/anatomy/`, loaded once per app
+/// run (kept alive: parsing ~200 paths is cheap but not free).
+final bodyAtlasProvider =
+    FutureProvider<BodyAtlas>((ref) => BodyAtlas.load(rootBundle));
 
 final muscleMapRepositoryProvider = Provider<MuscleMapRepository>(
   (ref) => MuscleMapRepositoryImpl(
@@ -60,8 +68,6 @@ final exerciseMuscleLinksProvider = FutureProvider.autoDispose
 String exerciseIdsKey(Iterable<String> ids) => (ids.toSet().toList()..sort()).join(',');
 
 /// Regions a list of exercises works, for lighting a plan card: primary
-/// muscles full, secondary at a lower glow.
-Map<Muscle, double> involvementIntensities(Map<Muscle, Involvement> m) => {
-      for (final e in m.entries)
-        e.key: e.value == Involvement.primary ? 1.0 : 0.4,
-    };
+/// muscles full, secondary at a lower glow. See [MuscleHighlight].
+Map<Muscle, double> involvementIntensities(Map<Muscle, Involvement> m) =>
+    MuscleHighlight.fromInvolvement(m);

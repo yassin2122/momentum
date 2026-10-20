@@ -1,4 +1,4 @@
--- Momentum v1.1 patch — Progress pillar fixes
+-- Grit v1.1 patch — Progress pillar fixes
 -- Resolves: (1) skill_progress had no per-node XP, but PRODUCT.md shows every
 -- roadmap node with its own XP bar ("High Pull-Up — 680/800 XP"); (2) skill
 -- prerequisites had no certification-level requirement ("locked until

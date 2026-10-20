@@ -1,7 +1,7 @@
 // =====================================================================
 // SAMPLE DATA — presentation only.
 //
-// The 41 Momentum achievements with placeholder unlock state, progress
+// The 41 Grit achievements with placeholder unlock state, progress
 // and dates from the canvas designs (ach/Overview). No achievements table
 // is wired yet; replace [sampleAchievements] with a provider backed by the
 // achievements repository when it exists. Screens only depend on the
@@ -118,8 +118,8 @@ final List<Achievement> sampleAchievements = [
   ),
   Achievement(
     id: 11,
-    slug: 'building-momentum',
-    title: 'Building Momentum',
+    slug: 'building-grit',
+    title: 'Building Grit',
     category: AchievementCategory.training,
     rarity: Rarity.uncommon,
     state: AchievementState.unlocked,
@@ -496,8 +496,8 @@ final List<Achievement> sampleAchievements = [
   ),
   const Achievement(
     id: 40,
-    slug: 'momentum-legend',
-    title: 'Momentum Legend',
+    slug: 'grit-legend',
+    title: 'Grit Legend',
     category: AchievementCategory.skills,
     rarity: Rarity.mythic,
     state: AchievementState.locked,
@@ -581,7 +581,7 @@ const Map<String, String> achievementGlyphs = {
   'first-rep': 'M7 9v6M17 9v6M4 10.5v3M20 10.5v3M7 12h10',
   'getting-started': 'M6 18v-4M12 18v-7M18 18V8',
   'five-strong': 'M12 3.5l8.1 5.9-3.1 9.6H7l-3.1-9.6zM12 8.5l3.3 2.4-1.3 3.9h-4l-1.3-3.9z',
-  'building-momentum': 'M5 7l5 5-5 5M12 7l5 5-5 5',
+  'building-grit': 'M5 7l5 5-5 5M12 7l5 5-5 5',
   'quarter-century': 'M12 3a9 9 0 1 0 9 9M12 3v9h9',
   'century-club': 'M3 12h18M7 7v10M10 5v14M14 5v14M17 7v10',
   'training-veteran': 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM8.5 10.5l3.5 2.5 3.5-2.5M8.5 14.5l3.5 2.5 3.5-2.5',
@@ -613,7 +613,7 @@ const Map<String, String> achievementGlyphs = {
   'galaxy-conqueror': 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6M12 3a9 9 0 1 0 9 9M19.5 4.5h.01',
   'legendary-skill': 'M6 4h12l3 5-9 11L3 9zM3 9h18M12 20 8.5 9 10 4M12 20l3.5-11L14 4',
   'master-of-the-galaxy': 'M12 6.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5zM3 13.5a9 9 0 0 0 18 0',
-  'momentum-legend': 'M8 8a4 4 0 1 0 0 8c3 0 5-8 8-8a4 4 0 1 1 0 8c-3 0-5-8-8-8z',
+  'grit-legend': 'M8 8a4 4 0 1 0 0 8c3 0 5-8 8-8a4 4 0 1 1 0 8c-3 0-5-8-8-8z',
   'beyond-limits': 'M3 15h6M15 15h6M12 21V4M7 9l5-5 5 5',
   'first-steps': 'M12 3l6 5-6 13-6-13zM6 8h12',
   'xp-collector': 'M8 3.5l4 3-4 8-4-8zM16 9.5l4 3-4 8-4-8z',

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_app/features/muscle_map/domain/entities/muscle.dart';
-import 'package:gym_app/features/muscle_map/domain/services/muscle_mapping.dart';
+import 'package:grit/features/muscle_map/domain/entities/muscle.dart';
+import 'package:grit/features/muscle_map/domain/services/muscle_mapping.dart';
 
 void main() {
   group('MuscleMapping.musclesFor', () {

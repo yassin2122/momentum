@@ -1,4 +1,4 @@
--- Momentum v1.1 patch — enum extensions (own migration: PG forbids using a
+-- Grit v1.1 patch — enum extensions (own migration: PG forbids using a
 -- newly added enum value inside the same transaction it was added in)
 
 alter type achievement_category add value if not exists 'master';

@@ -1,10 +1,10 @@
-# Momentum
+# Grit
 
 > **Level Up Your Body. Master Real Skills. Train Together.**
 
-Momentum is a premium fitness platform that combines structured strength training, skill progression, and social motivation into a single experience.
+Grit is a premium fitness platform that combines structured strength training, skill progression, and social motivation into a single experience.
 
-Unlike traditional workout trackers that only record sets and reps, Momentum turns fitness into a long-term journey with goals, unlocks, achievements, and a community that grows with you.
+Unlike traditional workout trackers that only record sets and reps, Grit turns fitness into a long-term journey with goals, unlocks, achievements, and a community that grows with you.
 
 ---
 
@@ -16,7 +16,7 @@ It should feel like progressing through a game.
 
 Every workout should move you closer to unlocking a new ability, reaching a new milestone, or becoming stronger than yesterday.
 
-Momentum transforms real fitness progress into a rewarding journey while remaining grounded in science-based training.
+Grit transforms real fitness progress into a rewarding journey while remaining grounded in science-based training.
 
 ---
 
@@ -38,7 +38,7 @@ These three systems work together to create an experience that keeps users motiv
 
 Give users the best possible workout experience.
 
-Whether someone lifts weights, practices calisthenics, or combines both, Momentum provides everything needed for effective training.
+Whether someone lifts weights, practices calisthenics, or combines both, Grit provides everything needed for effective training.
 
 ---
 
@@ -123,7 +123,7 @@ Charts for
 
 ## Vision
 
-Momentum transforms years of calisthenics practice into a structured, coach-approved progression system.
+Grit transforms years of calisthenics practice into a structured, coach-approved progression system.
 
 Every unlocked skill represents a genuine athletic achievement—not something earned by grinding XP.
 
@@ -500,7 +500,7 @@ Years of consistent training are reflected in a beautiful, structured roadmap th
 
 Fitness is easier when you're surrounded by people chasing similar goals.
 
-Momentum is designed to feel alive.
+Grit is designed to feel alive.
 
 ---
 
@@ -585,11 +585,11 @@ Training partners
 
 ---
 
-# Why Momentum is Different
+# Why Grit is Different
 
 Most fitness apps focus on only one area.
 
-| Traditional Apps     | Momentum |
+| Traditional Apps     | Grit |
 | --------------------- | -------- |
 | Workout logging       | ✅        |
 | Exercise library       | ✅        |
@@ -602,7 +602,7 @@ Most fitness apps focus on only one area.
 | Community challenges   | ✅        |
 | Long-term motivation   | ✅        |
 
-Momentum isn't just a tracker.
+Grit isn't just a tracker.
 
 It is a fitness progression platform.
 
@@ -610,7 +610,7 @@ It is a fitness progression platform.
 
 # Future Vision
 
-As the platform grows, Momentum will expand into:
+As the platform grows, Grit will expand into:
 
 * AI workout coaching
 * Nutrition tracking
@@ -642,7 +642,7 @@ Provide visible, rewarding long-term progression grounded in real athletic achie
 
 Strengthen motivation through community and shared goals.
 
-If a feature doesn't improve one of these pillars, it doesn't belong in Momentum.
+If a feature doesn't improve one of these pillars, it doesn't belong in Grit.
 
 ---
 

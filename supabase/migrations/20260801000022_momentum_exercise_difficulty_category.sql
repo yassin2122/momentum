@@ -1,4 +1,4 @@
--- Momentum v1.1 patch — exercise library: difficulty + category (FR-4)
+-- Grit v1.1 patch — exercise library: difficulty + category (FR-4)
 
 alter table public.exercises
   add column if not exists difficulty_level smallint check (difficulty_level between 1 and 5),

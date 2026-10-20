@@ -9,12 +9,12 @@ append-only migrations
 the folder conventions
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-- UI follows design/motra/. Always use lib/core/theme/ tokens.
+- UI follows design/grit/. Always use lib/core/theme/ tokens.
 - Never modify business logic or Supabase code when doing UI tasks.
 
 ## What this is
 
-**Momentum** — a Flutter fitness app backed entirely by Supabase (Postgres + Auth + RLS + PostgREST/RPC + Realtime + Storage). There is no custom API server; the Flutter client talks to Postgres through PostgREST and `security definer` RPCs.
+**Grit** — a Flutter fitness app backed entirely by Supabase (Postgres + Auth + RLS + PostgREST/RPC + Realtime + Storage). There is no custom API server; the Flutter client talks to Postgres through PostgREST and `security definer` RPCs.
 
 The product is organized into three pillars, and this vocabulary runs through the schema, the folder names, and the migration names:
 
@@ -22,7 +22,7 @@ The product is organized into three pillars, and this vocabulary runs through th
 - **PROGRESS** — the skill roadmap (galaxies → planets → stages → objectives), XP, achievements, weekly challenges
 - **CONNECT** — coaching ("Captain" = an athlete's active coach), consent-gated data sharing, program assignment
 
-Naming is inconsistent across generations of the code: `AppConstants.appName` says `'Gym App'`, the pubspec package is `gym_app`, docs and the deep-link scheme say `momentum`, and the newest widgets are prefixed `Motra`. Treat all four as the same app; don't "fix" one without asking.
+The app is named **Grit** everywhere: `AppConstants.appName` is `'Grit'`, the pubspec package is `grit`, the deep-link scheme is `io.grit.app`, and branded widgets are prefixed `Grit` (e.g. `GritApp`, `GritNavBar`). Earlier names (Momentum, Motra, Gym App / `gym_app`) are retired — don't reintroduce them. The only leftovers are intentional: the Android Kotlin `namespace` (`com.example.gym_app`, must match `MainActivity.kt`'s package), the local Supabase `project_id`, and the historical migration filenames (renaming applied migrations would break history).
 
 ## Repo layout
 
@@ -46,13 +46,13 @@ That said, the app is **not healthy**:
 
 - `flutter analyze` (from `mobile/`, after `flutter pub get`) reports **276 issues**
   (verified by re-running it, not just read from a doc).
-- `flutter test` **fails to even load** — `test/widget_test.dart:18` still references
-  `GymApp`; the real widget is `MomentumApp` (`mobile/lib/main.dart:31`).
+- `flutter test` previously failed to load because `test/widget_test.dart` and `main.dart`
+  disagreed on the root widget's name; both now use `GritApp` — re-run to confirm.
 
 None of this is a missing-file cascade — every error traces back to a known dead,
 duplicated, or orphaned file (unwired `dashboard_page.dart`, two unfinished generations of
 the Progress UI missing `core/models/*.dart`, duplicate `features/workout/` vs
-`features/workouts/`, the orphaned `motra_bottom_nav.dart`, and the `GymApp` rename). Full
+`features/workouts/`, the orphaned `grit_bottom_nav.dart`, and the old root-widget rename mismatch). Full
 file-by-file detail: **`docs/CLEANUP_AUDIT.md`** — read that before re-deriving any of this
 from scratch. None of it has been fixed as part of adding the skill system in
 `.claude/skills/`; it's tracked for a later cleanup phase, not resolved.
@@ -152,13 +152,13 @@ lib/
 ```
 
 - **State**: `flutter_riverpod`, `ProviderScope` at the root. Providers live in each feature's `presentation/providers/`.
-- **Navigation**: `go_router`, with a single persistent shell wrapping the bottom-nav tabs so the nav bar isn't rebuilt per navigation. The shell actually wired into `app_router.dart` is `AppShell` (`core/routing/app_shell.dart`) + `FloatingNavBar`, 5 tabs: dashboard/workouts/exercises/statistics/profile. `shared/widgets/motra_bottom_nav.dart` (`MotraShell`/`MotraBottomNav`, 4 tabs) is a second, **unwired** shell — nothing imports it, and it references `AppRoutes.achievements`/`.roadmap`/`.start`, which don't exist on `AppRoutes`. All paths are constants on `AppRoutes` — never a raw path string in a widget. See Known gaps: neither shell matches the product's actual 3-pillar TRAIN/PROGRESS/CONNECT nav target.
+- **Navigation**: `go_router`, with a single persistent shell wrapping the bottom-nav tabs so the nav bar isn't rebuilt per navigation. The shell actually wired into `app_router.dart` is `AppShell` (`core/routing/app_shell.dart`) + `FloatingNavBar`, 5 tabs: dashboard/workouts/exercises/statistics/profile. `shared/widgets/grit_bottom_nav.dart` (`GritShell`/`GritBottomNav`, 4 tabs) is a second, **unwired** shell — nothing imports it, and it references `AppRoutes.achievements`/`.roadmap`/`.start`, which don't exist on `AppRoutes`. All paths are constants on `AppRoutes` — never a raw path string in a widget. See Known gaps: neither shell matches the product's actual 3-pillar TRAIN/PROGRESS/CONNECT nav target.
 - **Supabase access**: `main.dart` exports a top-level `final supabase = Supabase.instance.client`, and repositories import it as `import '../../../main.dart' show supabase;`. Auth is the exception — `AuthRemoteDataSource` is the only place that touches `supabase_flutter`'s auth API, and it translates raw Supabase errors into the app's own `AuthException` / `NetworkException` so the repository can map them to domain `Failure`s.
 - **Theme**: dark-only (`themeMode: ThemeMode.dark`; both `theme` and `darkTheme` are `AppTheme.darkTheme`). Every color comes from `AppColors` and every `TextStyle` from `AppTypography` — no widget constructs a `TextStyle` or references `Colors.white`/`Colors.black` directly. `AppTypography._style` requires an explicit line height, so no token can forget one. Timing constants live on `AppConstants` (`animFast`, `animMedium`, …).
 
 ### Deep links
 
-OAuth and password-reset redirects use `io.momentum.app://login-callback/`, defined once as `AppConstants.authRedirectUrl` and registered in `mobile/android/app/src/main/AndroidManifest.xml` (and iOS `Info.plist`). Changing it means changing all three plus the Supabase dashboard redirect allowlist.
+OAuth and password-reset redirects use `io.grit.app://login-callback/`, defined once as `AppConstants.authRedirectUrl` and registered in `mobile/android/app/src/main/AndroidManifest.xml` (and iOS `Info.plist`). Changing it means changing all three plus the Supabase dashboard redirect allowlist.
 
 ## Known gaps
 
@@ -183,22 +183,14 @@ Still open:
 - Old social values linger in the `notification_type` enum (Postgres can't drop enum
   values); the emptied `post-media` storage bucket still needs deleting in the Supabase
   dashboard (dashboard-only, not fixable by a migration).
-- The live nav (`AppShell`, 5 tabs) and the unwired `MotraShell` (4 tabs, broken `AppRoutes`
+- The live nav (`AppShell`, 5 tabs) and the unwired `GritShell` (4 tabs, broken `AppRoutes`
   refs) both predate the product's actual target — a 3-tab **TRAIN / PROGRESS / CONNECT**
   nav. Neither is "the convention" to extend; don't add a tab to either as if it were final.
   No `features/connect/` folder exists at all yet, despite Connect being fully built in the
   schema (migrations 27–32) — it's the single largest gap between schema and app.
-- **"Motra"/"MOTRA" naming** predates the app being named Momentum and still appears in:
-  `mobile/lib/shared/widgets/motra_bottom_nav.dart`;
-  `mobile/lib/core/theme/app_typography.dart`, `app_spacing.dart`, `app_radius.dart`,
-  `app_sizing.dart` (doc comments only — the token values themselves are fine);
-  `mobile/lib/features/auth/presentation/screens/login_screen.dart`,
-  `register_screen.dart`, `forgot_password_screen.dart`;
-  `mobile/lib/features/auth/presentation/widgets/wordmark_lockup.dart`,
-  `login_hero_section.dart`;
-  `mobile/lib/features/dashboard/presentation/screens/dashboard_screen.dart`;
-  and the archived `archive/docs/BRAND_GUIDE.md`, `DESIGN_SYSTEM.md`, `MIGRATION_NOTES.md`.
-  Don't introduce "Motra/MOTRA" in new code, skills, or docs — the product name is Momentum.
+- **Old names retired**: the app was previously called Momentum, and before that Motra / Gym App.
+  All of those were renamed to **Grit** across code, docs and platform configs. Don't
+  reintroduce any of the old names.
 - ~~`docs/PRODUCT.md` describes Connect as a social feed~~ — **resolved** (commit
   `c574c7c`): it now describes Connect as 1:1 coaching, matching this file and the schema.
   `archive/docs/PRODUCT.md` still has the old pre-pivot social version — that copy is
@@ -211,8 +203,8 @@ Still open:
 
 ## Skill system ground rules
 
-Six skills live in `.claude/skills/` (momentum-ui, flutter-feature, supabase-security,
-momentum-qa, performance-audit, release-check). Rules shared by all of them, so each
+Six skills live in `.claude/skills/` (grit-ui, flutter-feature, supabase-security,
+grit-qa, performance-audit, release-check). Rules shared by all of them, so each
 `SKILL.md` can stay focused on its own workflow instead of repeating this:
 
 - **Don't invent.** Never reference a table, column, RPC, package, widget, or route that
@@ -229,7 +221,7 @@ momentum-qa, performance-audit, release-check). Rules shared by all of them, so 
   user before running `supabase db push` (hits the linked remote project).
 - **The live nav is not the target nav.** `AppShell` (5 tabs) is what's actually wired today;
   the product's target is a 3-tab TRAIN/PROGRESS/CONNECT nav (see Known gaps). Don't treat
-  `AppShell`'s current 5 tabs, or `MotraShell`'s 4, as "the convention" to extend.
+  `AppShell`'s current 5 tabs, or `GritShell`'s 4, as "the convention" to extend.
 - **Small, scoped diffs** over broad rewrites.
 - **Standard verification commands** (run from the stated directory, show real output):
   - `cd mobile && flutter analyze` — required after any Dart change
@@ -237,9 +229,9 @@ momentum-qa, performance-audit, release-check). Rules shared by all of them, so 
     see Known gaps / `docs/CLEANUP_AUDIT.md`; don't claim it passes)
   - `supabase db reset` (repo root) — required after any new migration, before `db push`
   - `supabase db push` — only with explicit user confirmation
-- **No "Motra/MOTRA"** in new skill content, code, or docs — see Known gaps for where it
-  still lingers. The product name is Momentum.
-- `momentum-qa` and `performance-audit` are **read-only**: report findings, don't edit code
+- **No old names** ("Momentum", "Motra", "Gym App") in new skill content, code, or docs.
+  The product name is Grit.
+- `grit-qa` and `performance-audit` are **read-only**: report findings, don't edit code
   unless the user explicitly authorizes fixes afterward.
 
 ## Repo hygiene issue to be aware of

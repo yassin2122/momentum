@@ -1,4 +1,4 @@
-/// MOTRA's spacing token system.
+/// GRIT's spacing token system.
 ///
 /// Every `EdgeInsets`, `SizedBox`, and `Gap` value anywhere in the app
 /// must be built from one of these tokens — no widget should ever write
@@ -51,7 +51,7 @@ abstract final class AppSpacing {
   static const double xl3 = 64;
 
   /// Largest step — reserved for generous top/bottom screen padding on
-  /// wide viewports (tablet/desktop), where MOTRA's phone-tuned smaller
+  /// wide viewports (tablet/desktop), where GRIT's phone-tuned smaller
   /// steps alone would leave content looking cramped against the extra
   /// available space.
   static const double xl4 = 96;
