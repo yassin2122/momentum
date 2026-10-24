@@ -149,7 +149,7 @@ class _RingPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final series = AppColors.analyticsSeries;
+    const series = AppColors.analyticsSeries;
     final shown = d.groups.where((g) => g.primarySets > 0).take(series.length).toList();
     final other = d.totalPrimarySets - shown.fold<int>(0, (s, g) => s + g.primarySets);
     final segments = [
