@@ -45,6 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Analytics › Body: private progress photos -->
+	<key>NSCameraUsageDescription</key>
+	<string>Grit uses the camera to take private progress photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Grit lets you pick private progress photos from your library.</string>
 
 	<!-- Deep-link / OAuth callback — matches io.grit.app://login-callback/ -->
 	<key>CFBundleURLTypes</key>

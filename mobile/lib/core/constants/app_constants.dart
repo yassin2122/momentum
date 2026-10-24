@@ -90,7 +90,13 @@ abstract final class AppRoutes {
   // TRAIN — full-screen, outside the tab shell
   static const String activeWorkout = '/workout';
 
-  /// Full-screen muscle activity map (opened from the Dashboard).
+  /// Athlete Analytics hub (the Dashboard's Analytics button).
+  static const String analytics = '/analytics';
+  static const String analyticsDistribution = '/analytics/distribution';
+  static const String analyticsBody = '/analytics/body';
+  static const String analyticsRecovery = '/analytics/recovery';
+
+  /// Full-screen muscle hologram (opened from Analytics).
   static const String muscleMap = '/muscles';
   static const String workoutSummary = '/workout/summary';
 

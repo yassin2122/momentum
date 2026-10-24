@@ -207,7 +207,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   onDiscipline: discipline == null
                       ? null
                       : () => _showDiscipline(discipline),
-                  onStats: () => context.push(AppRoutes.muscleMap),
+                  onStats: () => context.push(AppRoutes.analytics),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -346,7 +346,7 @@ class _TopSection extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     HubSquareIconButton(
                       icon: LucideIcons.trendingUp,
-                      semanticLabel: 'Your stats',
+                      semanticLabel: 'Analytics',
                       onPressed: onStats,
                     ),
                   ],

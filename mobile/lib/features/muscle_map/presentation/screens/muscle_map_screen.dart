@@ -78,7 +78,7 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
-                        'Muscle activity',
+                        'Muscle hologram',
                         style: AppTypography.headlineSmall.copyWith(
                           color: AppColors.hubTextBright,
                           fontWeight: AppTypography.bold,

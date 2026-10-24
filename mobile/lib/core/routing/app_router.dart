@@ -11,6 +11,10 @@ import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/achievements/presentation/screens/achievement_unlock_screen.dart';
 import '../../features/achievements/presentation/screens/achievements_screen.dart';
+import '../../features/analytics/presentation/screens/analytics_screen.dart';
+import '../../features/analytics/presentation/screens/body_progress_screen.dart';
+import '../../features/analytics/presentation/screens/muscle_distribution_screen.dart';
+import '../../features/analytics/presentation/screens/recovery_screen.dart';
 import '../../features/connect/presentation/screens/captain_hub_screen.dart';
 import '../../features/connect/presentation/screens/captain_profile_editor_screen.dart';
 import '../../features/connect/presentation/screens/captain_profile_screen.dart';
@@ -127,6 +131,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             achievementId: state.pathParameters['achievementId']!,
           ),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.analytics,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const AnalyticsScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.analyticsDistribution,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const MuscleDistributionScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.analyticsBody,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const BodyProgressScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.analyticsRecovery,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const RecoveryScreen()),
       ),
       GoRoute(
         path: AppRoutes.muscleMap,
