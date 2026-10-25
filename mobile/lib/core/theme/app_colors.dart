@@ -526,6 +526,56 @@ abstract final class AppColors {
   static const Color achTextFaint = Color(0xFF6F727A);
   static const Color achNewPill = Color(0xFFE8E5DD);
   static const Color achScrim = Color(0x99050507); // ~60%
+
+  // ==========================================================
+  // Analytics — dark graphite, brushed-silver details and the Grit
+  // teal (heroGlow). Each feature screen adds one restrained accent:
+  // distribution = teal, hologram = anatomyCyan, body = steel,
+  // recovery = dusk blue. Caution is a muted amber, never alarm red.
+  // ==========================================================
+  static const Color analyticsBgTop = Color(0xFF16181C);
+  static const Color analyticsBgBottom = Color(0xFF060708);
+  static const Color analyticsPanelTop = Color(0xFF1A1D22);
+  static const Color analyticsPanelBottom = Color(0xFF0D0F12);
+  static const Color analyticsPanelBorder = Color(0x1AFFFFFF); // ~10% white
+  static const Color analyticsHairline = Color(0x12FFFFFF); // ~7% white
+  static const Color analyticsTrack = Color(0xFF1D2127);
+  static const Color analyticsScrim = Color(0xCC050607); // ~80%
+
+  /// Brushed-silver ramp for metallic type, edges and ticks.
+  static const Color silverBright = Color(0xFFF3F4F6);
+  static const Color silver = Color(0xFFBAC0C8);
+  static const Color silverDim = Color(0xFF80868F);
+  static const Color silverDeep = Color(0xFF3B4048);
+  static const Color silverEdge = Color(0x40FFFFFF); // ~25% white
+
+  static const Color analyticsTeal = heroGlow;
+  static const Color analyticsTealMid = Color(0xFF2A9E8C);
+  static const Color analyticsTealDeep = Color(0xFF145247);
+  static const Color analyticsTealSoft = Color(0x263DDDC2); // ~15% teal
+  static const Color analyticsTealFaint = Color(0x0F3DDDC2); // ~6% teal
+
+  /// Ordered teal shades for chart series (distribution segments).
+  static const List<Color> analyticsSeries = [
+    analyticsTeal,
+    analyticsTealMid,
+    Color(0xFF1F7A6C),
+    analyticsTealDeep,
+    Color(0xFF8FD8CB),
+    Color(0xFF5DBFB0),
+  ];
+
+  static const Color analyticsSteel = Color(0xFFD8DEE6);
+  static const Color analyticsSteelSoft = Color(0x1FD8DEE6); // ~12%
+
+  static const Color analyticsDusk = Color(0xFF9FB2FF);
+  static const Color analyticsDuskDeep = Color(0xFF34407A);
+  static const Color analyticsDuskSoft = Color(0x229FB2FF); // ~13%
+
+  static const Color analyticsCaution = Color(0xFFF0C46E);
+  static const Color analyticsCautionSoft = Color(0x1FF0C46E); // ~12%
+  static const Color analyticsPositive = Color(0xFF7FE0B0);
+  static const Color analyticsPositiveSoft = Color(0x1F7FE0B0); // ~12%
 }
 
 /// One medallion material for a rarity tier. Every colour an achievement

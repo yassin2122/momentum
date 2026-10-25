@@ -36,6 +36,7 @@ class FocusSetRow extends StatefulWidget {
     required this.onSetTypeChanged,
     required this.onToggleCompleted,
     required this.onRemove,
+    this.swipeToRemove = true,
   });
 
   final LoggedSet set;
@@ -52,6 +53,11 @@ class FocusSetRow extends StatefulWidget {
   final ValueChanged<SetType> onSetTypeChanged;
   final VoidCallback onToggleCompleted;
   final VoidCallback onRemove;
+
+  /// Swipe left to delete the set. Turn off where a horizontal swipe means
+  /// something else (the paged active-workout screen); "Remove set" stays
+  /// in the set badge's menu either way.
+  final bool swipeToRemove;
 
   /// Text for the PREVIOUS column, e.g. "70 × 8", "BW × 12", "45 s".
   static String previousText(
@@ -156,7 +162,9 @@ class _FocusSetRowState extends State<FocusSetRow> {
 
     return Dismissible(
       key: ValueKey('dismiss-${set.id}'),
-      direction: DismissDirection.endToStart,
+      direction: widget.swipeToRemove
+          ? DismissDirection.endToStart
+          : DismissDirection.none,
       onDismissed: (_) => widget.onRemove(),
       background: Container(
         alignment: Alignment.centerRight,

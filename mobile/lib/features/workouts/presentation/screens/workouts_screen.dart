@@ -5,21 +5,24 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_sizing.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/app_card.dart';
-import '../../../../core/widgets/app_scaffold.dart';
-import '../../../../core/widgets/primary_button.dart';
-import '../../../../core/widgets/profile_button.dart';
-import '../../../../core/widgets/section_title.dart';
+import '../../../../core/widgets/hub_ui.dart';
 import '../../domain/entities/active_workout.dart';
 import '../../domain/entities/pending_workout.dart';
 import '../../domain/entities/workout_template.dart';
 import '../providers/active_workout_notifier.dart';
 import '../providers/workout_providers.dart';
+import '../widgets/elapsed_time.dart';
 
-/// TRAIN home: resume or start a workout, retry unsynced workouts, and
-/// start from a template.
+/// TRAIN tab, on the same hub canvas as Dashboard and Coach.
+///
+/// One hero card does the screen's main job: start an empty workout, or
+/// resume the one that's running (live timer). Under it: unsynced
+/// workouts, the user's templates (tap a row to start it) and the
+/// exercise library.
 class WorkoutsScreen extends ConsumerWidget {
   const WorkoutsScreen({super.key});
 
@@ -46,8 +49,8 @@ class WorkoutsScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.achSheet,
-        title: Text('Delete "${template.name}"?',
-            style: AppTypography.titleLarge),
+        title:
+            Text('Delete "${template.name}"?', style: AppTypography.titleLarge),
         content: Text(
           'The template is removed from your list. Workouts you already '
           'logged with it stay in your history.',
@@ -83,156 +86,228 @@ class WorkoutsScreen extends ConsumerWidget {
     final active = ref.watch(activeWorkoutProvider).valueOrNull;
     final pending = ref.watch(pendingWorkoutsProvider).valueOrNull ?? const [];
     final templates = ref.watch(workoutTemplatesProvider);
+    void newTemplate() => context.push(AppRoutes.createTemplate);
 
-    return AppScaffold(
-      extendBodyBehindNav: true,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: AppSpacing.lg),
-          const SectionTitle(
-            title: 'Train',
-            subtitle: 'Log sets, reps and weight',
-            trailing: ProfileButton(),
+    return HubPage(
+      glowCenter: const Alignment(-0.5, -0.9),
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xxs,
+            AppSpacing.xs,
+            AppSpacing.xxs,
+            0,
           ),
-          if (active != null)
-            _ResumeCard(
-              workout: active,
-              onResume: () => context.push(AppRoutes.activeWorkout),
-            )
-          else
-            PrimaryButton(
-              label: 'Start empty workout',
-              onPressed: () => _start(context, ref),
-            ),
-          if (pending.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.md),
-            _PendingCard(
-              pending: pending,
-              onRetry: () =>
-                  ref.read(pendingWorkoutsProvider.notifier).retry(),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          _LibraryCard(onTap: () => context.push(AppRoutes.exercises)),
-          const SizedBox(height: AppSpacing.xl),
-          Row(
+          child: Text(
+            'Train',
+            style: AppTypography.headlineLarge
+                .copyWith(color: AppColors.hubTextBright),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        active == null
+            ? _StartHero(onStart: () => _start(context, ref))
+            : _ResumeHero(
+                workout: active,
+                onResume: () => context.push(AppRoutes.activeWorkout),
+              ),
+        if (pending.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.sm),
+          _PendingCard(
+            pending: pending,
+            onRetry: () => ref.read(pendingWorkoutsProvider.notifier).retry(),
+          ),
+        ],
+        const SizedBox(height: AppSpacing.xl),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+          child: Row(
             children: [
-              Expanded(
-                child: Text('Templates', style: AppTypography.titleLarge),
-              ),
-              TextButton.icon(
-                onPressed: () => context.push(AppRoutes.createTemplate),
-                icon: const Icon(LucideIcons.plus, size: 18),
-                label: const Text('New template'),
-              ),
+              const Expanded(child: HubEyebrow('Your templates')),
+              HubLink(label: '+ New template', onTap: newTemplate),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          templates.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.all(AppSpacing.lg),
-              child: Center(
-                child:
-                    CircularProgressIndicator(color: AppColors.primaryBright),
-              ),
+        ),
+        if (active != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xxs,
+              AppSpacing.xxs,
+              AppSpacing.xxs,
+              0,
             ),
-            error: (error, _) => _Hint(
-              text: 'Couldn\'t load templates. $error',
+            child: Text(
+              'Finish your current workout to start another.',
+              style: AppTypography.bodySmall
+                  .copyWith(color: AppColors.hubTextMuted),
+            ),
+          ),
+        const SizedBox(height: AppSpacing.sm),
+        ...templates.when(
+          loading: () => const [HubLoading()],
+          error: (_, __) => [
+            HubMessageCard(
+              icon: LucideIcons.wifiOff,
+              title: "Couldn't load your templates",
+              message: 'Check your connection and try again.',
               actionLabel: 'Retry',
               onAction: () => ref.invalidate(workoutTemplatesProvider),
             ),
-            data: (list) => list.isEmpty
-                ? const _Hint(
-                    text: 'No templates yet. Tap "New template" to build '
-                        'one, or finish a workout and save it as a template.',
-                  )
-                : Column(
-                    children: [
-                      for (final t in list)
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(bottom: AppSpacing.sm),
-                          child: _TemplateCard(
-                            template: t,
-                            enabled: active == null,
-                            onStart: () => _start(context, ref, template: t),
-                            onDelete: () => _deleteTemplate(context, ref, t),
-                          ),
-                        ),
-                    ],
+          ],
+          data: (list) => list.isEmpty
+              ? [
+                  HubMessageCard(
+                    icon: LucideIcons.clipboardList,
+                    title: 'No templates yet',
+                    message: 'Build one from your exercises, or save a '
+                        'finished workout as a template.',
+                    actionLabel: 'New template',
+                    onAction: newTemplate,
                   ),
-          ),
-        ],
-      ),
+                ]
+              : [
+                  for (final t in list)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: _TemplateRow(
+                        template: t,
+                        enabled: active == null,
+                        onStart: () => _start(context, ref, template: t),
+                        onDelete: () => _deleteTemplate(context, ref, t),
+                      ),
+                    ),
+                ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+          child: HubEyebrow('Library'),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _LibraryRow(onTap: () => context.push(AppRoutes.exercises)),
+      ],
     );
   }
 }
 
-/// Entry point to the searchable Exercise Library.
-class _LibraryCard extends StatelessWidget {
-  const _LibraryCard({required this.onTap});
+/// Hero when nothing is running: the one big action on the screen.
+class _StartHero extends StatelessWidget {
+  const _StartHero({required this.onStart});
 
-  final VoidCallback onTap;
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      child: Row(
+    return HubCard(
+      hero: true,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(LucideIcons.dumbbell, color: AppColors.primaryBright),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Exercise library', style: AppTypography.titleMedium),
-                const SizedBox(height: 2),
-                Text(
-                  'Search and filter by muscle, equipment and level',
-                  style: AppTypography.caption,
-                ),
-              ],
+          const HubEyebrow('Quick start'),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Empty workout',
+            style: AppTypography.headlineMedium.copyWith(
+              color: AppColors.hubTextBright,
+              fontWeight: AppTypography.bold,
             ),
           ),
-          const Icon(LucideIcons.chevronRight, color: AppColors.textTertiary),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            'Add exercises as you go. Save it as a template when you finish.',
+            style:
+                AppTypography.bodyMedium.copyWith(color: AppColors.hubTextBody),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          HubGradientButton(
+            label: 'Start empty workout',
+            icon: LucideIcons.play,
+            height: AppSizing.minTouchTarget + 4,
+            onPressed: onStart,
+          ),
         ],
       ),
     );
   }
 }
 
-class _ResumeCard extends StatelessWidget {
-  const _ResumeCard({required this.workout, required this.onResume});
+/// Hero while a workout is running: live timer and progress, Resume.
+class _ResumeHero extends StatelessWidget {
+  const _ResumeHero({required this.workout, required this.onResume});
 
   final ActiveWorkout workout;
   final VoidCallback onResume;
 
   @override
   Widget build(BuildContext context) {
-    final minutes = DateTime.now().difference(workout.startedAt).inMinutes;
-    final done = workout.exercises
-        .expand((e) => e.sets)
-        .where((s) => s.completed)
-        .length;
-    return AppCard(
-      color: AppColors.primaryMuted,
+    final sets = workout.exercises.expand((e) => e.sets);
+    final done = sets.where((s) => s.completed).length;
+    final total = sets.length;
+    final exercises = workout.exercises.length;
+    return HubCard(
+      hero: true,
+      onTap: onResume,
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('WORKOUT IN PROGRESS', style: AppTypography.overline),
-          const SizedBox(height: AppSpacing.xxs),
-          Text(workout.title, style: AppTypography.headlineSmall),
+          Row(
+            children: [
+              const _LiveDot(),
+              const SizedBox(width: AppSpacing.xs),
+              const Expanded(child: HubEyebrow('In progress')),
+              ElapsedTime(since: workout.startedAt),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            workout.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.headlineMedium.copyWith(
+              color: AppColors.hubTextBright,
+              fontWeight: AppTypography.bold,
+            ),
+          ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
-            'Started $minutes min ago · ${workout.exercises.length} exercises '
-            '· $done sets done',
-            style: AppTypography.bodyMedium,
+            '$exercises exercise${exercises == 1 ? '' : 's'} · '
+            '$done of $total sets done',
+            style:
+                AppTypography.bodyMedium.copyWith(color: AppColors.hubTextBody),
           ),
+          if (total > 0) ...[
+            const SizedBox(height: AppSpacing.sm),
+            HubProgressBar(value: done / total),
+          ],
           const SizedBox(height: AppSpacing.md),
-          PrimaryButton(label: 'Resume workout', onPressed: onResume),
+          HubGradientButton(
+            label: 'Resume workout',
+            icon: LucideIcons.play,
+            height: AppSizing.minTouchTarget + 4,
+            onPressed: onResume,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Static "live" marker. Not animated: the ticking timer already shows
+/// the workout is running.
+class _LiveDot extends StatelessWidget {
+  const _LiveDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.square(
+      dimension: 8,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.startOrbMid,
+          shape: BoxShape.circle,
+        ),
       ),
     );
   }
@@ -247,29 +322,54 @@ class _PendingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final n = pending.length;
-    return AppCard(
-      color: AppColors.warningContainer,
+    return HubCard(
       child: Row(
         children: [
-          const Icon(Icons.cloud_off_outlined, color: AppColors.warning),
+          const Icon(
+            LucideIcons.cloudOff,
+            size: AppSizing.iconSm + 2,
+            color: AppColors.warning,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               '$n finished workout${n == 1 ? '' : 's'} saved on this device, '
               'waiting to sync.',
-              style:
-                  AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+              style: AppTypography.bodyMedium
+                  .copyWith(color: AppColors.hubTextBody),
             ),
           ),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
+          HubLink(label: 'Retry', onTap: onRetry),
         ],
       ),
     );
   }
 }
 
-class _TemplateCard extends StatelessWidget {
-  const _TemplateCard({
+/// Rounded square icon tile that leads each list row.
+class _RowIcon extends StatelessWidget {
+  const _RowIcon(this.icon);
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: AppSizing.minTouchTarget,
+      height: AppSizing.minTouchTarget,
+      decoration: BoxDecoration(
+        color: AppColors.hubIconButton,
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+        border: Border.all(color: AppColors.hubCardBorder),
+      ),
+      child:
+          Icon(icon, size: AppSizing.iconSm + 2, color: AppColors.hubEyebrow),
+    );
+  }
+}
+
+class _TemplateRow extends StatelessWidget {
+  const _TemplateRow({
     required this.template,
     required this.enabled,
     required this.onStart,
@@ -283,49 +383,86 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final count = template.exercises.length;
     final names = template.exercises.map((e) => e.exercise.name).join(', ');
-    return AppCard(
+    final summary = count == 0
+        ? 'No exercises'
+        : '$count exercise${count == 1 ? '' : 's'} · $names';
+    return HubCard(
       onTap: enabled ? onStart : null,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.xxs,
+        AppSpacing.sm,
+      ),
       child: Row(
         children: [
-          const Icon(LucideIcons.clipboardList, color: AppColors.primaryBright),
+          const _RowIcon(LucideIcons.clipboardList),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(template.name, style: AppTypography.titleMedium),
+                Text(
+                  template.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.hubTextBright,
+                    fontWeight: AppTypography.semiBold,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
-                  names.isEmpty ? 'No exercises' : names,
-                  maxLines: 2,
+                  summary,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.caption,
+                  style: AppTypography.bodySmall
+                      .copyWith(color: AppColors.hubTextMuted),
                 ),
               ],
             ),
           ),
-          Icon(
-            Icons.play_arrow_rounded,
-            color: enabled ? AppColors.textPrimary : AppColors.textDisabled,
+          const SizedBox(width: AppSpacing.xs),
+          // Visual cue only; the whole row is the Start target.
+          ExcludeSemantics(
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: enabled ? AppColors.hubHeroGlow : AppColors.hubTrack,
+              ),
+              child: Icon(
+                LucideIcons.play,
+                size: AppSizing.iconSm,
+                color: enabled ? AppColors.hubChipText : AppColors.hubTextFaint,
+              ),
+            ),
           ),
           PopupMenuButton<String>(
-            tooltip: 'Template options',
+            tooltip: 'More options for ${template.name}',
             color: AppColors.achSheet,
-            icon: const Icon(LucideIcons.ellipsisVertical,
-                color: AppColors.textSecondary),
+            icon: const Icon(
+              LucideIcons.ellipsisVertical,
+              size: AppSizing.iconSm + 2,
+              color: AppColors.hubTextMuted,
+            ),
             onSelected: (_) => onDelete(),
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    const Icon(Icons.delete_outline,
-                        size: 18, color: AppColors.error),
+                    const Icon(LucideIcons.trash2,
+                        size: AppSizing.iconSm, color: AppColors.error),
                     const SizedBox(width: AppSpacing.sm),
-                    Text('Delete template',
-                        style: AppTypography.bodyLarge
-                            .copyWith(color: AppColors.error)),
+                    Text(
+                      'Delete template',
+                      style: AppTypography.bodyLarge
+                          .copyWith(color: AppColors.error),
+                    ),
                   ],
                 ),
               ),
@@ -337,22 +474,48 @@ class _TemplateCard extends StatelessWidget {
   }
 }
 
-class _Hint extends StatelessWidget {
-  const _Hint({required this.text, this.actionLabel, this.onAction});
+/// Entry point to the searchable Exercise Library.
+class _LibraryRow extends StatelessWidget {
+  const _LibraryRow({required this.onTap});
 
-  final String text;
-  final String? actionLabel;
-  final VoidCallback? onAction;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return HubCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      child: Row(
         children: [
-          Text(text, style: AppTypography.bodyMedium),
-          if (actionLabel != null)
-            TextButton(onPressed: onAction, child: Text(actionLabel!)),
+          const _RowIcon(LucideIcons.dumbbell),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Exercise library',
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.hubTextBright,
+                    fontWeight: AppTypography.semiBold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Search by muscle, equipment and level',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall
+                      .copyWith(color: AppColors.hubTextMuted),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            LucideIcons.chevronRight,
+            size: AppSizing.iconSm + 2,
+            color: AppColors.hubTextMuted,
+          ),
         ],
       ),
     );

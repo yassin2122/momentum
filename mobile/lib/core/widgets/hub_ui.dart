@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -8,6 +7,8 @@ import '../theme/app_shadows.dart';
 import '../theme/app_sizing.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'motion.dart';
+import 'network_photo.dart';
 
 /// Shared chrome for the hub screens (Dashboard, Coach, Captain, Profile,
 /// Skill): the deep near-black canvas, slate cards, eyebrows, pills and
@@ -85,7 +86,15 @@ class HubPage extends StatelessWidget {
                   AppSpacing.sm,
                   bottomPadding,
                 ),
-                children: children,
+                children: [
+                  // Sections rise in once, staggered, on first visit.
+                  for (var i = 0; i < children.length; i++)
+                    Entrance(
+                      key: ValueKey('hub-$i-${children[i].runtimeType}'),
+                      index: i,
+                      child: children[i],
+                    ),
+                ],
               ),
             ),
             if (bottomBar != null)
@@ -192,14 +201,22 @@ class HubCard extends StatelessWidget {
       decoration: decoration,
       child: Padding(padding: padding, child: child),
     );
-    return Material(
-      color: AppColors.transparent,
-      borderRadius: radius,
-      clipBehavior: Clip.antiAlias,
-      child: onTap == null
-          ? content
-          : InkWell(borderRadius: radius, onTap: onTap, child: content),
-    );
+    Widget card(ValueChanged<bool>? onHighlight) => Material(
+          color: AppColors.transparent,
+          borderRadius: radius,
+          clipBehavior: Clip.antiAlias,
+          child: onTap == null
+              ? content
+              : InkWell(
+                  borderRadius: radius,
+                  onTap: onTap,
+                  onHighlightChanged: onHighlight,
+                  child: content,
+                ),
+        );
+    if (onTap == null) return card(null);
+    // Tappable cards give way a touch under the finger.
+    return PressScale(builder: (context, onHighlight) => card(onHighlight));
   }
 }
 
@@ -242,8 +259,7 @@ class HubCardHeader extends StatelessWidget {
     return Row(
       children: [
         Expanded(child: HubEyebrow(title)),
-        if (trailing != null)
-          HubLink(label: trailing!, onTap: onTrailingTap),
+        if (trailing != null) HubLink(label: trailing!, onTap: onTrailingTap),
       ],
     );
   }
@@ -268,7 +284,8 @@ class HubLink extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: AppTypography.labelMedium.copyWith(color: AppColors.hubEyebrow),
+          style:
+              AppTypography.labelMedium.copyWith(color: AppColors.hubEyebrow),
         ),
       ),
     );
@@ -334,27 +351,31 @@ class HubOutlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(AppRadius.medium);
-    return Material(
-      color: AppColors.transparent,
-      borderRadius: radius,
-      child: InkWell(
+    return PressScale(
+      scale: 0.97,
+      builder: (context, onHighlight) => Material(
+        color: AppColors.transparent,
         borderRadius: radius,
-        onTap: onPressed,
-        child: Container(
-          height: height,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            border: Border.all(color: AppColors.hubCardBorderStrong),
-          ),
-          child: Text(
-            label.toUpperCase(),
-            style: AppTypography.labelMedium.copyWith(
-              color: onPressed == null
-                  ? AppColors.hubTextFaint
-                  : AppColors.hubTextBright,
-              fontWeight: AppTypography.bold,
+        child: InkWell(
+          borderRadius: radius,
+          onTap: onPressed,
+          onHighlightChanged: onHighlight,
+          child: Container(
+            height: height,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              border: Border.all(color: AppColors.hubCardBorderStrong),
+            ),
+            child: Text(
+              label.toUpperCase(),
+              style: AppTypography.labelMedium.copyWith(
+                color: onPressed == null
+                    ? AppColors.hubTextFaint
+                    : AppColors.hubTextBright,
+                fontWeight: AppTypography.bold,
+              ),
             ),
           ),
         ),
@@ -387,55 +408,59 @@ class HubGradientButton extends StatelessWidget {
     final enabled = onPressed != null && !isLoading;
     return Opacity(
       opacity: enabled || isLoading ? 1 : 0.45,
-      child: Material(
-        color: AppColors.transparent,
-        borderRadius: radius,
-        child: InkWell(
+      child: PressScale(
+        scale: 0.97,
+        builder: (context, onHighlight) => Material(
+          color: AppColors.transparent,
           borderRadius: radius,
-          onTap: enabled ? onPressed : null,
-          child: Ink(
-            height: height,
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              gradient: const LinearGradient(
-                colors: [
-                  AppColors.authCtaStart,
-                  AppColors.authCtaMid,
-                  AppColors.authCtaEnd,
-                ],
-                stops: [0, 0.45, 1],
+          child: InkWell(
+            borderRadius: radius,
+            onTap: enabled ? onPressed : null,
+            onHighlightChanged: onHighlight,
+            child: Ink(
+              height: height,
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.authCtaStart,
+                    AppColors.authCtaMid,
+                    AppColors.authCtaEnd,
+                  ],
+                  stops: [0, 0.45, 1],
+                ),
               ),
-            ),
-            child: Center(
-              child: isLoading
-                  ? const SizedBox(
-                      width: AppSizing.iconSm,
-                      height: AppSizing.iconSm,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.hubTextBright,
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (icon != null) ...[
-                          Icon(
-                            icon,
-                            size: AppSizing.iconSm,
-                            color: AppColors.hubTextBright,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                        ],
-                        Text(
-                          label.toUpperCase(),
-                          style: AppTypography.labelMedium.copyWith(
-                            color: AppColors.hubTextBright,
-                            fontWeight: AppTypography.bold,
-                          ),
+              child: Center(
+                child: isLoading
+                    ? const SizedBox(
+                        width: AppSizing.iconSm,
+                        height: AppSizing.iconSm,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.hubTextBright,
                         ),
-                      ],
-                    ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (icon != null) ...[
+                            Icon(
+                              icon,
+                              size: AppSizing.iconSm,
+                              color: AppColors.hubTextBright,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                          ],
+                          Text(
+                            label.toUpperCase(),
+                            style: AppTypography.labelMedium.copyWith(
+                              color: AppColors.hubTextBright,
+                              fontWeight: AppTypography.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ),
@@ -546,11 +571,11 @@ class HubAvatar extends StatelessWidget {
       child: ClipOval(
         child: url == null || url.isEmpty
             ? fallback
-            : CachedNetworkImage(
-                imageUrl: url,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => fallback,
-                errorWidget: (_, __, ___) => fallback,
+            : NetworkPhoto(
+                url: url,
+                placeholder: fallback,
+                // Decode at the size it's drawn (3x covers every phone).
+                cacheWidth: (size * 3).round(),
               ),
       ),
     );
@@ -634,7 +659,8 @@ class HubSquareIconButton extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Icon(icon, size: AppSizing.iconSm + 2, color: AppColors.hubTextBody),
+                Icon(icon,
+                    size: AppSizing.iconSm + 2, color: AppColors.hubTextBody),
                 if (showDot)
                   const Positioned(
                     right: AppSpacing.xs - 2,
@@ -696,7 +722,8 @@ class HubStatTile extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.labelSmall.copyWith(color: AppColors.hubTextMuted),
+            style: AppTypography.labelSmall
+                .copyWith(color: AppColors.hubTextMuted),
           ),
         ],
       ),
@@ -762,7 +789,8 @@ class HubMessageCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxs),
           Text(
             message,
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.hubTextBody),
+            style:
+                AppTypography.bodyMedium.copyWith(color: AppColors.hubTextBody),
           ),
           if (actionLabel != null) ...[
             const SizedBox(height: AppSpacing.md),

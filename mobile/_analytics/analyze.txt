@@ -1,0 +1,16 @@
+Analyzing mobile...                                             
+
+   info - Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' - lib\features\analytics\presentation\screens\muscle_distribution_screen.dart:152:5 - prefer_const_declarations
+  error - The getter 'ltr' isn't defined for the type 'TextDirection'. Try importing the library that defines 'ltr', correcting the name to the name of an existing getter, or defining a getter or field named 'ltr' - lib\features\analytics\presentation\widgets\analytics_charts.dart:454:38 - undefined_getter
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\presentation\widgets\login_hero_section.dart:28:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\presentation\widgets\login_hero_section.dart:29:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\presentation\widgets\login_hero_section.dart:30:25 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal - lib\features\auth\presentation\widgets\login_hero_section.dart:33:25 - prefer_const_literals_to_create_immutables
+warning - A value for optional parameter 'extra' isn't ever given. Try removing the unused parameter - lib\features\dashboard\presentation\screens\dashboard_screen.dart:761:10 - unused_element_parameter
+   info - The parameter name 'old' doesn't match the name 'oldWidget' in the overridden method. Try changing the name to 'oldWidget' - lib\features\muscle_map\presentation\widgets\muscle_map_view.dart:137:38 - avoid_renaming_method_parameters
+   info - Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' - lib\features\progress\presentation\screens\planet_screen.dart:253:9 - prefer_const_declarations
+   info - 'anonKey' is deprecated and shouldn't be used. Use publishableKey instead. anonKey will be removed in a future major version. Try replacing the use of the deprecated member with the replacement - lib\main.dart:33:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\shared\widgets\grit_bottom_nav.dart:156:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement - lib\shared\widgets\motra_bottom_nav.dart:156:44 - deprecated_member_use
+
+12 issues found. (ran in 32.0s)

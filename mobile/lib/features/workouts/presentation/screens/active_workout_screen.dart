@@ -17,6 +17,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/hub_ui.dart';
 import '../../../../core/widgets/loading_overlay.dart';
+import '../../../../core/widgets/network_photo.dart';
 import '../../../muscle_map/domain/entities/muscle.dart';
 import '../../../muscle_map/domain/services/muscle_mapping.dart';
 import '../../../muscle_map/presentation/providers/muscle_map_providers.dart';
@@ -26,13 +27,17 @@ import '../../domain/entities/logged_set.dart';
 import '../../domain/entities/workout_enums.dart';
 import '../../domain/services/workout_finalizer.dart';
 import '../providers/active_workout_notifier.dart';
+import '../widgets/elapsed_time.dart';
+import '../widgets/exercise_frames.dart';
 import '../widgets/exercise_picker_sheet.dart';
 import '../widgets/focus_set_row.dart';
 
 /// The workout logger, one exercise in focus at a time:
 ///
 /// * a strip of round exercise tiles on top (tap to switch, "+" to add),
-/// * the focused exercise's muscle map, name, tools and set table,
+/// * the focused exercise's photos (start and end frame; or its muscle
+///   map), name, tools and set table — swipe left / right to move between
+///   the workout's exercises,
 /// * a rest timer that starts when a set is checked off, and a "Next"
 ///   button once every set of the exercise is done.
 ///
@@ -56,11 +61,29 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   /// Front/back chosen by the user for the focused exercise (null = auto).
   BodyView? _viewOverride;
 
+  /// The focused exercise shows its muscle map instead of its photos.
+  bool _showMuscles = false;
+
+  /// One page per exercise; created once the workout has loaded so it can
+  /// open on the focused exercise.
+  PageController? _pages;
+
+  /// True while the screen itself moves the pages (strip tap, "Next"), so
+  /// the pages passed on the way don't steal the focus.
+  bool _paging = false;
+
+  /// Photo URLs already handed to the image cache.
+  final Set<String> _precached = {};
+
   // Rest timer (screen-only; it isn't part of the saved workout).
   static const Duration _defaultRest = Duration(seconds: 90);
   DateTime? _restEnd;
   Duration _restTotal = _defaultRest;
   Timer? _restTicker;
+
+  /// Seconds left, ticking. Only the rest pill and bar listen to it, so the
+  /// countdown doesn't rebuild (and repaint) the whole screen every second.
+  final ValueNotifier<Duration> _restTick = ValueNotifier(Duration.zero);
 
   ActiveWorkoutNotifier get _notifier =>
       ref.read(activeWorkoutProvider.notifier);
@@ -68,6 +91,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   @override
   void dispose() {
     _restTicker?.cancel();
+    _restTick.dispose();
+    _pages?.dispose();
     super.dispose();
   }
 
@@ -90,10 +115,94 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     return open >= 0 ? open : 0;
   }
 
-  void _focus(String entryId) => setState(() {
-        _focusId = entryId;
-        _viewOverride = null;
-      });
+  /// Focuses [entryId] and slides its page into view.
+  void _focus(String entryId) {
+    setState(() {
+      _focusId = entryId;
+      _viewOverride = null;
+      _showMuscles = false;
+    });
+    // After the frame, so a just-added exercise already has its page.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final w = ref.read(activeWorkoutProvider).valueOrNull;
+      final i = w?.exercises.indexWhere((e) => e.id == entryId) ?? -1;
+      if (mounted && i >= 0) _showPage(i, animate: true);
+    });
+  }
+
+  /// Moves the pages to [i]: a glide for nearby pages, a jump for far ones
+  /// or with reduced motion.
+  Future<void> _showPage(int i, {required bool animate}) async {
+    final pages = _pages;
+    if (pages == null || !pages.hasClients) return;
+    final current = pages.page?.round();
+    if (current == i) return;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (!animate || reduceMotion || current == null || (current - i).abs() > 2) {
+      pages.jumpToPage(i);
+      return;
+    }
+    _paging = true;
+    try {
+      await pages.animateToPage(
+        i,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeInOutCubic,
+      );
+    } finally {
+      _paging = false;
+    }
+  }
+
+  /// A swipe landed on page [i].
+  void _onPageChanged(ActiveWorkout w, int i) {
+    if (_paging || i < 0 || i >= w.exercises.length) return;
+    final id = w.exercises[i].id;
+    if (id == _focusId) return;
+    HapticFeedback.selectionClick();
+    setState(() {
+      _focusId = id;
+      _viewOverride = null;
+      _showMuscles = false;
+    });
+  }
+
+  /// Keeps the pages on the focused exercise after reorders and removals.
+  void _syncPage(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pages = _pages;
+      if (!mounted || _paging || pages == null || !pages.hasClients) return;
+      if (pages.position.isScrollingNotifier.value) return;
+      if (pages.page?.round() != index) pages.jumpToPage(index);
+    });
+  }
+
+  /// Loads photos in the background so a swipe lands on ready frames:
+  /// the small strip photos for every exercise, the full-size frames only
+  /// for the exercises next to [index] (decoding every full-size frame at
+  /// once stalls the first seconds of the workout).
+  void _precachePhotos(ActiveWorkout w, int index) {
+    final hero = <String>[];
+    final tiles = <String>[];
+    for (var i = 0; i < w.exercises.length; i++) {
+      final urls = w.exercises[i].exercise.imageUrls;
+      if (i >= index - 1 && i <= index + 1) {
+        for (final u in urls.take(2)) {
+          if (_precached.add(u)) hero.add(u);
+        }
+      }
+      if (urls.isNotEmpty && _precached.add('tile:${urls.first}')) {
+        tiles.add(urls.first);
+      }
+    }
+    if (hero.isEmpty && tiles.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      NetworkPhoto.precache(context, hero);
+      NetworkPhoto.precache(context, tiles,
+          cacheWidth: _ExerciseStrip.photoCacheWidth);
+    });
+  }
 
   static bool _isDone(LoggedExercise e) =>
       e.sets.isNotEmpty && e.sets.every((s) => s.completed);
@@ -113,13 +222,14 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       _restTotal = length;
       _restEnd = DateTime.now().add(length);
     });
+    _restTick.value = _restLeft;
     _restTicker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       if (_restLeft == Duration.zero) {
         HapticFeedback.heavyImpact();
         _stopRest();
       } else {
-        setState(() {});
+        _restTick.value = _restLeft;
       }
     });
   }
@@ -131,6 +241,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       _restEnd = end.add(extra);
       _restTotal += extra;
     });
+    _restTick.value = _restLeft;
   }
 
   void _stopRest() {
@@ -162,6 +273,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   Future<void> _editNotes(LoggedExercise entry) async {
     final controller = TextEditingController(text: entry.notes ?? '');
     final saved = await showModalBottomSheet<String>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -226,6 +338,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   void _showLastTime(LoggedExercise entry) {
     final type = entry.exercise.trackingType;
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       useSafeArea: true,
       backgroundColor: AppColors.achSheet,
@@ -484,6 +597,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
 
     final index = _focusIndex(workout);
+    _pages ??= PageController(initialPage: math.max(0, index));
+    if (index >= 0) _syncPage(index);
+    _precachePhotos(workout, index);
     final links = ref
             .watch(exerciseMuscleLinksProvider(exerciseIdsKey(
                 workout.exercises.map((e) => e.exercise.id))))
@@ -504,11 +620,14 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     Widget? bottom;
     if (!keyboardOpen) {
       if (resting) {
-        bottom = _RestBar(
-          left: _restLeft,
-          total: _restTotal,
-          onAdd: () => _addRest(const Duration(seconds: 30)),
-          onSkip: _stopRest,
+        bottom = ValueListenableBuilder<Duration>(
+          valueListenable: _restTick,
+          builder: (context, left, _) => _RestBar(
+            left: left,
+            total: _restTotal,
+            onAdd: () => _addRest(const Duration(seconds: 30)),
+            onSkip: _stopRest,
+          ),
         );
       } else if (focused != null && _isDone(focused)) {
         final nextIndex = _nextOpenIndex(workout, index);
@@ -537,12 +656,15 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _Header(
-                    since: workout.startedAt,
-                    restLeft: resting ? _restLeft : null,
-                    onMinimise: _leave,
-                    onRest: resting ? _stopRest : _startRest,
-                    onFinish: _finishing ? null : () => _finish(workout),
+                  ValueListenableBuilder<Duration>(
+                    valueListenable: _restTick,
+                    builder: (context, left, _) => _Header(
+                      since: workout.startedAt,
+                      restLeft: resting ? left : null,
+                      onMinimise: _leave,
+                      onRest: resting ? _stopRest : _startRest,
+                      onFinish: _finishing ? null : () => _finish(workout),
+                    ),
                   ),
                   _ProgressLine(
                     value: totalSets == 0 ? 0 : doneSets / totalSets,
@@ -558,32 +680,47 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   Expanded(
                     child: focused == null
                         ? _NoExercises(onAdd: _addExercise)
-                        : _FocusedExercise(
-                            key: ValueKey(focused.id),
-                            entry: focused,
-                            index: index,
-                            count: workout.exercises.length,
-                            muscles: musclesOf(focused),
-                            viewOverride: _viewOverride,
-                            onFlipView: (v) =>
-                                setState(() => _viewOverride = v),
-                            bottomPadding: bottom == null
-                                ? AppSpacing.xl
-                                : AppSizing.buttonHeight + AppSpacing.xl3,
-                            onMenu: (a) => _onMenu(workout, index, a),
-                            onReplace: () => _replace(focused),
-                            onNotes: () => _editNotes(focused),
-                            onLastTime: () => _showLastTime(focused),
-                            onFill: () => _fillFromLastTime(focused),
-                            onAddSet: () => _notifier.addSet(focused.id),
-                            onSetChanged: (setId, update) =>
-                                _notifier.updateSet(focused.id, setId, update),
-                            onSetTypeChanged: (setId, type) =>
-                                _notifier.updateSet(focused.id, setId,
-                                    (s) => s.copyWith(setType: type)),
-                            onToggle: (set) => _toggleSet(focused, set),
-                            onRemoveSet: (setId) =>
-                                _notifier.removeSet(focused.id, setId),
+                        // One page per exercise: swipe to move through the
+                        // workout; the strip and "Next" slide it too.
+                        : PageView.builder(
+                            controller: _pages,
+                            itemCount: workout.exercises.length,
+                            onPageChanged: (i) => _onPageChanged(workout, i),
+                            itemBuilder: (context, i) {
+                              final e = workout.exercises[i];
+                              final isFocus = i == index;
+                              return _FocusedExercise(
+                                key: ValueKey(e.id),
+                                entry: e,
+                                index: i,
+                                count: workout.exercises.length,
+                                muscles: musclesOf(e),
+                                isFocused: isFocus,
+                                showMuscles: isFocus && _showMuscles,
+                                onToggleMuscles: () => setState(
+                                    () => _showMuscles = !_showMuscles),
+                                viewOverride: isFocus ? _viewOverride : null,
+                                onFlipView: (v) =>
+                                    setState(() => _viewOverride = v),
+                                bottomPadding: bottom == null
+                                    ? AppSpacing.xl
+                                    : AppSizing.buttonHeight + AppSpacing.xl3,
+                                onMenu: (a) => _onMenu(workout, i, a),
+                                onReplace: () => _replace(e),
+                                onNotes: () => _editNotes(e),
+                                onLastTime: () => _showLastTime(e),
+                                onFill: () => _fillFromLastTime(e),
+                                onAddSet: () => _notifier.addSet(e.id),
+                                onSetChanged: (setId, update) =>
+                                    _notifier.updateSet(e.id, setId, update),
+                                onSetTypeChanged: (setId, type) =>
+                                    _notifier.updateSet(e.id, setId,
+                                        (s) => s.copyWith(setType: type)),
+                                onToggle: (set) => _toggleSet(e, set),
+                                onRemoveSet: (setId) =>
+                                    _notifier.removeSet(e.id, setId),
+                              );
+                            },
                           ),
                   ),
                 ],
@@ -661,7 +798,7 @@ class _Header extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Center(child: _ElapsedTime(since: since)),
+          Center(child: ElapsedTime(since: since)),
           Row(
             children: [
               IconButton(
@@ -786,44 +923,6 @@ class _ProgressLine extends StatelessWidget {
   }
 }
 
-/// "12:34" since [since], ticking every second.
-class _ElapsedTime extends StatefulWidget {
-  const _ElapsedTime({required this.since});
-
-  final DateTime since;
-
-  @override
-  State<_ElapsedTime> createState() => _ElapsedTimeState();
-}
-
-class _ElapsedTimeState extends State<_ElapsedTime> {
-  late final Timer _timer =
-      Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final d = DateTime.now().difference(widget.since);
-    String two(int n) => n.toString().padLeft(2, '0');
-    final text = d.inHours > 0
-        ? '${d.inHours}:${two(d.inMinutes % 60)}:${two(d.inSeconds % 60)}'
-        : '${d.inMinutes}:${two(d.inSeconds % 60)}';
-    return Text(
-      text,
-      semanticsLabel: 'Workout time $text',
-      style: AppTypography.numeric(AppTypography.headlineSmall).copyWith(
-        color: AppColors.hubTextBright,
-        fontWeight: AppTypography.semiBold,
-      ),
-    );
-  }
-}
-
 // ── Exercise strip ─────────────────────────────────────────────────────────
 
 /// Which side of the body shows the most of these muscles.
@@ -837,7 +936,7 @@ BodyView _bestView(Map<Muscle, double> muscles) {
   return back > front ? BodyView.back : BodyView.front;
 }
 
-class _ExerciseStrip extends StatelessWidget {
+class _ExerciseStrip extends StatefulWidget {
   const _ExerciseStrip({
     required this.exercises,
     required this.focusIndex,
@@ -856,11 +955,61 @@ class _ExerciseStrip extends StatelessWidget {
 
   static const double _size = 84;
 
+  /// Decode width for the tile photos (≈ 3× the tile).
+  static const int photoCacheWidth = 252;
+
+  @override
+  State<_ExerciseStrip> createState() => _ExerciseStripState();
+}
+
+class _ExerciseStripState extends State<_ExerciseStrip> {
+  final ScrollController _scroll = ScrollController();
+
+  static const double _size = _ExerciseStrip._size;
+  static const double _step = _size + AppSpacing.sm;
+
+  @override
+  void didUpdateWidget(_ExerciseStrip old) {
+    super.didUpdateWidget(old);
+    if (old.focusIndex != widget.focusIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reveal());
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// Centres the focused tile when a swipe moves the focus off-screen.
+  void _reveal() {
+    if (!mounted || !_scroll.hasClients || widget.focusIndex < 0) return;
+    final p = _scroll.position;
+    final tileStart = AppSpacing.md + widget.focusIndex * _step;
+    final visible = tileStart >= p.pixels &&
+        tileStart + _size <= p.pixels + p.viewportDimension;
+    if (visible) return;
+    final target = (tileStart - (p.viewportDimension - _size) / 2)
+        .clamp(p.minScrollExtent, p.maxScrollExtent);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _scroll.jumpTo(target);
+    } else {
+      _scroll.animateTo(
+        target,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final exercises = widget.exercises;
     return SizedBox(
       height: _size + AppSpacing.lg,
       child: ListView.separated(
+        controller: _scroll,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -875,7 +1024,7 @@ class _ExerciseStrip extends StatelessWidget {
               label: 'Add exercise',
               excludeSemantics: true,
               child: GestureDetector(
-                onTap: onAdd,
+                onTap: widget.onAdd,
                 child: Container(
                   width: _size,
                   height: _size,
@@ -893,16 +1042,24 @@ class _ExerciseStrip extends StatelessWidget {
             );
           }
           final e = exercises[i];
-          final selected = i == focusIndex;
-          final done = isDone(e);
-          final muscles = musclesOf(e);
+          final selected = i == widget.focusIndex;
+          final done = widget.isDone(e);
+          final muscles = widget.musclesOf(e);
+          final photo = e.exercise.imageUrl;
+          final muscleMap = IgnorePointer(
+            child: MuscleMapView(
+              view: _bestView(muscles),
+              intensities: muscles,
+              zoomToHighlight: true,
+            ),
+          );
           return Semantics(
             button: true,
             selected: selected,
             label: '${e.exercise.name}${done ? ', done' : ''}',
             excludeSemantics: true,
             child: GestureDetector(
-              onTap: () => onSelect(i),
+              onTap: () => widget.onSelect(i),
               child: SizedBox(
                 width: _size,
                 height: _size,
@@ -913,7 +1070,8 @@ class _ExerciseStrip extends StatelessWidget {
                       curve: Curves.easeOut,
                       width: _size,
                       height: _size,
-                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      padding: EdgeInsets.all(
+                          photo == null ? AppSpacing.xs : 3),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.hubCardBottom,
@@ -925,13 +1083,13 @@ class _ExerciseStrip extends StatelessWidget {
                         ),
                       ),
                       child: ClipOval(
-                        child: IgnorePointer(
-                          child: MuscleMapView(
-                            view: _bestView(muscles),
-                            intensities: muscles,
-                            zoomToHighlight: true,
-                          ),
-                        ),
+                        child: photo == null
+                            ? muscleMap
+                            : NetworkPhoto(
+                                url: photo,
+                                cacheWidth: _ExerciseStrip.photoCacheWidth,
+                                placeholder: muscleMap,
+                              ),
                       ),
                     ),
                     if (done)
@@ -976,6 +1134,9 @@ class _FocusedExercise extends StatelessWidget {
     required this.index,
     required this.count,
     required this.muscles,
+    required this.isFocused,
+    required this.showMuscles,
+    required this.onToggleMuscles,
     required this.viewOverride,
     required this.onFlipView,
     required this.bottomPadding,
@@ -995,6 +1156,13 @@ class _FocusedExercise extends StatelessWidget {
   final int index;
   final int count;
   final Map<Muscle, double> muscles;
+
+  /// This page is the one on screen (its photos play).
+  final bool isFocused;
+
+  /// Show the muscle map in place of the photos.
+  final bool showMuscles;
+  final VoidCallback onToggleMuscles;
   final BodyView? viewOverride;
   final ValueChanged<BodyView> onFlipView;
   final double bottomPadding;
@@ -1023,6 +1191,7 @@ class _FocusedExercise extends StatelessWidget {
   Widget build(BuildContext context) {
     final type = entry.exercise.trackingType;
     final view = viewOverride ?? _bestView(muscles);
+    final photos = entry.exercise.imageUrls;
     final firstOpen = entry.sets.indexWhere((s) => !s.completed);
     var working = 0;
     final headerStyle = AppTypography.labelMedium.copyWith(
@@ -1035,52 +1204,83 @@ class _FocusedExercise extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(
           AppSpacing.md, 0, AppSpacing.md, bottomPadding),
       children: [
-        // Muscle map hero; tap the pill to see the other side.
-        SizedBox(
-          height: 290,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 260,
-                height: 260,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.accentProgress.withValues(alpha: 0.16),
-                      AppColors.accentProgress.withValues(alpha: 0),
-                    ],
+        // Hero: the exercise's start / end photos, or its muscle map (no
+        // photos, or "Muscles" tapped). Same 3:2 box either way, so
+        // swiping between exercises never shifts the layout.
+        if (photos.isNotEmpty && !showMuscles)
+          ExerciseFrames(
+            urls: photos,
+            exerciseName: entry.exercise.name,
+            playing: isFocused,
+            trailing: _SmallChip(
+              icon: LucideIcons.personStanding,
+              label: 'Muscles',
+              semanticLabel: 'Show the muscles this works',
+              onTap: onToggleMuscles,
+            ),
+          )
+        else
+          AspectRatio(
+            aspectRatio: ExerciseFrames.aspectRatio,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                FractionallySizedBox(
+                  heightFactor: 0.95,
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            AppColors.accentProgress.withValues(alpha: 0.16),
+                            AppColors.accentProgress.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                child: MuscleMapView(
-                  view: view,
-                  intensities: muscles,
-                  zoomToHighlight: true,
-                  semanticLabel: muscles.isEmpty
-                      ? null
-                      : 'Works ${muscles.keys.map((m) => m.label).join(', ')}',
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  child: MuscleMapView(
+                    view: view,
+                    intensities: muscles,
+                    zoomToHighlight: true,
+                    semanticLabel: muscles.isEmpty
+                        ? null
+                        : 'Works ${muscles.keys.map((m) => m.label).join(', ')}',
+                  ),
                 ),
-              ),
-              Positioned(
-                right: 0,
-                bottom: AppSpacing.xs,
-                child: _SmallChip(
-                  icon: LucideIcons.refreshCw,
-                  label: view == BodyView.front ? 'Back' : 'Front',
-                  semanticLabel: view == BodyView.front
-                      ? 'Show back of body'
-                      : 'Show front of body',
-                  onTap: () => onFlipView(
-                      view == BodyView.front ? BodyView.back : BodyView.front),
+                Positioned(
+                  right: 0,
+                  bottom: AppSpacing.xs,
+                  child: _SmallChip(
+                    icon: LucideIcons.refreshCw,
+                    label: view == BodyView.front ? 'Back' : 'Front',
+                    semanticLabel: view == BodyView.front
+                        ? 'Show back of body'
+                        : 'Show front of body',
+                    onTap: () => onFlipView(view == BodyView.front
+                        ? BodyView.back
+                        : BodyView.front),
+                  ),
                 ),
-              ),
-            ],
+                if (photos.isNotEmpty)
+                  Positioned(
+                    right: 0,
+                    top: AppSpacing.xs,
+                    child: _SmallChip(
+                      icon: LucideIcons.image,
+                      label: 'Photos',
+                      semanticLabel: 'Show exercise photos',
+                      onTap: onToggleMuscles,
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
@@ -1277,6 +1477,9 @@ class _FocusedExercise extends StatelessWidget {
               onSetTypeChanged: (t) => onSetTypeChanged(entry.sets[i].id, t),
               onToggleCompleted: () => onToggle(entry.sets[i]),
               onRemove: () => onRemoveSet(entry.sets[i].id),
+              // Sideways swipes change the exercise here; "Remove set" is
+              // in the set badge's menu.
+              swipeToRemove: false,
             ),
           ),
         const SizedBox(height: AppSpacing.xxs),

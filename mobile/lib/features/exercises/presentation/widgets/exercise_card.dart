@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -8,6 +7,7 @@ import '../../../../core/theme/app_sizing.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/hub_ui.dart';
+import '../../../../core/widgets/network_photo.dart';
 import '../../domain/entities/exercise_entity.dart';
 import 'exercise_labels.dart';
 
@@ -138,12 +138,10 @@ class ExerciseThumbnail extends StatelessWidget {
         dimension: size,
         child: u == null || u.isEmpty
             ? fallback
-            : CachedNetworkImage(
-                imageUrl: u,
-                fit: BoxFit.cover,
-                memCacheWidth: (size * 3).round(),
-                placeholder: (_, __) => fallback,
-                errorWidget: (_, __, ___) => fallback,
+            : NetworkPhoto(
+                url: u,
+                cacheWidth: (size * 3).round(),
+                placeholder: fallback,
               ),
       ),
     );

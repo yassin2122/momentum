@@ -1,0 +1,51 @@
+ D "app_design/dashboard screen.png"
+ D "app_design/friends screen.png"
+ D "app_design/login screen.png"
+ D "app_design/register screen.png"
+ D "app_design/splash screen.png"
+ M mobile/ios/Runner/Info.plist
+ M mobile/lib/core/constants/app_constants.dart
+ M mobile/lib/core/routing/app_router.dart
+ M mobile/lib/core/theme/app_colors.dart
+A  mobile/lib/features/analytics/data/datasources/body_progress_remote_datasource.dart
+A  mobile/lib/features/analytics/data/datasources/recovery_remote_datasource.dart
+A  mobile/lib/features/analytics/data/models/analytics_rows.dart
+A  mobile/lib/features/analytics/data/repositories/body_progress_repository_impl.dart
+A  mobile/lib/features/analytics/data/repositories/recovery_repository_impl.dart
+A  mobile/lib/features/analytics/domain/entities/body_progress.dart
+A  mobile/lib/features/analytics/domain/entities/muscle_group_distribution.dart
+A  mobile/lib/features/analytics/domain/entities/recovery.dart
+A  mobile/lib/features/analytics/domain/repositories/body_progress_repository.dart
+A  mobile/lib/features/analytics/domain/repositories/recovery_repository.dart
+A  mobile/lib/features/analytics/domain/services/body_trend.dart
+A  mobile/lib/features/analytics/domain/services/muscle_group_distribution_calculator.dart
+A  mobile/lib/features/analytics/domain/services/recovery_insights.dart
+A  mobile/lib/features/analytics/presentation/providers/analytics_providers.dart
+A  mobile/lib/features/analytics/presentation/screens/analytics_screen.dart
+A  mobile/lib/features/analytics/presentation/screens/body_progress_screen.dart
+A  mobile/lib/features/analytics/presentation/screens/muscle_distribution_screen.dart
+A  mobile/lib/features/analytics/presentation/screens/recovery_screen.dart
+A  mobile/lib/features/analytics/presentation/widgets/analytics_charts.dart
+A  mobile/lib/features/analytics/presentation/widgets/analytics_chrome.dart
+A  mobile/lib/features/analytics/presentation/widgets/body_sheets.dart
+A  mobile/lib/features/analytics/presentation/widgets/recovery_checkin_sheet.dart
+ M mobile/lib/features/dashboard/presentation/screens/dashboard_screen.dart
+ M mobile/lib/features/exercises/presentation/widgets/exercise_card.dart
+ M mobile/lib/features/exercises/presentation/widgets/exercise_detail_sheet.dart
+ M mobile/lib/features/muscle_map/presentation/screens/muscle_map_screen.dart
+ M mobile/lib/features/muscle_map/presentation/widgets/muscle_map_view.dart
+ M mobile/lib/features/workouts/domain/entities/trackable_exercise.dart
+ M mobile/lib/features/workouts/presentation/providers/active_workout_notifier.dart
+ M mobile/lib/features/workouts/presentation/screens/active_workout_screen.dart
+ M mobile/lib/features/workouts/presentation/widgets/exercise_picker_sheet.dart
+ M mobile/lib/features/workouts/presentation/widgets/focus_set_row.dart
+ M mobile/pubspec.yaml
+A  mobile/test/features/analytics/body_trend_test.dart
+A  mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart
+A  mobile/test/features/analytics/recovery_insights_test.dart
+ M supabase/SCHEMA.md
+A  supabase/migrations/20261024200000_athlete_analytics_body_recovery.sql
+?? mobile/_analytics/
+?? mobile/analytics_check.bat
+?? mobile/lib/core/widgets/network_photo.dart
+?? mobile/lib/features/workouts/presentation/widgets/exercise_frames.dart

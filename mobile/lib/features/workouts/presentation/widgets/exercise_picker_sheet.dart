@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,6 +11,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/hub_ui.dart';
+import '../../../../core/widgets/network_photo.dart';
 import '../../domain/entities/trackable_exercise.dart';
 import '../../domain/services/exercise_catalog.dart';
 import '../providers/workout_providers.dart';
@@ -29,6 +29,7 @@ Future<TrackableExercise?> showExercisePicker(
   required String title,
 }) =>
     showModalBottomSheet<TrackableExercise>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -493,12 +494,10 @@ class _Thumb extends StatelessWidget {
         dimension: _size,
         child: u == null
             ? fallback
-            : CachedNetworkImage(
-                imageUrl: u,
-                fit: BoxFit.cover,
-                memCacheWidth: (_size * 3).round(),
-                placeholder: (_, __) => fallback,
-                errorWidget: (_, __, ___) => fallback,
+            : NetworkPhoto(
+                url: u,
+                cacheWidth: (_size * 3).round(),
+                placeholder: fallback,
               ),
       ),
     );

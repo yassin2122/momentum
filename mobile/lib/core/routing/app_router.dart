@@ -11,6 +11,10 @@ import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/achievements/presentation/screens/achievement_unlock_screen.dart';
 import '../../features/achievements/presentation/screens/achievements_screen.dart';
+import '../../features/analytics/presentation/screens/analytics_screen.dart';
+import '../../features/analytics/presentation/screens/body_progress_screen.dart';
+import '../../features/analytics/presentation/screens/muscle_distribution_screen.dart';
+import '../../features/analytics/presentation/screens/recovery_screen.dart';
 import '../../features/connect/presentation/screens/captain_hub_screen.dart';
 import '../../features/connect/presentation/screens/captain_profile_editor_screen.dart';
 import '../../features/connect/presentation/screens/captain_profile_screen.dart';
@@ -60,7 +64,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isRecovering = isLoggedIn && ref.read(passwordRecoveryProvider);
       final onResetRoute = state.matchedLocation == AppRoutes.resetPassword;
       if (isRecovering) return onResetRoute ? null : AppRoutes.resetPassword;
-      if (onResetRoute) return isLoggedIn ? AppRoutes.dashboard : AppRoutes.login;
+      if (onResetRoute) {
+        return isLoggedIn ? AppRoutes.dashboard : AppRoutes.login;
+      }
 
       // Hold on the splash route until its intro animation has played.
       if (state.matchedLocation == AppRoutes.splash &&
@@ -100,21 +106,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.captainProfile,
-        pageBuilder: (context, state) => _fadePage(
+        pageBuilder: (context, state) => _pushPage(
           state,
           CaptainProfileScreen(coachId: state.pathParameters['coachId']!),
         ),
       ),
       GoRoute(
         path: AppRoutes.planet,
-        pageBuilder: (context, state) => _fadePage(
+        pageBuilder: (context, state) => _pushPage(
           state,
           PlanetScreen(planetId: state.pathParameters['planetId']!),
         ),
       ),
       GoRoute(
         path: AppRoutes.skill,
-        pageBuilder: (context, state) => _fadePage(
+        pageBuilder: (context, state) => _pushPage(
           state,
           SkillScreen(skillId: state.pathParameters['skillId']!),
         ),
@@ -129,24 +135,44 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: AppRoutes.analytics,
+        pageBuilder: (context, state) =>
+            _pushPage(state, const AnalyticsScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.analyticsDistribution,
+        pageBuilder: (context, state) =>
+            _pushPage(state, const MuscleDistributionScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.analyticsBody,
+        pageBuilder: (context, state) =>
+            _pushPage(state, const BodyProgressScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.analyticsRecovery,
+        pageBuilder: (context, state) =>
+            _pushPage(state, const RecoveryScreen()),
+      ),
+      GoRoute(
         path: AppRoutes.muscleMap,
         pageBuilder: (context, state) =>
-            _fadePage(state, const MuscleMapScreen()),
+            _pushPage(state, const MuscleMapScreen()),
       ),
       GoRoute(
         path: AppRoutes.activeWorkout,
         pageBuilder: (context, state) =>
-            _fadePage(state, const ActiveWorkoutScreen()),
+            _pushPage(state, const ActiveWorkoutScreen()),
       ),
       GoRoute(
         path: AppRoutes.exercises,
         pageBuilder: (context, state) =>
-            _fadePage(state, const ExercisesScreen()),
+            _pushPage(state, const ExercisesScreen()),
       ),
       GoRoute(
         path: AppRoutes.createTemplate,
         pageBuilder: (context, state) =>
-            _fadePage(state, const CreateTemplateScreen()),
+            _pushPage(state, const CreateTemplateScreen()),
       ),
       GoRoute(
         path: AppRoutes.workoutSummary,
@@ -185,21 +211,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'find',
                     pageBuilder: (context, state) =>
-                        _fadePage(state, const FindCaptainScreen()),
+                        _pushPage(state, const FindCaptainScreen()),
                   ),
                   GoRoute(
                     path: 'hub',
                     pageBuilder: (context, state) =>
-                        _fadePage(state, const CaptainHubScreen()),
+                        _pushPage(state, const CaptainHubScreen()),
                     routes: [
                       GoRoute(
                         path: 'profile',
-                        pageBuilder: (context, state) => _fadePage(
+                        pageBuilder: (context, state) => _pushPage(
                             state, const CaptainProfileEditorScreen()),
                       ),
                       GoRoute(
                         path: 'client/:relationshipId',
-                        pageBuilder: (context, state) => _fadePage(
+                        pageBuilder: (context, state) => _pushPage(
                           state,
                           ClientDetailScreen(
                             relationshipId:
@@ -240,7 +266,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'achievements',
                     pageBuilder: (context, state) =>
-                        _fadePage(state, const AchievementsScreen()),
+                        _pushPage(state, const AchievementsScreen()),
                   ),
                 ],
               ),
@@ -261,7 +287,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-/// Standard ~250ms fade transition used for every route in the app, per
+/// Drill-in screens (analytics, hologram, exercises, Captain pages…) use
+/// the platform's own push: on iOS the native slide with interactive
+/// swipe-back, on Android its system transition and predictive back. A
+/// custom transition would lose the back gesture people expect.
+Page<void> _pushPage(GoRouterState state, Widget child) =>
+    MaterialPage<void>(key: state.pageKey, child: child);
+
+/// Standard ~250ms fade for tab roots, auth and moments that aren't a
+/// drill-in (achievement unlock, workout summary), per
 /// DESIGN_SYSTEM.md's Standard Animation Timing (`animMedium`) — kept as
 /// a raw literal here rather than importing AppConstants to avoid a
 /// routing → constants → routing import cycle risk; matches

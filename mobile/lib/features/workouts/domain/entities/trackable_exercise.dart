@@ -12,6 +12,7 @@ final class TrackableExercise {
     this.isCustom = false,
     this.slug,
     this.imagePath,
+    this.imagePaths = const [],
     this.primaryMuscle,
   });
 
@@ -32,22 +33,43 @@ final class TrackableExercise {
   /// [AppConstants.exerciseImageBaseUrl], or an absolute URL.
   final String? imagePath;
 
+  /// Every entry of `exercises.images`, in order — library exercises have
+  /// two frames (start and end position). Empty for workouts saved before
+  /// this was kept; [imageUrls] then falls back to [imagePath].
+  final List<String> imagePaths;
+
   /// Library muscle-group name of the primary target, when fetched.
   final String? primaryMuscle;
 
   /// Thumbnail URL, or null when the exercise has no photo.
   String? get imageUrl {
-    final p = imagePath;
-    if (p == null || p.isEmpty) return null;
-    if (p.startsWith('http://') || p.startsWith('https://')) return p;
-    return '${AppConstants.exerciseImageBaseUrl}$p';
+    final p = imagePath ?? (imagePaths.isEmpty ? null : imagePaths.first);
+    return p == null || p.isEmpty ? null : _resolve(p);
   }
+
+  /// Every photo URL in order (start frame first); empty when none.
+  List<String> get imageUrls {
+    final paths = imagePaths.isNotEmpty
+        ? imagePaths
+        : [if (imagePath != null) imagePath!];
+    return [for (final p in paths) if (p.isNotEmpty) _resolve(p)];
+  }
+
+  static String _resolve(String p) =>
+      p.startsWith('http://') || p.startsWith('https://')
+          ? p
+          : '${AppConstants.exerciseImageBaseUrl}$p';
 
   /// Reads a row from `exercises`. Optional columns (`slug`, `images`) and
   /// the `exercise_muscle_groups(is_primary, muscle_groups(name))` embed
   /// are used when present; [toJson]'s own keys round-trip too.
   factory TrackableExercise.fromJson(Map<String, dynamic> json) {
     final images = json['images'];
+    final paths = <String>[
+      for (final p in (json['image_paths'] as List?) ??
+          (images is List ? images : const []))
+        if (p is String && p.isNotEmpty) p,
+    ];
     return TrackableExercise(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -57,7 +79,8 @@ final class TrackableExercise {
       isCustom: json['is_custom'] as bool? ?? false,
       slug: json['slug'] as String?,
       imagePath: json['image_path'] as String? ??
-          (images is List && images.isNotEmpty ? images.first as String? : null),
+          (paths.isEmpty ? null : paths.first),
+      imagePaths: paths,
       primaryMuscle:
           json['primary_muscle'] as String? ?? _primaryFromEmbed(json),
     );
@@ -83,6 +106,7 @@ final class TrackableExercise {
         'is_custom': isCustom,
         if (slug != null) 'slug': slug,
         if (imagePath != null) 'image_path': imagePath,
+        if (imagePaths.isNotEmpty) 'image_paths': imagePaths,
         if (primaryMuscle != null) 'primary_muscle': primaryMuscle,
       };
 }

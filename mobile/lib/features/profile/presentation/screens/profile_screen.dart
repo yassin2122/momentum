@@ -10,20 +10,16 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/hub_ui.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../../achievements/presentation/sample/achievements_sample_data.dart';
-import '../../../achievements/presentation/widgets/achievement_badge.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/providers/auth_state_notifier.dart';
 import '../../../connect/presentation/providers/connect_providers.dart';
 import '../../../connect/presentation/widgets/coach_sheets.dart';
 import '../../../progress/presentation/sample/progress_sample_data.dart';
 
-/// PROFILE tab: who you are, totals, certifications, achievements,
-/// personal records and settings.
+/// PROFILE tab: who you are, totals, personal records and settings.
 ///
 /// Live: name/email, guest state, Captain, sign-out (logic unchanged).
-/// Sample (see `progress_sample_data.dart` / `achievements_sample_data.dart`):
-/// totals, certifications, achievements and personal records.
+/// Sample (see `progress_sample_data.dart`): totals and personal records.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -75,12 +71,6 @@ class ProfileScreen extends ConsumerWidget {
             : 'Athlete';
     final captain = isGuest ? null : ref.watch(myCaptainProvider).valueOrNull;
     final settingsKey = GlobalKey();
-
-    final certified = [
-      for (final p in samplePlanets)
-        for (final s in p.skills)
-          if (s.tier != SkillTier.none) (planet: p, skill: s),
-    ]..sort((a, b) => b.skill.tier.index - a.skill.tier.index);
 
     return HubPage(
       glowCenter: const Alignment(-0.6, -0.84),
@@ -182,13 +172,6 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(width: AppSpacing.sm - 2),
             Expanded(
               child: HubStatTile(
-                value: '${certified.length}',
-                label: 'Skills certified',
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm - 2),
-            Expanded(
-              child: HubStatTile(
                 value: '${sampleHud.bestStreakDays}',
                 label: 'Best streak',
                 valueColor: AppColors.hubStreak,
@@ -232,36 +215,6 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
         ],
-        const SizedBox(height: AppSpacing.sm),
-        HubCard(
-          child: Column(
-            children: [
-              HubCardHeader(
-                title: 'Certifications',
-                trailing: 'View all',
-                onTrailingTap: () => context.go(AppRoutes.universe),
-              ),
-              const SizedBox(height: AppSpacing.sm - 2),
-              Row(
-                children: [
-                  for (var i = 0; i < 3 && i < certified.length; i++) ...[
-                    if (i > 0) const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: _CertTile(
-                        tier: certified[i].skill.tier,
-                        name: certified[i].skill.name,
-                        onTap: () => context
-                            .push(AppRoutes.skillPath(certified[i].skill.id)),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        const _AchievementsCard(),
         const SizedBox(height: AppSpacing.sm),
         HubCard(
           padding: const EdgeInsets.fromLTRB(
@@ -342,140 +295,6 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _CertTile extends StatelessWidget {
-  const _CertTile({required this.tier, required this.name, required this.onTap});
-
-  final SkillTier tier;
-  final String name;
-  final VoidCallback onTap;
-
-  static const double _height = 58;
-
-  @override
-  Widget build(BuildContext context) {
-    final (Color label, Gradient? fill, Color? flat, Color border) =
-        switch (tier) {
-      SkillTier.legendary => (
-          AppColors.tierLegendary,
-          const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.tierLegendaryFillTop,
-              AppColors.tierLegendaryFillBottom,
-            ],
-          ),
-          null,
-          AppColors.tierLegendaryBorder,
-        ),
-      SkillTier.master => (
-          AppColors.tierMaster,
-          const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.tierMasterFillTop,
-              AppColors.tierMasterFillBottom,
-            ],
-          ),
-          null,
-          AppColors.tierMasterBorder,
-        ),
-      _ => (
-          AppColors.tierComplete,
-          null,
-          AppColors.tierCompleteFill,
-          AppColors.hubEyebrow.withValues(alpha: 0.4),
-        ),
-    };
-    final radius = BorderRadius.circular(AppRadius.medium);
-    return Material(
-      color: AppColors.transparent,
-      borderRadius: radius,
-      child: InkWell(
-        borderRadius: radius,
-        onTap: onTap,
-        child: Ink(
-          height: _height,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm - 2,
-            vertical: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            gradient: fill,
-            color: flat,
-            border: Border.all(color: border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                tier.label.toUpperCase(),
-                style: AppTypography.labelSmall.copyWith(
-                  color: label,
-                  fontWeight: AppTypography.extraBold,
-                ),
-              ),
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.labelLarge.copyWith(
-                  color: AppColors.hubTextBright,
-                  fontWeight: AppTypography.semiBold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AchievementsCard extends StatelessWidget {
-  const _AchievementsCard();
-
-  static const double _badge = 56;
-
-  @override
-  Widget build(BuildContext context) {
-    final earned = sampleAchievements.where((a) => a.isEarned).toList()
-      ..sort((a, b) => (b.earnedOn ?? DateTime(0)).compareTo(
-            a.earnedOn ?? DateTime(0),
-          ));
-    return HubCard(
-      onTap: () => context.go(AppRoutes.achievements),
-      child: Column(
-        children: [
-          HubCardHeader(
-            title: 'Achievements',
-            trailing: '${earned.length} / ${sampleAchievements.length}',
-            onTrailingTap: () => context.go(AppRoutes.achievements),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              for (final a in earned.take(4)) ...[
-                AchievementBadge(achievement: a, size: _badge),
-                const SizedBox(width: AppSpacing.sm - 2),
-              ],
-              const Spacer(),
-              const Icon(
-                LucideIcons.chevronRight,
-                size: AppSizing.iconSm + 2,
-                color: AppColors.hubTextMuted,
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

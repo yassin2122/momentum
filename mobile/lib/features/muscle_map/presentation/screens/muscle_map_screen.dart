@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -8,7 +8,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/hub_ui.dart';
+import '../../../../core/widgets/motion.dart';
+import '../../../analytics/presentation/widgets/analytics_chrome.dart';
 import '../../domain/entities/muscle.dart';
 import '../../domain/entities/muscle_activity.dart';
 import '../../domain/services/muscle_highlight.dart';
@@ -16,8 +17,13 @@ import '../providers/muscle_map_providers.dart';
 import '../widgets/muscle_detail_sheet.dart';
 import '../widgets/muscle_map_view.dart';
 
-/// Full-screen muscle map: front/back body lit by completed workouts in a
-/// chosen window; tap a muscle for its history.
+/// Full-screen muscle hologram: front/back body lit by completed workouts
+/// in a chosen window; tap a muscle (or its chip) for its history.
+///
+/// Same graphite canvas and header as the other Analytics screens, with
+/// the hologram's own electric-cyan accent. The body scans in on open,
+/// flips with the Front/Back control or a horizontal swipe, and the time
+/// window is a segmented control at the top like Distribution's.
 class MuscleMapScreen extends ConsumerStatefulWidget {
   const MuscleMapScreen({super.key});
 
@@ -29,6 +35,9 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
   BodyView _view = BodyView.front;
   Muscle? _selected;
 
+  /// Horizontal fling speed (logical px/s) that flips the body.
+  static const double _flipVelocity = 300;
+
   Future<void> _open(Muscle muscle, MuscleActivityReport report) async {
     setState(() {
       _selected = muscle;
@@ -38,6 +47,7 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
       }
     });
     await showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -56,6 +66,16 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
     if (mounted) setState(() => _selected = null);
   }
 
+  void _setView(BodyView v) {
+    if (v == _view) return;
+    setState(() => _view = v);
+  }
+
+  void _flip() {
+    HapticFeedback.selectionClick();
+    _setView(_view == BodyView.front ? BodyView.back : BodyView.front);
+  }
+
   @override
   Widget build(BuildContext context) {
     final days = ref.watch(muscleWindowDaysProvider);
@@ -63,8 +83,23 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
     final data = report.valueOrNull;
 
     return Scaffold(
-      backgroundColor: AppColors.hubBackgroundBottom,
-      body: HubBackground(
+      backgroundColor: AppColors.analyticsBgBottom,
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          // The analytics canvas recipe, lit from behind the body.
+          gradient: RadialGradient(
+            center: const Alignment(0, -0.2),
+            radius: 1.1,
+            colors: [
+              Color.alphaBlend(
+                AppColors.anatomyCyan.withValues(alpha: 0.08),
+                AppColors.analyticsBgTop,
+              ),
+              AppColors.analyticsBgBottom,
+            ],
+            stops: const [0, 0.75],
+          ),
+        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -72,110 +107,113 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: AppSpacing.xs),
-                Row(
-                  children: [
-                    HubBackButton(onPressed: () => context.pop()),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        'Muscle activity',
-                        style: AppTypography.headlineSmall.copyWith(
-                          color: AppColors.hubTextBright,
-                          fontWeight: AppTypography.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+                const Entrance(
+                  child: AnalyticsHeader(
+                    eyebrow: 'Front & back · tap any muscle',
+                    title: 'Hologram',
+                    accent: AppColors.anatomyCyan,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    for (final v in BodyView.values) ...[
-                      _Toggle(
-                        label: v == BodyView.front ? 'Front' : 'Back',
-                        selected: _view == v,
-                        onTap: () => setState(() => _view = v),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                    ],
-                    const Spacer(),
-                    PopupMenuButton<int>(
-                      tooltip: 'Time window',
-                      color: AppColors.achSheet,
-                      initialValue: days,
-                      onSelected: (d) => ref
-                          .read(muscleWindowDaysProvider.notifier)
-                          .state = d,
-                      itemBuilder: (_) => [
-                        for (final d in muscleWindowOptions)
-                          PopupMenuItem(
-                            value: d,
-                            child: Text(
-                              'Last $d days',
-                              style: AppTypography.bodyMedium
-                                  .copyWith(color: AppColors.hubTextBright),
-                            ),
-                          ),
-                      ],
-                      child: HubPill(
-                        label: 'Last $days days',
-                        icon: LucideIcons.calendar,
-                      ),
-                    ),
-                  ],
+                Entrance(
+                  index: 1,
+                  child: AnalyticsSegmented<int>(
+                    options: muscleWindowOptions,
+                    selected: days,
+                    labelOf: (d) => '${d}d',
+                    accent: AppColors.anatomyCyan,
+                    onChanged: (d) =>
+                        ref.read(muscleWindowDaysProvider.notifier).state = d,
+                  ),
                 ),
                 Expanded(
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: AnimatedSwitcher(
-                          duration: AppConstants.animMedium,
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, anim) => FadeTransition(
-                            opacity: anim,
-                            child: ScaleTransition(
-                              scale: Tween(begin: 0.96, end: 1.0).animate(anim),
-                              child: child,
+                        child: GestureDetector(
+                          // Swipe sideways to turn the body around.
+                          onHorizontalDragEnd: (d) {
+                            if ((d.primaryVelocity ?? 0).abs() >
+                                _flipVelocity) {
+                              _flip();
+                            }
+                          },
+                          child: AnimatedSwitcher(
+                            duration: reduceMotionOf(context)
+                                ? Duration.zero
+                                : AppConstants.animMedium,
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            transitionBuilder: (child, anim) => FadeTransition(
+                              opacity: anim,
+                              child: ScaleTransition(
+                                scale:
+                                    Tween(begin: 0.96, end: 1.0).animate(anim),
+                                child: child,
+                              ),
                             ),
-                          ),
-                          child: Padding(
-                            key: ValueKey(_view),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: AppSpacing.md),
-                            child: MuscleMapView(
-                              view: _view,
-                              intensities: data?.intensities ?? const {},
-                              selected: _selected,
-                              semanticLabel: _semantics(data),
-                              onMuscleTap: data == null
-                                  ? null
-                                  : (m) {
-                                      if (m != null) _open(m, data);
-                                    },
+                            child: Padding(
+                              key: ValueKey(_view),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.md),
+                              child: MuscleMapView(
+                                view: _view,
+                                scanIn: true,
+                                intensities: data?.intensities ?? const {},
+                                selected: _selected,
+                                semanticLabel: _semantics(data),
+                                onMuscleTap: data == null
+                                    ? null
+                                    : (m) {
+                                        if (m != null) _open(m, data);
+                                      },
+                              ),
                             ),
                           ),
                         ),
                       ),
                       if (report.isLoading)
                         const Positioned(
-                            top: 0, right: 0, child: HubLoading()),
+                          top: AppSpacing.sm,
+                          right: 0,
+                          child: SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.anatomyCyan,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
-                if (report.hasError && data == null)
-                  HubMessageCard(
-                    icon: LucideIcons.wifiOff,
-                    title: "Couldn't load your workouts",
-                    message: 'Check your connection and try again.',
-                    actionLabel: 'Retry',
-                    onAction: () => ref.invalidate(muscleActivityProvider),
-                  )
-                else
-                  _Footer(
-                    report: data,
-                    onMuscle: data == null ? null : (m) => _open(m, data),
+                // Lower on screen, within thumb reach.
+                Center(
+                  child: SizedBox(
+                    width: 200,
+                    child: AnalyticsSegmented<BodyView>(
+                      options: BodyView.values,
+                      selected: _view,
+                      labelOf: (v) => v == BodyView.front ? 'Front' : 'Back',
+                      accent: AppColors.anatomyCyan,
+                      onChanged: _setView,
+                    ),
                   ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AnalyticsSwap(
+                  child: report.hasError && data == null
+                      ? AnalyticsErrorPanel(
+                          key: const ValueKey('error'),
+                          message: 'Check your connection and try again.',
+                          onRetry: () => ref.invalidate(muscleActivityProvider),
+                        )
+                      : _Footer(
+                          key: const ValueKey('footer'),
+                          report: data,
+                          onMuscle: data == null ? null : (m) => _open(m, data),
+                        ),
+                ),
                 const SizedBox(height: AppSpacing.md),
               ],
             ),
@@ -194,59 +232,10 @@ class _MuscleMapScreenState extends ConsumerState<MuscleMapScreen> {
   }
 }
 
-class _Toggle extends StatelessWidget {
-  const _Toggle({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(AppRadius.pill);
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: Material(
-        color: selected ? AppColors.hubHeroGlow : AppColors.hubIconButton,
-        shape: RoundedRectangleBorder(
-          borderRadius: radius,
-          side: BorderSide(
-            color: selected
-                ? AppColors.accentProgress
-                : AppColors.hubCardBorder,
-          ),
-        ),
-        child: InkWell(
-          borderRadius: radius,
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-            child: Text(
-              label,
-              style: AppTypography.labelLarge.copyWith(
-                color: selected
-                    ? AppColors.hubTextBright
-                    : AppColors.hubTextMuted,
-                fontWeight: AppTypography.semiBold,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Legend, trained-muscle chips (a non-spatial way to open details) and
 /// data notes.
 class _Footer extends StatelessWidget {
-  const _Footer({required this.report, required this.onMuscle});
+  const _Footer({required this.report, required this.onMuscle, super.key});
 
   final MuscleActivityReport? report;
   final ValueChanged<Muscle>? onMuscle;
@@ -256,7 +245,9 @@ class _Footer extends StatelessWidget {
     final r = report;
     final trained = r == null
         ? const <MuscleActivity>[]
-        : (r.byMuscle.values.toList()..sort((a, b) => b.load.compareTo(a.load)));
+        : (r.byMuscle.values.toList()
+          ..sort((a, b) => b.load.compareTo(a.load)));
+    final note = AppTypography.caption.copyWith(color: AppColors.silverDim);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -283,8 +274,7 @@ class _Footer extends StatelessWidget {
                         : 'Brighter = more sets · ${r.workoutCount} '
                             '${r.workoutCount == 1 ? 'workout' : 'workouts'}. '
                             'Volume, not recovery.',
-                style: AppTypography.caption
-                    .copyWith(color: AppColors.hubTextMuted),
+                style: note,
               ),
             ),
           ],
@@ -292,34 +282,27 @@ class _Footer extends StatelessWidget {
         if (trained.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
-            height: AppSpacing.xl + AppSpacing.xxs,
+            height: _chipHeight,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: trained.length,
               separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.xs),
-              itemBuilder: (context, i) => ActionChip(
-                backgroundColor: AppColors.hubIconButton,
-                side: const BorderSide(color: AppColors.hubCardBorder),
-                shape: const StadiumBorder(),
-                label: Text(
-                  '${trained[i].muscle.label} · ${trained[i].totalSets}',
-                  style: AppTypography.labelMedium
-                      .copyWith(color: AppColors.hubTextBody),
-                ),
-                onPressed:
-                    onMuscle == null ? null : () => onMuscle!(trained[i].muscle),
+              itemBuilder: (context, i) => _MuscleChip(
+                activity: trained[i],
+                onTap: onMuscle == null
+                    ? null
+                    : () => onMuscle!(trained[i].muscle),
               ),
             ),
           ),
         ],
-        if (r != null &&
-            MuscleHighlight.undrawn(r.intensities).isNotEmpty) ...[
+        if (r != null && MuscleHighlight.undrawn(r.intensities).isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Not drawn on the map: '
             '${MuscleHighlight.undrawn(r.intensities).map((m) => m.label).join(', ')}'
             ' — tap its chip above for details.',
-            style: AppTypography.caption.copyWith(color: AppColors.hubTextFaint),
+            style: note,
           ),
         ],
         if (r != null && r.unmappedExercises.isNotEmpty) ...[
@@ -328,16 +311,74 @@ class _Footer extends StatelessWidget {
             'No muscle data yet for: ${r.unmappedExercises.join(', ')}',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.caption.copyWith(color: AppColors.hubTextFaint),
+            style: note,
           ),
         ],
         const SizedBox(height: AppSpacing.xs),
         // Required by the art's CC BY 4.0 licence.
         Text(
           'Anatomy illustration © Ryan Graves, CC BY 4.0',
-          style: AppTypography.labelSmall.copyWith(color: AppColors.hubTextFaint),
+          style: AppTypography.labelSmall.copyWith(color: AppColors.silverDim),
         ),
       ],
+    );
+  }
+}
+
+/// Chip row height (keeps chips comfortably tappable).
+const double _chipHeight = 36;
+
+/// Graphite chip for a trained muscle, with a cyan dot tying it to the map.
+class _MuscleChip extends StatelessWidget {
+  const _MuscleChip({required this.activity, required this.onTap});
+
+  final MuscleActivity activity;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = BorderRadius.circular(AppRadius.pill);
+    return Semantics(
+      button: true,
+      label: '${activity.muscle.label}, ${activity.totalSets} sets',
+      excludeSemantics: true,
+      child: PressScale(
+        scale: 0.95,
+        builder: (context, onHighlight) => Material(
+          color: AppColors.analyticsPanelBottom,
+          shape: RoundedRectangleBorder(
+            borderRadius: r,
+            side: const BorderSide(color: AppColors.analyticsPanelBorder),
+          ),
+          child: InkWell(
+            borderRadius: r,
+            onTap: onTap,
+            onHighlightChanged: onHighlight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.anatomyCyan,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xxs + 2),
+                  Text(
+                    '${activity.muscle.label} · ${activity.totalSets}',
+                    style: AppTypography.labelMedium
+                        .copyWith(color: AppColors.silver),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

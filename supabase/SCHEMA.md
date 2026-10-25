@@ -17,12 +17,16 @@ Rule: never edit an applied migration. Add a new one.
 | 31      | `security_hardening`      | function EXECUTE grants, pinned search_path          |
 | 32      | `assignment_completion_profile_privacy` | `complete_assignment`, private profile columns |
 | 20261020200000 | `captain_hub_invitations` | invites, Captain Hub RPCs, listing toggle, suspension + capacity fixes |
+| 20261024200000 | `athlete_analytics_body_recovery` | body measurements, `body_goals`, private `progress_photos` + bucket, `recovery_checkins` |
 
 ## 2. Table map by pillar
 
 ### Shared / identity
 - `profiles` — one row per auth user; `role` = `user` | `admin`
-- `body_metrics_log` — weight/height history
+- `body_metrics_log` — weight/height history, plus optional body fat % and neck/chest/waist/hips/arm/thigh/calf (cm) and a note (migration `20261024200000`; plausibility check is `NOT VALID`, so only new/changed rows are checked)
+- `body_goals` — one optional bodyweight goal per user (`target_weight_kg`, `start_weight_kg`, `target_date`); owner CRUD
+- `progress_photos` — private progress photos; objects live in the **private** `progress-photos` bucket at `<user_id>/<file>`; owner-only table + storage policies, **no coach access**
+- `recovery_checkins` — one per user per local date (`sleep_hours`, `sleep_quality`, `soreness`, `energy`, `fatigue` on 1–5, `note`); owner-only, **no coach access**
 - `notifications` — generic in-app notifications (reused by Connect)
 - `content_audit_log` — admin content change log
 
@@ -74,7 +78,7 @@ Leftovers: old social values stay inside `notification_type` (Postgres cannot dr
   - `workouts`: `workout_logs`, `workout_log_exercises`, `workout_log_sets`, `user_streaks`
   - `prs`: `personal_records`, `personal_record_history`, `roadmap_personal_bests`
   - `progress`: `skill_progress`, `user_skill_stage_progress`, `user_objective_progress`, `xp_transactions`, `user_achievements`, `roadmap_workout_logs`, `roadmap_workout_log_exercises`
-  - `body`: `body_metrics_log`
+  - `body`: `body_metrics_log`, `body_goals` (never `progress_photos` or `recovery_checkins`)
 - Coaches have **no write policy** on any athlete log. History stays trustworthy.
 - Ending a relationship removes access immediately.
 - Coach programs are `is_official = false`, visible only to the coach and assigned athletes.

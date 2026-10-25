@@ -19,6 +19,7 @@ Future<ExerciseLibraryFilters?> showExerciseFilterSheet(
   required ExerciseFilterOptions options,
 }) {
   return showModalBottomSheet<ExerciseLibraryFilters>(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     useSafeArea: true,

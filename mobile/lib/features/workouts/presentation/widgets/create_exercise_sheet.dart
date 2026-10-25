@@ -20,6 +20,7 @@ Future<TrackableExercise?> showCreateExerciseSheet(
   String initialName = '',
 }) =>
     showModalBottomSheet<TrackableExercise>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,

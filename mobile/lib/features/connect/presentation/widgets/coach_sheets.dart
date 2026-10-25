@@ -27,6 +27,7 @@ void _toastOn(ScaffoldMessengerState messenger, String message) {
 
 Future<void> _showHubSheet(BuildContext context, Widget child) {
   return showModalBottomSheet<void>(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     useSafeArea: true,

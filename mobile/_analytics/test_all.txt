@@ -1,0 +1,171 @@
+00:00 +0: loading F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart
+00:00 +0: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: series is oldest first, one point per day, latest save wins
+00:00 +1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: change, latest and recorded measures
+00:00 +2: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: rolling average only uses real points inside the window
+00:00 +3: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: goal progress uses the saved start weight
+00:00 +4: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: goal progress falls back to first weigh-in after the goal was set
+00:00 +5: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: goal progress gaining goal, passing target clamps to reached
+00:00 +6: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: goal progress moving away from target counts as zero progress
+00:00 +7: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: goal progress null without goal or weights
+00:00 +8: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: rows entry row maps measures, drops blank note, keeps local date
+00:00 +9: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: rows entry from row reads only present measures
+00:00 +10: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: rows goal without a target is ignored
+00:00 +11: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/body_trend_test.dart: rows photo pose falls back to other
+00:00 +12: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart: counts primary and assisting sets per library group
+00:00 +13: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart: aliases resolve to canonical groups
+00:00 +14: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart: skips unfinished and out-of-range workouts; reports unmapped
+00:00 +15: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart: regions split primary sets
+00:00 +16: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart: 7-day range buckets by day, 4 weeks by week, newest last
+00:00 +17: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart: sessions are newest first with per-workout sets
+00:00 +18: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/muscle_group_distribution_calculator_test.dart: empty input is empty, not an error
+00:00 +19: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: too few check-ins gives a neutral prompt, no patterns
+00:00 +20: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: sleep below own baseline is flagged with its numbers
+00:00 +21: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: short sleep without a baseline
+00:00 +22: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: three close high-soreness check-ins are flagged
+00:00 +23: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: low energy + high fatigue today only uses today
+00:00 +24: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: feeling fresh is positive
+00:00 +25: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: volume jump vs the three weeks before
+00:01 +26: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: daily loads are zero-filled, oldest first, ending today
+00:01 +27: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/analytics/recovery_insights_test.dart: check-in row round trip
+00:01 +28: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: parseSvgPath supports the absolute commands the assets use, including H/V
+00:01 +29: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: parseSvgPath rejects commands outside the subset
+00:01 +30: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets every muscle is drawn in exactly the views it claims
+00:01 +31: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets lower back is not drawn: the art has no erector spinae
+00:01 +32: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets regions keep their stable anatomical ids, both sides
+00:01 +33: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets ids are unique and every shape sits inside the view box
+00:01 +34: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets parts are in paint order
+00:01 +35: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets every drawn muscle can be tapped
+00:01 +36: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets paint order decides overlapping taps: upper traps over the whole trapezius
+00:01 +37: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets taps outside the body hit nothing
+00:01 +38: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets an off-contract asset fails loudly
+00:01 +39: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets focus frame zooms onto the lit muscles, both sides in shot
+00:01 +40: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets focus frame follows the brightest muscles only
+00:01 +41: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets focus frame falls back to the whole body
+00:01 +42: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets focus frame never shrinks below a minimum and stays on the body
+00:01 +43: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/body_geometry_test.dart: anatomy assets fit keeps aspect ratio and centres
+00:01 +44: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_activity_calculator_test.dart: counts primary and secondary sets separately
+00:02 +45: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_activity_calculator_test.dart: ignores incomplete workouts and ones outside the window
+00:02 +46: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_activity_calculator_test.dart: a longer window brings older workouts back in
+00:02 +47: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_activity_calculator_test.dart: tracks last trained, exercises and sessions newest first
+00:02 +48: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_activity_calculator_test.dart: reports exercises without muscle data and skips empty ones
+00:02 +49: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_activity_calculator_test.dart: row mapping drops warm-up exercises and warm-up or unfinished sets
+00:02 +50: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_activity_calculator_test.dart: row mapping groups link rows by exercise and skips broken rows
+00:02 +51: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: exercise → muscle highlight primary muscles full, secondary dimmer
+00:02 +52: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: exercise → muscle highlight library aliases resolve (middle back → upper back)
+00:02 +53: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: exercise → muscle highlight an exercise without muscle data lights nothing
+00:02 +54: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: exercise → muscle highlight every highlighted muscle except lower back is drawable
+00:02 +55: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: workout highlight state without a focus every exercise lights; brightest wins
+00:02 +56: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: workout highlight state changing the focused exercise moves the bright highlight
+00:02 +57: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: workout highlight state unknown exercise ids are ignored
+00:02 +58: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_highlight_test.dart: workout highlight state best view follows where the highlight is
+00:02 +59: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_mapping_test.dart: MuscleMapping.musclesFor maps every library muscle group to at least one region
+00:02 +60: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_mapping_test.dart: MuscleMapping.musclesFor shared groups light every region they cover
+00:02 +61: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_mapping_test.dart: MuscleMapping.musclesFor normalizes case, separators and aliases
+00:02 +62: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_mapping_test.dart: MuscleMapping.musclesFor unknown names map to nothing
+00:02 +63: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_mapping_test.dart: MuscleMapping.involvement primary wins over secondary for the same region
+00:02 +64: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_mapping_test.dart: MuscleMapping.involvement template involvement is the union across exercises
+00:03 +65: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_map_view_test.dart: renders the anatomy and starts unlit
+00:03 +66: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_map_view_test.dart: highlight changes animate to the target look
+00:03 +67: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/muscle_map/muscle_map_view_test.dart: selection overrides intensity
+00:03 +68: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:03 +69: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:03 +70: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:03 +71: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +72: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +73: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +74: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +75: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +76: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +77: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +78: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:04 +79: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +80: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +81: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +82: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +83: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +84: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +85: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +86: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +87: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +88: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +89: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +90: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +91: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +92: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +93: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +94: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +95: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +96: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:05 +97: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:06 +98: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:06 +99: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:06 +100: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:06 +101: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:06 +102: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:06 +103: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+00:06 +104: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Rest": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart:81:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart line 81
+The test description was:
+  log a set in lb, add a pre-filled set, change its category, finish
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +104 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish [E]
+  Test failed. See exception logs above.
+  The test description was: log a set in lb, add a pre-filled set, change its category, finish
+  
+00:06 +104 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_finalizer_test.dart: drops empty uncompleted sets, saves completed sets only
+00:06 +105 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_finalizer_test.dart: warns (hasCompletedSets = false) when nothing was completed
+00:06 +106 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_finalizer_test.dart: stores canonical kg and the value exactly as typed
+00:06 +107 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_finalizer_test.dart: load goes to the column matching the tracking type
+00:06 +108 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_finalizer_test.dart: summary: duration, working sets, volume and PRs
+00:06 +109 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_finalizer_test.dart: server bodyweight snapshot overrides the local one
+00:06 +110 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_finalizer_test.dart: active workout survives a JSON round trip (local persistence)
+lib/features/analytics/presentation/widgets/analytics_charts.dart:454:38: Error: Member not found: 'ltr'.
+        textDirection: TextDirection.ltr,
+                                     ^^^
+00:07 +111 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: starting empty workout has no exercises and no template
+00:07 +112 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: starting from template: exercises in order with default set counts
+00:07 +113 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: template rules an added exercise joins the template on finish
+00:07 +114 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: template rules no template additions when the workout has no template
+00:07 +115 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: template rules removing a template exercise never changes the template
+00:07 +116 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: template rules removing an added exercise drops its pending template addition
+00:07 +117 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: template rules replacing never changes the template, even an added exercise
+00:07 +118 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: template rules the same exercise added twice is one addition
+00:07 +119 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: replace same position, keeps set count and categories, records origin
+00:07 +120 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: replace same tracking type keeps the load
+00:07 +121 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: replace replacing twice keeps the original exercise as origin
+00:07 +122 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: replace duration → reps clears the hold time
+00:07 +123 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: sets add set copies the previous set as a working set
+00:07 +124 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: sets add set with no sets left uses the last session
+00:07 +125 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: sets history pre-fills untouched sets by position, exact in same unit
+00:07 +126 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: sets remove set re-indexes positions
+00:07 +127 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: sets canComplete follows the tracking type
+00:07 +128 -1: F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/workout_session_editor_test.dart: reorder moves an exercise
+00:07 +129 -2: loading F:/Downloads/Projects/gym_app_2.0/mobile/test/widget_test.dart [E]
+  Failed to load "F:/Downloads/Projects/gym_app_2.0/mobile/test/widget_test.dart":
+  Compilation failed for testPath=F:/Downloads/Projects/gym_app_2.0/mobile/test/widget_test.dart: lib/features/analytics/presentation/widgets/analytics_charts.dart:454:38: Error: Member not found: 'ltr'.
+          textDirection: TextDirection.ltr,
+                                       ^^^
+  .
+00:07 +129 -2: Some tests failed.
+
+Failing tests:
+  F:/Downloads/Projects/gym_app_2.0/mobile/test/features/workouts/active_workout_screen_test.dart: log a set in lb, add a pre-filled set, change its category, finish
+  F:/Downloads/Projects/gym_app_2.0/mobile/test/widget_test.dart: loading F:/Downloads/Projects/gym_app_2.0/mobile/test/widget_test.dart
+test exit 1 

@@ -31,11 +31,35 @@ class ActiveWorkoutNotifier extends AsyncNotifier<ActiveWorkout?> {
 
   ActiveWorkout? get _current => state.valueOrNull;
 
-  /// Applies [next] and queues the write (writes stay in order).
+  /// The newest state not yet written to the device.
+  ActiveWorkout? _unsaved;
+  bool _writing = false;
+
+  /// Applies [next] and saves it. Saves never overlap: while one is
+  /// running, edits made meanwhile (every keystroke in a set field) are
+  /// coalesced and only the newest is written next — the device always
+  /// ends up with the latest workout without serialising each keystroke.
   void _commit(ActiveWorkout next) {
     state = AsyncData(next);
-    final repo = ref.read(workoutRepositoryProvider);
-    _writes = _writes.then((_) => repo.saveActiveWorkout(next)).catchError((_) {});
+    _unsaved = next;
+    if (!_writing) _writes = _flush();
+  }
+
+  Future<void> _flush() async {
+    _writing = true;
+    try {
+      while (_unsaved != null) {
+        final next = _unsaved!;
+        _unsaved = null;
+        try {
+          await ref.read(workoutRepositoryProvider).saveActiveWorkout(next);
+        } catch (_) {
+          // Best effort, as before: the next edit saves again.
+        }
+      }
+    } finally {
+      _writing = false;
+    }
   }
 
   void _edit(ActiveWorkout Function(ActiveWorkout w) change) {

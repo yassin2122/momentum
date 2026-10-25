@@ -15,6 +15,7 @@ import 'achievement_badge.dart';
 /// Opens the achievement detail sheet (design/canvas: ach/Detail).
 Future<void> showAchievementDetail(BuildContext context, Achievement a) {
   return showModalBottomSheet<void>(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     useSafeArea: true,

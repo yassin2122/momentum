@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -9,6 +8,7 @@ import '../../../../core/theme/app_sizing.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/hub_ui.dart';
+import '../../../../core/widgets/network_photo.dart';
 import '../../domain/entities/exercise_entity.dart';
 import '../providers/exercise_detail_provider.dart';
 import 'exercise_card.dart';
@@ -22,6 +22,7 @@ Future<void> showExerciseDetailSheet(
   required ExerciseEntity summary,
 }) {
   return showModalBottomSheet<void>(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
@@ -176,18 +177,16 @@ class _ImageStrip extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.xs),
         itemBuilder: (context, i) => ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.hubCard),
+          // The library photos' own 3:2 shape, so neither frame is cropped.
           child: AspectRatio(
-            aspectRatio: 4 / 3,
-            child: CachedNetworkImage(
-              imageUrl: urls[i],
-              fit: BoxFit.cover,
-              placeholder: (_, __) =>
-                  const ColoredBox(color: AppColors.hubIconButton),
-              errorWidget: (_, __, ___) => const ColoredBox(
+            aspectRatio: 3 / 2,
+            child: NetworkPhoto(
+              url: urls[i],
+              placeholder: const ColoredBox(
                 color: AppColors.hubIconButton,
                 child: Center(
                   child: Icon(
-                    Icons.broken_image_outlined,
+                    Icons.image_outlined,
                     color: AppColors.hubTextFaint,
                   ),
                 ),

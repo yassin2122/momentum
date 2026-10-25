@@ -22,6 +22,7 @@ import '../../../workouts/domain/entities/active_workout.dart';
 import '../../../workouts/domain/entities/workout_template.dart';
 import '../../../workouts/presentation/providers/active_workout_notifier.dart';
 import '../../../workouts/presentation/providers/workout_providers.dart';
+import '../../../workouts/presentation/widgets/resume_workout_bar.dart';
 import '../../domain/entities/discipline_score.dart';
 import '../../domain/entities/streak_status.dart';
 import '../providers/dashboard_providers.dart';
@@ -62,6 +63,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   void _showDiscipline(DisciplineScore score) {
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       useSafeArea: true,
       backgroundColor: AppColors.achSheet,
@@ -88,6 +90,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   void _preview(WorkoutTemplate template, {required bool canStart}) {
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -188,82 +191,122 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       backgroundColor: AppColors.hubBackgroundBottom,
       body: HubBackground(
         glowCenter: const Alignment(0.4, -0.84),
-        child: SafeArea(
-          bottom: false,
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: kNavClearance),
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  0,
+        child: Stack(
+          children: [
+            SafeArea(
+              bottom: false,
+              child: ListView(
+                padding: EdgeInsets.only(
+                  bottom: kNavClearance +
+                      (active == null
+                          ? 0
+                          : ResumeWorkoutBar.height + AppSpacing.sm),
                 ),
-                child: _TopSection(
-                  name: name,
-                  streak: streak,
-                  discipline: discipline,
-                  onDiscipline: discipline == null
-                      ? null
-                      : () => _showDiscipline(discipline),
-                  onStats: () => context.push(AppRoutes.muscleMap),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Your Plan',
-                        style: AppTypography.headlineLarge
-                            .copyWith(color: AppColors.hubTextBright),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.sm,
+                      AppSpacing.md,
+                      0,
+                    ),
+                    child: _TopSection(
+                      name: name,
+                      streak: streak,
+                      discipline: discipline,
+                      onDiscipline: discipline == null
+                          ? null
+                          : () => _showDiscipline(discipline),
+                      onStats: () => context.push(AppRoutes.analytics),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Your Plan',
+                            style: AppTypography.headlineLarge
+                                .copyWith(color: AppColors.hubTextBright),
+                          ),
+                        ),
+                        _HeaderAction(
+                          icon: LucideIcons.plus,
+                          label: 'New',
+                          semanticLabel: 'Create a template',
+                          color: AppColors.accentProgress,
+                          onTap: _createTemplate,
+                        ),
+                        const SizedBox(width: AppSpacing.xxs),
+                        _HeaderAction(
+                          icon: LucideIcons.arrowRight,
+                          label: 'Manage',
+                          semanticLabel: 'Manage templates',
+                          color: AppColors.hubTextMuted,
+                          iconAfter: true,
+                          onTap: _manageTemplates,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                    height: _carouselHeight,
+                    child: PageView.builder(
+                      controller: _pages,
+                      itemCount: cards.length,
+                      padEnds: false,
+                      onPageChanged: (i) => setState(() => _page = i),
+                      itemBuilder: (context, i) => Padding(
+                        padding: EdgeInsets.only(
+                          left: i == 0 ? AppSpacing.md : AppSpacing.xs,
+                          right: i == cards.length - 1 ? AppSpacing.md : 0,
+                        ),
+                        child: cards[i],
                       ),
                     ),
-                    _HeaderAction(
-                      icon: LucideIcons.plus,
-                      label: 'New',
-                      semanticLabel: 'Create a template',
-                      color: AppColors.accentProgress,
-                      onTap: _createTemplate,
-                    ),
-                    const SizedBox(width: AppSpacing.xxs),
-                    _HeaderAction(
-                      icon: LucideIcons.arrowRight,
-                      label: 'Manage',
-                      semanticLabel: 'Manage templates',
-                      color: AppColors.hubTextMuted,
-                      iconAfter: true,
-                      onTap: _manageTemplates,
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  if (cards.length > 1)
+                    _PageDots(count: cards.length, index: page),
+                ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                height: _carouselHeight,
-                child: PageView.builder(
-                  controller: _pages,
-                  itemCount: cards.length,
-                  padEnds: false,
-                  onPageChanged: (i) => setState(() => _page = i),
-                  itemBuilder: (context, i) => Padding(
-                    padding: EdgeInsets.only(
-                      left: i == 0 ? AppSpacing.md : AppSpacing.xs,
-                      right: i == cards.length - 1 ? AppSpacing.md : 0,
-                    ),
-                    child: cards[i],
+            ),
+            // Pinned just above the floating nav bar. The shell extends its
+            // body behind the bar, so bottom padding here is the bar's height.
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.xs,
+              child: AnimatedSwitcher(
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : AppConstants.animMedium,
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween(
+                      begin: const Offset(0, 0.4),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
                   ),
                 ),
+                child: active == null
+                    ? const SizedBox.shrink()
+                    : ResumeWorkoutBar(
+                        workout: active,
+                        onResume: () => context.push(AppRoutes.activeWorkout),
+                      ),
               ),
-              const SizedBox(height: AppSpacing.md),
-              if (cards.length > 1)
-                _PageDots(count: cards.length, index: page),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -346,7 +389,7 @@ class _TopSection extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     HubSquareIconButton(
                       icon: LucideIcons.trendingUp,
-                      semanticLabel: 'Your stats',
+                      semanticLabel: 'Analytics',
                       onPressed: onStats,
                     ),
                   ],
@@ -359,8 +402,7 @@ class _TopSection extends StatelessWidget {
           '${_greeting()}, $name',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style:
-              AppTypography.bodyLarge.copyWith(color: AppColors.hubTextBody),
+          style: AppTypography.bodyLarge.copyWith(color: AppColors.hubTextBody),
         ),
         const SizedBox(height: AppSpacing.xxs),
         Text(
@@ -559,9 +601,7 @@ class _GritCard extends StatelessWidget {
     return _StatCard(
       eyebrow: 'GRIT',
       onTap: onTap,
-      semanticLabel: v == null
-          ? 'Grit loading'
-          : 'Grit $v percent. $_caption',
+      semanticLabel: v == null ? 'Grit loading' : 'Grit $v percent. $_caption',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -705,8 +745,8 @@ class _DisciplineSheet extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxs),
           Text(
             'Last ${score.windowDays} days',
-            style:
-                AppTypography.bodyMedium.copyWith(color: AppColors.hubTextMuted),
+            style: AppTypography.bodyMedium
+                .copyWith(color: AppColors.hubTextMuted),
           ),
           const SizedBox(height: AppSpacing.md),
           for (final (label, value) in rows)
@@ -739,8 +779,8 @@ class _DisciplineSheet extends StatelessWidget {
                     'template to plan your week and workouts will count too.'
                 : 'Half your score is showing up, half is training to plan. '
                     'Each template counts as one session a week.',
-            style: AppTypography.bodySmall
-                .copyWith(color: AppColors.hubTextMuted),
+            style:
+                AppTypography.bodySmall.copyWith(color: AppColors.hubTextMuted),
           ),
         ],
       ),
@@ -935,26 +975,39 @@ class _GradientPill extends StatelessWidget {
   }
 }
 
-/// The muscle "hologram" filling the top of a card: the front body map,
-/// lit for the muscles the card's exercises work (primary bright,
-/// secondary dimmer). Unlit until the muscle data arrives.
+/// The muscle "hologram" filling the top of a card: the body map lit for
+/// the muscles the card's exercises work (primary bright, secondary
+/// dimmer), zoomed in on them so they read up close, on whichever side
+/// shows them best. Whole body, unlit, until the muscle data arrives.
 class _CardArt extends StatelessWidget {
   const _CardArt({required this.muscles});
 
   final Map<Muscle, double> muscles;
 
+  /// Back when the back carries more of the work (a pull day), else front.
+  static BodyView _side(Map<Muscle, double> muscles) {
+    var front = 0.0;
+    var back = 0.0;
+    for (final e in muscles.entries) {
+      if (e.key.views.contains(BodyView.front)) front += e.value;
+      if (e.key.views.contains(BodyView.back)) back += e.value;
+    }
+    return back > front ? BodyView.back : BodyView.front;
+  }
+
   @override
   Widget build(BuildContext context) {
     final names = [for (final m in muscles.keys) m.label].join(', ');
     return Positioned(
-      left: AppSpacing.lg,
-      right: AppSpacing.lg,
-      top: AppSpacing.xl2,
-      bottom: AppSpacing.xl4 * 2,
+      left: AppSpacing.xs,
+      right: AppSpacing.xs,
+      top: AppSpacing.xl,
+      bottom: AppSpacing.xl4 * 2 - AppSpacing.md,
       child: IgnorePointer(
         child: MuscleMapView(
-          view: BodyView.front,
+          view: _side(muscles),
           intensities: muscles,
+          zoomToHighlight: true,
           semanticLabel: muscles.isEmpty ? null : 'Works $names',
         ),
       ),

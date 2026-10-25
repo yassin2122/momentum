@@ -1,6 +1,7 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -62,10 +63,16 @@ class MuscleMapView extends ConsumerStatefulWidget {
     this.onMuscleTap,
     this.semanticLabel,
     this.zoomToHighlight = false,
+    this.scanIn = false,
     super.key,
   });
 
   final bool zoomToHighlight;
+
+  /// Reveal the body with a one-time cyan scan line, top to bottom, the
+  /// first time it's drawn — the hologram's signature moment. Off by
+  /// default so small maps elsewhere in the app stay quiet.
+  final bool scanIn;
   final BodyView view;
   final Map<Muscle, double> intensities;
   final Muscle? selected;
@@ -85,9 +92,11 @@ class MuscleMapView extends ConsumerStatefulWidget {
     }
     final t = intensity.clamp(0.0, 1.0);
     if (t <= 0) return MuscleLook.idle;
-    final hue = Color.lerp(AppColors.anatomyCyanDeep, AppColors.anatomyCyan, t)!;
+    final hue =
+        Color.lerp(AppColors.anatomyCyanDeep, AppColors.anatomyCyan, t)!;
     return MuscleLook(
-      Color.alphaBlend(hue.withValues(alpha: 0.45 + 0.5 * t), AppColors.anatomyBody),
+      Color.alphaBlend(
+          hue.withValues(alpha: 0.45 + 0.5 * t), AppColors.anatomyBody),
       0.3 + 0.6 * t,
     );
   }
@@ -97,12 +106,46 @@ class MuscleMapView extends ConsumerStatefulWidget {
 }
 
 class MuscleMapViewState extends ConsumerState<MuscleMapView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _anim = AnimationController(
     vsync: this,
     duration: AppConstants.animMedium,
     value: 1,
   );
+
+  /// First-draw scan reveal (1 = fully shown, no scan line).
+  late final AnimationController _scan = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+    value: widget.scanIn ? 0 : 1,
+  );
+  bool _scanScheduled = false;
+
+  /// One-shot halo ripple from a newly selected muscle (1 = settled).
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 650),
+    value: 1,
+  );
+
+  bool get _reduceMotion =>
+      MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_reduceMotion) _scan.value = 1;
+  }
+
+  /// Starts the scan once the body geometry is ready to draw.
+  void _maybeStartScan() {
+    if (_scanScheduled || _scan.value >= 1) return;
+    _scanScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scan.forward();
+    });
+  }
+
   late Map<Muscle, MuscleLook> _from = _targetLooks();
   late Map<Muscle, MuscleLook> _to = _from;
 
@@ -114,14 +157,20 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
           ),
       };
 
-  Map<Muscle, MuscleLook> get _current => {
-        for (final m in Muscle.values)
-          m: MuscleLook.lerp(
-            _from[m]!,
-            _to[m]!,
-            Curves.easeOutCubic.transform(_anim.value),
-          ),
-      };
+  /// The looks on screen. At rest this is the very same [_to] map every
+  /// time, so the painter (which compares by identity) skips repainting
+  /// when the parent rebuilds; a fresh map is built only mid-transition.
+  Map<Muscle, MuscleLook> get _current {
+    if (_anim.value >= 1) return _to;
+    return {
+      for (final m in Muscle.values)
+        m: MuscleLook.lerp(
+          _from[m]!,
+          _to[m]!,
+          Curves.easeOutCubic.transform(_anim.value),
+        ),
+    };
+  }
 
   /// What [muscle] looks like right now (mid-transition included).
   @visibleForTesting
@@ -134,9 +183,14 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
         !_sameIntensities(old.intensities, widget.intensities)) {
       _from = _current;
       _to = _targetLooks();
-      final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+      final reduceMotion = _reduceMotion;
       _anim.duration = reduceMotion ? Duration.zero : AppConstants.animMedium;
       _anim.forward(from: 0);
+      if (widget.selected != null &&
+          old.selected != widget.selected &&
+          !reduceMotion) {
+        _pulse.forward(from: 0);
+      }
     }
   }
 
@@ -151,25 +205,50 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
   @override
   void dispose() {
     _anim.dispose();
+    _scan.dispose();
+    _pulse.dispose();
     super.dispose();
   }
 
   /// The frame currently on screen (mid-glide included), for hit tests.
   Rect? _shownFrame;
 
+  // Last camera frame and what it was computed from: focusFrame measures
+  // region bounds, which is too much work to redo on every parent rebuild.
+  Rect? _frameCache;
+  BodyGeometry? _frameGeometry;
+  Size? _frameSize;
+  Map<Muscle, double>? _frameIntensities;
+  Muscle? _frameSelected;
+
   Rect _targetFrame(BodyGeometry geometry, Size size) {
     if (!widget.zoomToHighlight || size.isEmpty) return geometry.bodyFrame;
+    final cached = _frameCache;
+    if (cached != null &&
+        identical(_frameGeometry, geometry) &&
+        _frameSize == size &&
+        _frameSelected == widget.selected &&
+        _sameIntensities(_frameIntensities!, widget.intensities)) {
+      return cached;
+    }
     final lit = {
       ...widget.intensities,
       if (widget.selected != null) widget.selected!: 1.0,
     };
-    return geometry.focusFrame(lit, aspect: size.width / size.height);
+    _frameGeometry = geometry;
+    _frameSize = size;
+    _frameSelected = widget.selected;
+    _frameIntensities = widget.intensities;
+    return _frameCache =
+        geometry.focusFrame(lit, aspect: size.width / size.height);
   }
 
   void _onTapUp(TapUpDetails details, Size size, BodyGeometry geometry) {
     final fit = geometry.fit(size, frame: _shownFrame);
     final local = (details.localPosition - fit.offset) / fit.scale;
-    widget.onMuscleTap!(geometry.hitTest(local));
+    final muscle = geometry.hitTest(local);
+    if (muscle != null) HapticFeedback.selectionClick();
+    widget.onMuscleTap!(muscle);
   }
 
   @override
@@ -184,8 +263,8 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
           // Assets load once at startup-time speed; keep the space quiet
           // until then rather than flashing a spinner.
           if (geometry == null) return SizedBox.fromSize(size: size);
-          final reduceMotion =
-              MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+          _maybeStartScan();
+          final reduceMotion = _reduceMotion;
           final paint = RepaintBoundary(
             child: TweenAnimationBuilder<Rect?>(
               tween: RectTween(end: _targetFrame(geometry, size)),
@@ -194,13 +273,16 @@ class MuscleMapViewState extends ConsumerState<MuscleMapView>
               builder: (context, frame, _) {
                 _shownFrame = frame;
                 return AnimatedBuilder(
-                  animation: _anim,
+                  animation: Listenable.merge([_anim, _scan, _pulse]),
                   builder: (context, _) => CustomPaint(
                     size: size,
                     painter: _HologramPainter(
                       geometry: geometry,
                       looks: _current,
                       frame: frame,
+                      scan: Curves.easeInOutCubic.transform(_scan.value),
+                      pulse: _pulse.value,
+                      pulseMuscle: widget.selected,
                     ),
                   ),
                 );
@@ -224,18 +306,33 @@ class _HologramPainter extends CustomPainter {
     required this.geometry,
     required this.looks,
     required this.frame,
+    required this.scan,
+    required this.pulse,
+    required this.pulseMuscle,
   });
 
   final BodyGeometry geometry;
   final Map<Muscle, MuscleLook> looks;
   final Rect? frame;
 
+  /// 0–1 scan-in reveal; 1 draws everything with no scan line.
+  final double scan;
+
+  /// 0–1 halo ripple progress around [pulseMuscle]; 1 = none.
+  final double pulse;
+  final Muscle? pulseMuscle;
+
   @override
   void paint(Canvas canvas, Size size) {
+    if (scan <= 0) return;
+    final scanY = size.height * scan;
     final fit = geometry.fit(size, frame: frame);
     canvas
       ..save()
-      ..clipRect(Offset.zero & size)
+      // Above the scan line only, while the scan runs.
+      ..clipRect(scan < 1
+          ? Rect.fromLTWH(0, 0, size.width, scanY)
+          : Offset.zero & size)
       ..translate(fit.offset.dx, fit.offset.dy)
       ..scale(fit.scale);
     final hair = 1 / fit.scale; // one logical pixel in view-box units
@@ -243,7 +340,8 @@ class _HologramPainter extends CustomPainter {
     // that size it only reads as noise.
     final tiny = fit.scale < 0.2;
 
-    canvas.drawPath(geometry.silhouette, Paint()..color = AppColors.anatomyBody);
+    canvas.drawPath(
+        geometry.silhouette, Paint()..color = AppColors.anatomyBody);
 
     final fill = Paint();
     final stroke = Paint()
@@ -293,6 +391,22 @@ class _HologramPainter extends CustomPainter {
       );
     }
 
+    // Selection ripple: one soft cyan ring spreading out and fading.
+    final ripple =
+        pulseMuscle == null ? null : geometry.regionPath(pulseMuscle!);
+    if (ripple != null && pulse < 1) {
+      final p = Curves.easeOutCubic.transform(pulse);
+      canvas.drawPath(
+        ripple,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = (2 + 10 * p) * hair
+          ..color =
+              AppColors.anatomyCyanBright.withValues(alpha: 0.55 * (1 - p))
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, (2 + 6 * p) * hair),
+      );
+    }
+
     canvas.drawPath(
       geometry.silhouette,
       Paint()
@@ -301,11 +415,45 @@ class _HologramPainter extends CustomPainter {
         ..color = AppColors.anatomyLine.withValues(alpha: 0.85),
     );
     canvas.restore();
+
+    if (scan < 1) _paintScanLine(canvas, size, scanY);
+  }
+
+  /// The bright scan front plus a faint glow trailing above it.
+  void _paintScanLine(Canvas canvas, Size size, double y) {
+    const trail = 28.0;
+    // Fade the line out over the last tenth of the sweep.
+    final fade = ((1 - scan) / 0.1).clamp(0.0, 1.0);
+    canvas
+      ..drawRect(
+        Rect.fromLTWH(0, y - trail, size.width, trail),
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.anatomyCyan.withValues(alpha: 0),
+              AppColors.anatomyCyan.withValues(alpha: 0.12 * fade),
+            ],
+          ).createShader(Rect.fromLTWH(0, y - trail, size.width, trail)),
+      )
+      ..drawRect(
+        Rect.fromLTWH(0, y - 1, size.width, 1.5),
+        Paint()
+          ..shader = LinearGradient(colors: [
+            AppColors.anatomyCyanBright.withValues(alpha: 0),
+            AppColors.anatomyCyanBright.withValues(alpha: 0.9 * fade),
+            AppColors.anatomyCyanBright.withValues(alpha: 0),
+          ]).createShader(Rect.fromLTWH(0, y - 1, size.width, 1.5)),
+      );
   }
 
   @override
   bool shouldRepaint(_HologramPainter old) =>
       !identical(old.geometry, geometry) ||
       !identical(old.looks, looks) ||
-      old.frame != frame;
+      old.frame != frame ||
+      old.scan != scan ||
+      old.pulse != pulse ||
+      old.pulseMuscle != pulseMuscle;
 }
