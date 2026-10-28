@@ -87,29 +87,21 @@ class _FindCaptainScreenState extends ConsumerState<FindCaptainScreen> {
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
-        _SearchField(
-          controller: _search,
-          onChanged: (v) => setState(() => _query = v),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          height: AppSizing.minTouchTarget - AppSpacing.xs - 2,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _FilterChip(
-                label: 'All',
-                selected: _specialty == null,
-                onTap: () => setState(() => _specialty = null),
+        Row(
+          children: [
+            Expanded(
+              child: _SearchField(
+                controller: _search,
+                onChanged: (v) => setState(() => _query = v),
               ),
-              for (final s in specialties)
-                _FilterChip(
-                  label: s,
-                  selected: _specialty == s,
-                  onTap: () => setState(() => _specialty = s),
-                ),
-            ],
-          ),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _TypeMenuButton(
+              options: specialties,
+              selected: _specialty,
+              onSelected: (s) => setState(() => _specialty = s),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.sm),
         ...directory.when(
@@ -190,53 +182,106 @@ class _SearchField extends StatelessWidget {
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
+/// One pill button for choosing a type. Tapping it opens the types as a
+/// menu; the current choice is checked and shown on the button.
+class _TypeMenuButton extends StatelessWidget {
+  const _TypeMenuButton({
+    required this.options,
     required this.selected,
-    required this.onTap,
+    required this.onSelected,
   });
 
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
+  final List<String> options;
+  final String? selected;
+  final ValueChanged<String?> onSelected;
+
+  /// Menu value for "All" — a dismissed menu returns null, so null
+  /// can't stand for "All".
+  static const String _all = '';
+
+  static const double _maxLabelWidth = 120;
 
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(AppRadius.pill);
-    return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.xs),
-      child: Semantics(
-        button: true,
-        selected: selected,
-        child: Material(
-          color: selected ? AppColors.hubHeroGlow : AppColors.authInputFill,
-          shape: RoundedRectangleBorder(
-            borderRadius: radius,
-            side: BorderSide(
-              color: selected ? AppColors.hubRing : AppColors.authInputBorder,
-            ),
+    final active = selected != null;
+    return PopupMenuButton<String>(
+      tooltip: 'Choose type',
+      position: PopupMenuPosition.under,
+      offset: const Offset(0, AppSpacing.xs),
+      color: AppColors.hubCardTop,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.hubCard),
+        side: const BorderSide(color: AppColors.hubCardBorderStrong),
+      ),
+      onSelected: (v) => onSelected(v == _all ? null : v),
+      itemBuilder: (context) => [
+        _item(_all, 'All', selected == null),
+        for (final o in options) _item(o, o, selected == o),
+      ],
+      child: Container(
+        height: AppSizing.minTouchTarget,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md - 2),
+        decoration: BoxDecoration(
+          color: active ? AppColors.hubHeroGlow : AppColors.authInputFill,
+          borderRadius: radius,
+          border: Border.all(
+            color: active ? AppColors.hubRing : AppColors.authInputBorder,
           ),
-          child: InkWell(
-            borderRadius: radius,
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md - 2),
-              child: Center(
-                child: Text(
-                  label,
-                  style: AppTypography.labelMedium.copyWith(
-                    color: selected
-                        ? AppColors.hubTextBright
-                        : AppColors.hubTextBody,
-                    fontWeight:
-                        selected ? AppTypography.semiBold : AppTypography.medium,
-                  ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _maxLabelWidth),
+              child: Text(
+                selected ?? 'All types',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.labelMedium.copyWith(
+                  color:
+                      active ? AppColors.hubTextBright : AppColors.hubTextBody,
+                  fontWeight:
+                      active ? AppTypography.semiBold : AppTypography.medium,
                 ),
               ),
             ),
-          ),
+            const SizedBox(width: AppSpacing.xxs),
+            Icon(
+              LucideIcons.chevronDown,
+              size: AppSizing.iconSm,
+              color: active ? AppColors.hubTextBright : AppColors.hubTextMuted,
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _item(String value, String label, bool isSelected) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: AppTypography.titleSmall.copyWith(
+                color: isSelected
+                    ? AppColors.hubTextBright
+                    : AppColors.hubTextBody,
+                fontWeight:
+                    isSelected ? AppTypography.semiBold : AppTypography.medium,
+              ),
+            ),
+          ),
+          if (isSelected)
+            const Icon(
+              LucideIcons.check,
+              size: AppSizing.iconSm,
+              color: AppColors.hubEyebrow,
+            ),
+        ],
       ),
     );
   }

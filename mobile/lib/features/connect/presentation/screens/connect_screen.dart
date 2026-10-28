@@ -73,7 +73,6 @@ class ConnectScreen extends ConsumerWidget {
 
   List<Widget> _captainCards(BuildContext context, CaptainOverview o) => [
         _CaptainHeroCard(overview: o),
-        _FeedbackCard(overview: o),
         _ProgramCard(overview: o),
         _SharingCard(overview: o),
       ];
@@ -332,57 +331,6 @@ class _CaptainHeroCard extends StatelessWidget {
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeedbackCard extends StatelessWidget {
-  const _FeedbackCard({required this.overview});
-
-  final CaptainOverview overview;
-
-  @override
-  Widget build(BuildContext context) {
-    final latest = overview.latestCoachFeedback;
-    return HubCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Expanded(child: HubEyebrow('Latest feedback')),
-              if (latest != null)
-                Text(
-                  DateFormat('MMM d').format(latest.createdAt.toLocal()),
-                  style: AppTypography.labelMedium
-                      .copyWith(color: AppColors.hubTextMuted),
-                ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm - 2),
-          Text(
-            latest == null
-                ? 'No feedback yet. Your Coach\'s notes on your workouts '
-                    'will show up here.'
-                : '"${latest.body}"',
-            style: AppTypography.bodyLarge.copyWith(
-              color: latest == null
-                  ? AppColors.hubTextMuted
-                  : AppColors.hubTextBright,
-            ),
-          ),
-          if (latest?.workoutLogId != null || latest?.skillId != null) ...[
-            const SizedBox(height: AppSpacing.sm - 2),
-            HubPill(
-              icon: LucideIcons.dumbbell,
-              label: latest!.skillId != null ? 'On a skill' : 'On a workout',
-              fill: AppColors.hubTrack,
-              textColor: AppColors.hubTextMuted,
-            ),
-          ],
         ],
       ),
     );

@@ -10,6 +10,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_state_notifier.dart';
+import '../widgets/account_type_picker.dart';
 import '../widgets/auth_ui.dart';
 
 /// Register screen (app_design/register screen.png).
@@ -27,6 +28,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _agreedToTerms = false;
+  AccountType _accountType = AccountType.athlete;
 
   @override
   void dispose() {
@@ -165,6 +167,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         firstLine: 'Create',
         secondLine: 'your account',
         subtitle: 'Join Grit and start\nyour transformation.',
+      ),
+      const SizedBox(height: AppSpacing.lg),
+      AccountTypePicker(
+        value: _accountType,
+        onChanged: (type) => setState(() => _accountType = type),
       ),
       const SizedBox(height: AppSpacing.lg),
       AuthTextField(
