@@ -14,6 +14,7 @@ import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/providers/auth_state_notifier.dart';
 import '../../../connect/presentation/providers/connect_providers.dart';
 import '../../../connect/presentation/widgets/coach_sheets.dart';
+import '../../../connect/presentation/widgets/pro_join_sheet.dart';
 import '../../../progress/presentation/sample/progress_sample_data.dart';
 
 /// PROFILE tab: who you are, totals, personal records and settings.
@@ -273,6 +274,12 @@ class ProfileScreen extends ConsumerWidget {
                     ? () => showSharingSheet(context, captain)
                     : () => context.go(AppRoutes.connect),
               ),
+              if (!isGuest)
+                _SettingsRow(
+                  icon: LucideIcons.briefcase,
+                  label: 'Join Grit as a pro',
+                  onTap: () => showProJoinSheet(context),
+                ),
               _SettingsRow(
                 icon: LucideIcons.bell,
                 label: 'Notifications',

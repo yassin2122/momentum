@@ -30,9 +30,15 @@ enum AccountType {
   ),
   doctor(
     label: 'Doctor',
-    description: 'Support athletes with medical guidance',
+    description: 'Sports medicine, orthopedics and more',
     icon: Icons.medical_services_rounded,
     tint: AppColors.error,
+  ),
+  physio(
+    label: 'Physiotherapist',
+    description: 'Help athletes recover and get back to training',
+    icon: Icons.accessibility_new_rounded,
+    tint: AppColors.info,
   );
 
   const AccountType({
@@ -50,9 +56,10 @@ enum AccountType {
   bool get isProfessional => this != AccountType.athlete;
 }
 
-/// iOS-style inset grouped list: section header, one row per account
-/// type, hairline separators inset past the icon, trailing checkmark on
-/// the selected row, and a footer note.
+/// "I'm joining as": a segmented tab (Athlete | Professional). Choosing
+/// Professional reveals an iOS-style inset grouped list of the four
+/// professional types — hairline separators inset past the icon, trailing
+/// checkmark on the selected row — and a footer note.
 class AccountTypePicker extends StatelessWidget {
   const AccountTypePicker({
     super.key,
@@ -68,7 +75,7 @@ class AccountTypePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rows = <Widget>[];
-    for (final type in AccountType.values) {
+    for (final type in AccountType.values.where((t) => t.isProfessional)) {
       if (rows.isNotEmpty) {
         rows.add(
           const Padding(
@@ -102,20 +109,38 @@ class AccountTypePicker extends StatelessWidget {
             ),
           ),
         ),
-        Semantics(
-          container: true,
-          label: 'Account type',
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.medium),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppColors.authInputFill,
-                border: Border.all(color: AppColors.authInputBorder),
-                borderRadius: BorderRadius.circular(AppRadius.medium),
-              ),
-              child: Column(children: rows),
-            ),
-          ),
+        _Segmented(
+          professional: value.isProfessional,
+          onChanged: (pro) {
+            if (pro == value.isProfessional) return;
+            HapticFeedback.selectionClick();
+            onChanged(pro ? AccountType.coach : AccountType.athlete);
+          },
+        ),
+        AnimatedSize(
+          duration: AppConstants.animMedium,
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: !value.isProfessional
+              ? const SizedBox(width: double.infinity)
+              : Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.sm),
+                  child: Semantics(
+                    container: true,
+                    label: 'Professional account type',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.medium),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AppColors.authInputFill,
+                          border: Border.all(color: AppColors.authInputBorder),
+                          borderRadius: BorderRadius.circular(AppRadius.medium),
+                        ),
+                        child: Column(children: rows),
+                      ),
+                    ),
+                  ),
+                ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -128,9 +153,9 @@ class AccountTypePicker extends StatelessWidget {
             duration: AppConstants.animFast,
             child: Text(
               value.isProfessional
-                  ? 'Professional accounts are reviewed before they appear '
-                      'to athletes.'
-                  : 'You can switch to a professional account later.',
+                  ? 'After sign-up you\'ll set up your ${value.label.toLowerCase()} '
+                      'profile. Grit reviews it before athletes can see it.'
+                  : 'Coaches, gyms, doctors and physios: choose Professional.',
               key: ValueKey(value.isProfessional),
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.authTextHint,
@@ -215,6 +240,65 @@ class AccountTypePicker extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+
+/// Two-segment control in the auth style.
+class _Segmented extends StatelessWidget {
+  const _Segmented({required this.professional, required this.onChanged});
+
+  final bool professional;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget segment(String label, bool isPro) {
+      final selected = professional == isPro;
+      return Expanded(
+        child: Semantics(
+          button: true,
+          selected: selected,
+          inMutuallyExclusiveGroup: true,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => onChanged(isPro),
+            child: AnimatedContainer(
+              duration: AppConstants.animFast,
+              curve: Curves.easeOut,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? AppColors.authSky : AppColors.transparent,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: Text(
+                label,
+                style: AppTypography.labelLarge.copyWith(
+                  color: selected ? AppColors.white : AppColors.authTextHint,
+                  fontWeight: AppTypography.semiBold,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.authInputFill,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: AppColors.authInputBorder),
+      ),
+      child: Row(
+        children: [
+          segment('Athlete', false),
+          segment('Professional', true),
+        ],
       ),
     );
   }

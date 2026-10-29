@@ -152,7 +152,7 @@ class _CaptainProfileEditorScreenState
         messenger.showSnackBar(SnackBar(
           content: Text(_isNew
               ? 'Profile sent for review'
-              : 'Captain profile saved'),
+              : 'Coach profile saved'),
         ));
         _back();
       },
@@ -227,7 +227,7 @@ class _CaptainProfileEditorScreenState
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                _isNew ? 'Become a Captain' : 'Edit Captain profile',
+                _isNew ? 'Become a Coach' : 'Edit Coach profile',
                 style: AppTypography.headlineMedium
                     .copyWith(color: AppColors.hubTextBright),
               ),

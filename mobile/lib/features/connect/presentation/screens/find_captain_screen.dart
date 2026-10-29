@@ -10,6 +10,7 @@ import '../../../../core/theme/app_sizing.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/hub_ui.dart';
+import '../../../../core/widgets/provider_card.dart';
 import '../../domain/entities/connect_entities.dart';
 import '../providers/connect_providers.dart';
 
@@ -73,7 +74,7 @@ class _FindCaptainScreenState extends ConsumerState<FindCaptainScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const HubEyebrow('Coach hub'),
+                  const HubEyebrow('Connect'),
                   Text(
                     'Find a Coach',
                     style: AppTypography.headlineMedium.copyWith(
@@ -131,7 +132,7 @@ class _FindCaptainScreenState extends ConsumerState<FindCaptainScreen> {
             return [
               for (final c in shown) ...[
                 _CoachCard(coach: c, isMine: c.coachId == myCoachId),
-                const SizedBox(height: AppSpacing.sm - 2),
+                const SizedBox(height: AppSpacing.sm),
               ],
             ];
           },
@@ -323,81 +324,16 @@ class _CoachCard extends StatelessWidget {
       );
     }
 
-    void open() => context.push(AppRoutes.captainProfilePath(coach.coachId));
-
-    return HubCard(
-      onTap: open,
-      padding: const EdgeInsets.all(AppSpacing.md - 2),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HubAvatar(
-                name: name,
-                imageUrl: coach.avatarUrl,
-                size: 52,
-                ringColor: null,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTypography.titleMedium.copyWith(
-                              color: AppColors.hubTextBright,
-                              fontWeight: AppTypography.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.xxs + 2),
-                        const Icon(
-                          LucideIcons.badgeCheck,
-                          size: AppSizing.iconSm - 2,
-                          color: AppColors.hubEyebrow,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xxs - 1),
-                    if (specialties.isNotEmpty || coach.headline != null)
-                      Text(
-                        specialties.isNotEmpty ? specialties : coach.headline!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.labelLarge
-                            .copyWith(color: AppColors.hubTextBody),
-                      ),
-                    const SizedBox(height: AppSpacing.xxs - 1),
-                    Text(
-                      meta,
-                      style: AppTypography.labelMedium
-                          .copyWith(color: AppColors.hubTextMuted),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              status,
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            child: HubOutlineButton(
-              label: 'View profile',
-              height: 38,
-              onPressed: open,
-            ),
-          ),
-        ],
-      ),
+    return ProviderCard(
+      onTap: () => context.push(AppRoutes.captainProfilePath(coach.coachId)),
+      leading: HubAvatar(name: name, imageUrl: coach.avatarUrl, size: 56, ringColor: null),
+      title: name,
+      badges: [
+        const ProviderTypeChip(label: 'Coach', icon: LucideIcons.clipboardList),
+        status,
+      ],
+      subtitle: specialties.isNotEmpty ? specialties : coach.headline,
+      fact: meta,
     );
   }
 }

@@ -21,6 +21,21 @@ import '../../features/connect/presentation/screens/captain_profile_screen.dart'
 import '../../features/connect/presentation/screens/client_detail_screen.dart';
 import '../../features/connect/presentation/screens/connect_screen.dart';
 import '../../features/connect/presentation/screens/find_captain_screen.dart';
+import '../../features/gyms/presentation/screens/coach_gyms_screen.dart';
+import '../../features/gyms/presentation/screens/find_gym_screen.dart';
+import '../../features/gyms/presentation/screens/gym_admin_screen.dart';
+import '../../features/gyms/presentation/screens/gym_ai_usage_screen.dart';
+import '../../features/gyms/presentation/screens/gym_branches_screen.dart';
+import '../../features/gyms/presentation/screens/gym_detail_screen.dart';
+import '../../features/gyms/presentation/screens/gym_register_screen.dart';
+import '../../features/gyms/presentation/screens/my_gyms_screen.dart';
+import '../../features/health/domain/entities/health_entities.dart';
+import '../../features/health/presentation/screens/health_marketplace_screen.dart';
+import '../../features/health/presentation/screens/health_pro_onboarding_screen.dart';
+import '../../features/health/presentation/screens/health_pro_setup_screen.dart';
+import '../../features/health/presentation/screens/health_profile_editor_screen.dart';
+import '../../features/health/presentation/screens/health_provider_screen.dart';
+import '../../features/health/presentation/screens/saved_providers_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/exercises/presentation/screens/exercises_screen.dart';
 import '../../features/muscle_map/presentation/screens/muscle_map_screen.dart';
@@ -110,6 +125,83 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
           CaptainProfileScreen(coachId: state.pathParameters['coachId']!),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.gymDetail,
+        pageBuilder: (context, state) => _pushPage(
+          state,
+          GymDetailScreen(gymId: state.pathParameters['gymId']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.healthProvider,
+        pageBuilder: (context, state) => _pushPage(
+          state,
+          HealthProviderScreen(listingId: state.pathParameters['listingId']!),
+        ),
+      ),
+      // `new` must come before `:listingId`.
+      GoRoute(
+        path: AppRoutes.healthProSetup,
+        pageBuilder: (context, state) => _pushPage(
+          state,
+          HealthProSetupScreen(
+            initialKind: state.uri.queryParameters['kind'] == null
+                ? null
+                : HealthKind.fromDb(state.uri.queryParameters['kind']),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.healthProEditor,
+        pageBuilder: (context, state) => _pushPage(
+          state,
+          HealthProfileEditorScreen(listingId: state.pathParameters['listingId']!),
+        ),
+        routes: [
+          GoRoute(
+            path: 'setup',
+            pageBuilder: (context, state) => _pushPage(
+              state,
+              HealthProOnboardingScreen(listingId: state.pathParameters['listingId']!),
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.myGyms,
+        pageBuilder: (context, state) =>
+            _pushPage(state, const MyGymsScreen()),
+        routes: [
+          GoRoute(
+            path: 'new',
+            pageBuilder: (context, state) =>
+                _pushPage(state, const GymRegisterScreen()),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.gymAdmin,
+        pageBuilder: (context, state) => _pushPage(
+          state,
+          GymAdminScreen(gymId: state.pathParameters['gymId']!),
+        ),
+        routes: [
+          GoRoute(
+            path: 'branches',
+            pageBuilder: (context, state) => _pushPage(
+              state,
+              GymBranchesScreen(gymId: state.pathParameters['gymId']!),
+            ),
+          ),
+          GoRoute(
+            path: 'ai',
+            pageBuilder: (context, state) => _pushPage(
+              state,
+              GymAiUsageScreen(gymId: state.pathParameters['gymId']!),
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.planet,
@@ -214,10 +306,32 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                         _pushPage(state, const FindCaptainScreen()),
                   ),
                   GoRoute(
+                    path: 'gyms',
+                    pageBuilder: (context, state) =>
+                        _pushPage(state, const FindGymScreen()),
+                  ),
+                  GoRoute(
+                    path: 'health',
+                    pageBuilder: (context, state) =>
+                        _pushPage(state, const HealthMarketplaceScreen()),
+                    routes: [
+                      GoRoute(
+                        path: 'saved',
+                        pageBuilder: (context, state) =>
+                            _pushPage(state, const SavedProvidersScreen()),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
                     path: 'hub',
                     pageBuilder: (context, state) =>
                         _pushPage(state, const CaptainHubScreen()),
                     routes: [
+                      GoRoute(
+                        path: 'gyms',
+                        pageBuilder: (context, state) =>
+                            _pushPage(state, const CoachGymsScreen()),
+                      ),
                       GoRoute(
                         path: 'profile',
                         pageBuilder: (context, state) => _pushPage(

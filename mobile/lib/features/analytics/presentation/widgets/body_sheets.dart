@@ -573,7 +573,7 @@ class _AddPhotoSheetState extends ConsumerState<AddPhotoSheet> {
         children: [
           const AnalyticsSheetHeader(
             title: 'Progress photo',
-            subtitle: 'Stored privately — only you can see it. Your Captain '
+            subtitle: 'Stored privately — only you can see it. Your Coach '
                 'never gets access to photos.',
           ),
           const SizedBox(height: AppSpacing.md),

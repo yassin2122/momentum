@@ -11,6 +11,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/hub_ui.dart';
 import '../../../auth/presentation/providers/auth_state_notifier.dart';
+import '../../../gyms/presentation/providers/gym_providers.dart';
 import '../../domain/entities/connect_entities.dart';
 import '../providers/connect_providers.dart';
 import '../widgets/coach_sheets.dart';
@@ -38,7 +39,7 @@ class CaptainHubScreen extends ConsumerWidget {
         HubMessageCard(
           icon: LucideIcons.userRound,
           title: 'Coaching needs a full account',
-          message: 'Create an account to set up a Captain profile.',
+          message: 'Create an account to set up a Coach profile.',
         ),
       ];
     } else {
@@ -47,7 +48,7 @@ class CaptainHubScreen extends ConsumerWidget {
         error: (e, _) => [
           HubMessageCard(
             icon: LucideIcons.wifiOff,
-            title: "Couldn't load your Captain Hub",
+            title: "Couldn't load your Coach Hub",
             message: connectErrorMessage(e),
             actionLabel: 'Retry',
             onAction: () => ref.invalidate(captainHubProvider),
@@ -74,7 +75,7 @@ class CaptainHubScreen extends ConsumerWidget {
                   children: [
                     const HubEyebrow('Coach'),
                     Text(
-                      'Captain Hub',
+                      'Coach Hub',
                       style: AppTypography.headlineLarge
                           .copyWith(color: AppColors.hubTextBright),
                     ),
@@ -95,7 +96,7 @@ class CaptainHubScreen extends ConsumerWidget {
             const _StatusCard(
               icon: LucideIcons.shieldCheck,
               title: 'Profile under review',
-              message: 'We check every Captain before they can coach. You '
+              message: 'We check every Coach before they can coach. You '
                   'can keep improving your profile in the meantime.',
             ),
             _ProfileCard(hub: h),
@@ -103,7 +104,7 @@ class CaptainHubScreen extends ConsumerWidget {
         CoachStatus.suspended => [
             const _StatusCard(
               icon: LucideIcons.lock,
-              title: 'Captain profile suspended',
+              title: 'Coach profile suspended',
               message: 'You can\'t see athlete data, send feedback or invite '
                   'clients right now. Contact Grit support for details.',
               danger: true,
@@ -114,9 +115,72 @@ class CaptainHubScreen extends ConsumerWidget {
             if (h.requests.isNotEmpty) _RequestsCard(requests: h.requests),
             _ClientsCard(hub: h),
             _InvitesCard(hub: h),
+            const _GymsEntry(),
             _ProfileCard(hub: h),
           ],
       };
+}
+
+/// Captain Hub → Gyms: the gyms this coach works at and invitations from
+/// gyms. Joining a gym never moves clients or data.
+class _GymsEntry extends ConsumerWidget {
+  const _GymsEntry();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gyms = ref.watch(myGymAffiliationsProvider).valueOrNull;
+    final invites = gyms?.invitations.where((i) => !i.isMyRequest).length ?? 0;
+    final count = gyms?.affiliations.length ?? 0;
+    final subtitle = invites > 0
+        ? '$invites gym invitation${invites == 1 ? '' : 's'}'
+        : count == 0
+            ? 'Join your gym to use its AI tools'
+            : count == 1
+                ? gyms!.affiliations.first.gymName
+                : '$count gyms';
+
+    return HubCard(
+      onTap: () => context.push(AppRoutes.coachGyms),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
+        children: [
+          const Icon(
+            LucideIcons.dumbbell,
+            size: AppSizing.iconMd,
+            color: AppColors.hubEyebrow,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Gyms',
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.hubTextBright,
+                    fontWeight: AppTypography.bold,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTypography.labelMedium.copyWith(
+                    color: invites > 0
+                        ? AppColors.hubWaitText
+                        : AppColors.hubTextMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            LucideIcons.chevronRight,
+            size: AppSizing.iconSm,
+            color: AppColors.hubTextFaint,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -159,7 +223,7 @@ class _ApplyCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: HubGradientButton(
-              label: 'Create Captain profile',
+              label: 'Create Coach profile',
               onPressed: () => context.go(AppRoutes.captainHubProfile),
             ),
           ),
@@ -563,7 +627,7 @@ class _ProfileCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           HubCardHeader(
-            title: 'Your Captain profile',
+            title: 'Your Coach profile',
             trailing: 'Edit',
             onTrailingTap: () => context.go(AppRoutes.captainHubProfile),
           ),

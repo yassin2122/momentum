@@ -62,7 +62,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } else if (failure != null) {
       _showError(failure.message);
     } else {
-      context.go(AppRoutes.dashboard);
+      final router = GoRouter.of(context);
+      // A professional goes straight on to set up their profile.
+      if (_accountType == AccountType.coach) {
+        router.go(AppRoutes.captainHubProfile); // inside the Coach tab
+        return;
+      }
+      router.go(AppRoutes.dashboard);
+      final setup = switch (_accountType) {
+        AccountType.gym => AppRoutes.gymRegister,
+        AccountType.doctor => AppRoutes.healthProSetupPath('doctor'),
+        AccountType.physio => AppRoutes.healthProSetupPath('physical_therapist'),
+        _ => null,
+      };
+      if (setup != null) router.push(setup);
     }
   }
 

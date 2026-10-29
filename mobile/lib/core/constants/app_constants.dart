@@ -70,6 +70,43 @@ abstract final class AppRoutes {
   static const String captainProfile = '/captain/:coachId';
   static String captainProfilePath(String coachId) => '/captain/$coachId';
 
+  // GYMS — Find a gym keeps the nav bar (Coach tab); a gym page, the gym
+  // dashboard and its editors are full-screen.
+  static const String findGym = '/connect/gyms';
+
+  /// Captain Hub → Gyms (invitations, affiliations, AI allowance).
+  static const String coachGyms = '/connect/hub/gyms';
+
+  static const String gymDetail = '/gym/:gymId';
+  static String gymDetailPath(String gymId) => '/gym/$gymId';
+
+  /// Profile → Your gyms (dashboards, register, join a team).
+  static const String myGyms = '/gyms';
+  static const String gymRegister = '/gyms/new';
+
+  static const String gymAdmin = '/gym-admin/:gymId';
+  static String gymAdminPath(String gymId) => '/gym-admin/$gymId';
+  static const String gymAdminBranches = '/gym-admin/:gymId/branches';
+  static String gymAdminBranchesPath(String gymId) => '/gym-admin/$gymId/branches';
+  static const String gymAdminAi = '/gym-admin/:gymId/ai';
+  static String gymAdminAiPath(String gymId) => '/gym-admin/$gymId/ai';
+
+  // HEALTH — doctors & physiotherapists (discovery only, no booking).
+  // Find a health pro and Saved keep the nav bar (Coach tab).
+  static const String healthMarketplace = '/connect/health';
+  static const String savedProviders = '/connect/health/saved';
+  static const String healthProvider = '/health/:listingId';
+  static String healthProviderPath(String listingId) => '/health/$listingId';
+
+  /// Provider side: set up (`?kind=doctor|physical_therapist`) and edit.
+  static const String healthProSetup = '/health-pro/new';
+  static String healthProSetupPath(String kind) => '/health-pro/new?kind=$kind';
+  static const String healthProEditor = '/health-pro/:listingId';
+  static String healthProEditorPath(String listingId) => '/health-pro/$listingId';
+
+  /// First-time setup in four steps, right after creating the profile.
+  static String healthProOnboardingPath(String listingId) => '/health-pro/$listingId/setup';
+
   // PROGRESS — inside the Universe tab. While the tab is a "Coming soon"
   // placeholder, `universe` points at the tab root so existing links
   // (Dashboard, Profile) land there instead of a dead route.

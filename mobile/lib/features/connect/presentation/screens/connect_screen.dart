@@ -62,10 +62,18 @@ class ConnectScreen extends ConsumerWidget {
         glowCenter: const Alignment(-0.6, -0.8),
         children: [
           const SizedBox(height: AppSpacing.xs),
-          _Header(onFind: () => context.go(AppRoutes.findCaptain)),
-          const SizedBox(height: AppSpacing.sm),
+          const _Header(),
+          const SizedBox(height: AppSpacing.md),
+          const _ExploreRow(),
+          const SizedBox(height: AppSpacing.lg),
+          const _SectionLabel('Your Coach'),
           for (final w in body) ...[w, const SizedBox(height: AppSpacing.sm)],
-          if (!isGuest) const _CaptainHubEntry(),
+          // People who already coach keep a shortcut to their Coach Hub.
+          // Joining as a pro lives in sign-up and Profile, not here.
+          if (!isGuest) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const _CaptainHubEntry(),
+          ],
         ],
       ),
     );
@@ -79,9 +87,7 @@ class ConnectScreen extends ConsumerWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onFind});
-
-  final VoidCallback onFind;
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
@@ -94,17 +100,16 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const HubEyebrow('Coach hub'),
+                const HubEyebrow('Find your team'),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  'Your Coach',
+                  'Connect',
                   style: AppTypography.headlineLarge
                       .copyWith(color: AppColors.hubTextBright),
                 ),
               ],
             ),
           ),
-          HubLink(label: 'Find coaches', onTap: onFind),
         ],
       ),
     );
@@ -172,26 +177,28 @@ class _CaptainHubEntry extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // While loading or on error, show the generic entry rather than
     // nothing — the hub screen itself handles the error state.
+    // Only for people who already coach; everyone else starts from
+    // "Join Grit as a pro" below it.
     final hub = ref.watch(captainHubProvider).valueOrNull;
+    if (hub == null) return const SizedBox.shrink();
     final String title;
     final String subtitle;
-    if (hub == null) {
-      title = 'Are you a coach?';
-      subtitle = 'Become a Captain and coach athletes on Grit';
-    } else if (hub.status == CoachStatus.pending) {
-      title = 'Captain Hub';
-      subtitle = 'Your Captain profile is under review';
+    if (hub.status == CoachStatus.pending) {
+      title = 'Coach Hub';
+      subtitle = 'Your Coach profile is under review';
     } else {
       final n = hub.clients.length;
       final r = hub.requests.length;
-      title = 'Captain Hub';
+      title = 'Coach Hub';
       subtitle = [
         '$n athlete${n == 1 ? '' : 's'}',
         if (r > 0) '$r new request${r == 1 ? '' : 's'}',
       ].join(' · ');
     }
 
-    return HubCard(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: HubCard(
       onTap: () => context.go(AppRoutes.captainHub),
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
@@ -228,8 +235,127 @@ class _CaptainHubEntry extends ConsumerWidget {
           ),
         ],
       ),
+    ),
     );
   }
+}
+
+/// Coaches, Gyms and Health side by side, equal weight.
+class _ExploreRow extends StatelessWidget {
+  const _ExploreRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _ExploreTile(
+              icon: LucideIcons.clipboardList,
+              title: 'Coaches',
+              subtitle: 'Find a Coach',
+              route: AppRoutes.findCaptain,
+            ),
+          ),
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: _ExploreTile(
+              icon: LucideIcons.dumbbell,
+              title: 'Gyms',
+              subtitle: 'Near you',
+              route: AppRoutes.findGym,
+            ),
+          ),
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: _ExploreTile(
+              icon: LucideIcons.stethoscope,
+              title: 'Health',
+              subtitle: 'Doctors & physios',
+              route: AppRoutes.healthMarketplace,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExploreTile extends StatelessWidget {
+  const _ExploreTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.route,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String route;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$title, $subtitle',
+      child: ExcludeSemantics(
+        child: HubCard(
+          onTap: () => context.go(route),
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.sm, AppSpacing.md, AppSpacing.sm, AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: AppSizing.minTouchTarget,
+                height: AppSizing.minTouchTarget,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.hubHeroGlow,
+                ),
+                child: Icon(icon, size: AppSizing.iconMd, color: AppColors.hubSkyLight),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                title,
+                style: AppTypography.titleMedium.copyWith(
+                  color: AppColors.hubTextBright,
+                  fontWeight: AppTypography.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 2,
+                style: AppTypography.labelMedium.copyWith(color: AppColors.hubTextMuted),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.xs),
+        child: Text(
+          text.toUpperCase(),
+          style: AppTypography.labelSmall.copyWith(
+            color: AppColors.hubTextMuted,
+            letterSpacing: 0.6,
+            fontWeight: AppTypography.semiBold,
+          ),
+        ),
+      );
 }
 
 class _CaptainHeroCard extends StatelessWidget {

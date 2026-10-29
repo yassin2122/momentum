@@ -468,7 +468,7 @@ class _CreateInviteSheetState extends ConsumerState<_CreateInviteSheet> {
 
   List<Widget> _result(CreatedInvite invite) {
     final expires = DateFormat('MMM d').format(invite.expiresAt.toLocal());
-    final message = 'Join me on Grit — I\'ll be your Captain. Open the Coach '
+    final message = 'Join me on Grit — I\'ll be your Coach. Open the Coach '
         'tab, tap "Have an invite code?" and enter ${invite.code} '
         '(valid until $expires).';
     return [
@@ -639,7 +639,7 @@ class _RedeemInviteSheetState extends ConsumerState<_RedeemInviteSheet> {
   List<Widget> _codeStep() => [
         const _SheetHeader(
           title: 'Enter invite code',
-          subtitle: 'Your Captain shares a 10-character code with you.',
+          subtitle: 'Your Coach shares a 10-character code with you.',
         ),
         TextField(
           controller: _code,
