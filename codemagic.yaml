@@ -1,0 +1,22 @@
+workflows:
+  android-apk:
+    name: Grit Android APK
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: mobile
+    environment:
+      flutter: stable
+      java: 17
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+    scripts:
+      - name: Get packages
+        script: flutter pub get
+      - name: Build APK
+        # Supabase URL + publishable anon key come from mobile/.env (client-safe values).
+        script: flutter build apk --release --dart-define-from-file=.env
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
