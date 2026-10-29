@@ -1,4 +1,4 @@
-import '../constants/app_constants.dart';
+import 'password_strength.dart';
 
 /// Shared form-field validators. Kept UI-agnostic (pure functions returning
 /// an error string or null) so they can be reused by any TextFormField's
@@ -17,12 +17,25 @@ abstract final class Validators {
     return null;
   }
 
+  /// Sign-in only: an existing password just has to be present (older
+  /// accounts may predate the current strength rules).
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
-    if (value.length < AppConstants.minPasswordLength) {
-      return 'Password must be at least ${AppConstants.minPasswordLength} characters';
+    return null;
+  }
+
+  /// New passwords (sign-up, reset). Mirrors the server rule in
+  /// supabase/config.toml (`minimum_password_length`, `password_requirements`),
+  /// which is what actually enforces it.
+  static String? newPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    final missing = PasswordStrength.missingRequirements(value);
+    if (missing.isNotEmpty) {
+      return 'Password needs ${missing.join(', ')}';
     }
     return null;
   }

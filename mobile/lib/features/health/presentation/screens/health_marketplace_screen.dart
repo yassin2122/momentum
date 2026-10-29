@@ -136,7 +136,8 @@ class _HealthMarketplaceScreenState extends ConsumerState<HealthMarketplaceScree
         ),
         const SizedBox(height: AppSpacing.md),
         list.when(
-          loading: () => const _Skeleton(),
+          loading: () =>
+              const ProviderCardSkeleton(semanticLabel: 'Loading providers'),
           error: (e, _) => HubMessageCard(
             icon: LucideIcons.circleAlert,
             title: "Couldn't load providers",
@@ -257,56 +258,6 @@ class HealthProviderCard extends StatelessWidget {
           ? null
           : '${gymPrice(e.consultationFee!, e.feeCurrency)} consultation · set by provider',
       trailing: ProviderSaveButton(saved: e.isSaved, name: e.name, onPressed: onSave),
-    );
-  }
-}
-
-class _Skeleton extends StatelessWidget {
-  const _Skeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    Widget bar(double w, double h) => Container(
-          width: w,
-          height: h,
-          decoration: BoxDecoration(
-            color: AppColors.hubIconButton,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-          ),
-        );
-    return Semantics(
-      label: 'Loading providers',
-      child: Column(
-        children: [
-          for (var i = 0; i < 3; i++) ...[
-            HubCard(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                        shape: BoxShape.circle, color: AppColors.hubIconButton),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      bar(150, 14),
-                      const SizedBox(height: AppSpacing.xs),
-                      bar(90, 12),
-                      const SizedBox(height: AppSpacing.xs),
-                      bar(190, 12),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
-        ],
-      ),
     );
   }
 }

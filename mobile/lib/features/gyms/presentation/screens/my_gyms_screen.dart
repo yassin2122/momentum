@@ -41,7 +41,7 @@ class MyGymsScreen extends ConsumerWidget {
           )
         else
           gyms.when(
-            loading: () => const HubLoading(),
+            loading: () => const GymRowsSkeleton(semanticLabel: 'Loading your gyms'),
             error: (e, _) => HubMessageCard(
               icon: LucideIcons.circleAlert,
               title: "Couldn't load your gyms",

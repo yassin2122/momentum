@@ -41,6 +41,12 @@ abstract final class AppRoutes {
   /// Set-new-password screen, reached from the reset-email deep link.
   static const String resetPassword = '/reset-password';
 
+  /// Second sign-in step for accounts with two-factor auth.
+  static const String mfaVerify = '/mfa';
+
+  /// Profile > Two-factor authentication settings.
+  static const String twoFactor = '/security/two-factor';
+
   // Shell tabs — Dashboard, Coach, START (Train), Universe, Profile.
   // Order matches AppShell / the branches in app_router.dart.
   static const String dashboard = '/dashboard';

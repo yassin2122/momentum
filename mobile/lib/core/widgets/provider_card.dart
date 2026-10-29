@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
 import '../theme/app_sizing.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -168,4 +169,63 @@ class ProviderSaveButton extends StatelessWidget {
           color: saved ? AppColors.hubDanger : AppColors.hubTextMuted,
         ),
       );
+}
+
+/// Placeholder [ProviderCard]s while a directory loads, so the page keeps
+/// its shape instead of showing a spinner.
+class ProviderCardSkeleton extends StatelessWidget {
+  const ProviderCardSkeleton({
+    this.semanticLabel = 'Loading',
+    this.count = 3,
+    super.key,
+  });
+
+  final String semanticLabel;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bar(double w, double h) => Container(
+          width: w,
+          height: h,
+          decoration: BoxDecoration(
+            color: AppColors.hubIconButton,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+        );
+    return Semantics(
+      label: semanticLabel,
+      child: Column(
+        children: [
+          for (var i = 0; i < count; i++) ...[
+            HubCard(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                        shape: BoxShape.circle, color: AppColors.hubIconButton),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      bar(150, 14),
+                      const SizedBox(height: AppSpacing.xs),
+                      bar(90, 12),
+                      const SizedBox(height: AppSpacing.xs),
+                      bar(190, 12),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ],
+      ),
+    );
+  }
 }

@@ -175,11 +175,15 @@ class HubCard extends StatelessWidget {
     final radius = BorderRadius.circular(
       hero ? AppRadius.hubHero : AppRadius.hubCard,
     );
-    final decoration = BoxDecoration(
+    // Continuous (squircle) corners instead of plain circular arcs.
+    final shape = RoundedSuperellipseBorder(
       borderRadius: radius,
-      border: Border.all(
+      side: BorderSide(
         color: hero ? AppColors.hubNavBorder : AppColors.hubCardBorder,
       ),
+    );
+    final decoration = ShapeDecoration(
+      shape: shape,
       gradient: hero
           ? const RadialGradient(
               center: Alignment(-0.7, 1),
@@ -203,12 +207,12 @@ class HubCard extends StatelessWidget {
     );
     Widget card(ValueChanged<bool>? onHighlight) => Material(
           color: AppColors.transparent,
-          borderRadius: radius,
+          shape: RoundedSuperellipseBorder(borderRadius: radius),
           clipBehavior: Clip.antiAlias,
           child: onTap == null
               ? content
               : InkWell(
-                  borderRadius: radius,
+                  customBorder: RoundedSuperellipseBorder(borderRadius: radius),
                   onTap: onTap,
                   onHighlightChanged: onHighlight,
                   child: content,

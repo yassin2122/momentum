@@ -106,7 +106,9 @@ class _FindCaptainScreenState extends ConsumerState<FindCaptainScreen> {
         ),
         const SizedBox(height: AppSpacing.sm),
         ...directory.when(
-          loading: () => const [HubLoading()],
+          loading: () => const [
+            ProviderCardSkeleton(semanticLabel: 'Loading coaches'),
+          ],
           error: (e, _) => [
             HubMessageCard(
               icon: LucideIcons.wifiOff,

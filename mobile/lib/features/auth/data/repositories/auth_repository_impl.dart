@@ -3,6 +3,7 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/error/result.dart';
 import '../../domain/entities/auth_change.dart';
+import '../../domain/entities/mfa.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -135,6 +136,56 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  bool needsMfaVerification() => _remoteDataSource.needsMfaVerification;
+
+  @override
+  Future<Result<List<MfaFactor>>> getMfaFactors() => _run(() async {
+        final factors = await _remoteDataSource.verifiedTotpFactors();
+        return [
+          for (final f in factors)
+            MfaFactor(id: f.id, friendlyName: f.friendlyName),
+        ];
+      });
+
+  @override
+  Future<Result<MfaEnrollment>> startMfaEnrollment() => _run(() async {
+        final res = await _remoteDataSource.enrollTotp();
+        final totp = res.totp;
+        if (totp == null) {
+          throw const AuthException('no_totp', 'Could not start 2FA setup');
+        }
+        return MfaEnrollment(
+          factorId: res.id,
+          secret: totp.secret,
+          otpauthUri: totp.uri,
+        );
+      });
+
+  @override
+  Future<Result<void>> verifyMfaCode({
+    required String factorId,
+    required String code,
+  }) =>
+      _run(() =>
+          _remoteDataSource.verifyTotp(factorId: factorId, code: code));
+
+  @override
+  Future<Result<void>> removeMfaFactor(String factorId) =>
+      _run(() => _remoteDataSource.unenrollFactor(factorId));
+
+  Future<Result<T>> _run<T>(Future<T> Function() body) async {
+    try {
+      return Result.success(await body());
+    } on AuthException catch (e) {
+      return Result.failure(_mapAuthError(e));
+    } on NetworkException {
+      return const Result.failure(NetworkFailure());
+    } catch (_) {
+      return const Result.failure(UnknownFailure());
+    }
+  }
+
   /// Maps Supabase's auth error codes to precise domain failures so the UI
   /// can show a specific, actionable message instead of a generic one.
   Failure _mapAuthError(AuthException e) {
@@ -154,6 +205,16 @@ class AuthRepositoryImpl implements AuthRepository {
       case 'confirmation_required':
       case 'email_not_confirmed':
         return const EmailConfirmationRequiredFailure();
+      case 'over_request_rate_limit':
+      case 'over_email_send_rate_limit':
+        return const TooManyAttemptsFailure();
+      case 'mfa_verification_failed':
+      case 'mfa_verification_rejected':
+        return const ServerFailure('That code is incorrect or expired.');
+      case 'mfa_challenge_expired':
+        return const ServerFailure('That code expired. Enter the new one.');
+      case 'insufficient_aal':
+        return const ServerFailure('Verify with your authenticator app first.');
       case 'same_password':
         return const ServerFailure(
           'Choose a password different from your current one.',

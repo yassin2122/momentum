@@ -10,6 +10,7 @@ import '../widgets/auth_footer_prompt.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/gradient_pill_button.dart';
 import '../widgets/labeled_text_field.dart';
+import '../widgets/password_strength_meter.dart';
 
 /// Set-new-password screen — the final step of the reset flow.
 ///
@@ -93,14 +94,14 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                       LabeledTextField(
                         label: 'New password',
                         controller: _passwordController,
-                        hintText: 'At least 8 characters',
+                        hintText: '8+ chars, upper & lowercase, a number',
                         leadingIcon: Icons.lock_outline_rounded,
                         obscureText: true,
                         textInputAction: TextInputAction.next,
                         autofillHints: const [AutofillHints.newPassword],
-                        validator: Validators.password,
+                        validator: Validators.newPassword,
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      PasswordStrengthMeter(controller: _passwordController),
                       LabeledTextField(
                         label: 'Confirm password',
                         controller: _confirmController,

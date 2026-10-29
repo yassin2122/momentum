@@ -201,16 +201,18 @@ class GymSection extends StatelessWidget {
             ),
           ),
         DecoratedBox(
-          decoration: BoxDecoration(
+          decoration: ShapeDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [AppColors.hubCardTop, AppColors.hubCardBottom],
             ),
-            borderRadius: BorderRadius.circular(AppRadius.hubHero),
-            border: Border.all(color: AppColors.hubCardBorder),
+            shape: RoundedSuperellipseBorder(
+              borderRadius: BorderRadius.circular(AppRadius.hubHero),
+              side: const BorderSide(color: AppColors.hubCardBorder),
+            ),
           ),
-          child: ClipRRect(
+          child: ClipRSuperellipse(
             borderRadius: BorderRadius.circular(AppRadius.hubHero),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -229,6 +231,66 @@ class GymSection extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Placeholder [GymSection] rows (logo + two lines) while a gym list loads.
+class GymRowsSkeleton extends StatelessWidget {
+  const GymRowsSkeleton({this.semanticLabel = 'Loading', this.rows = 2, super.key});
+
+  final String semanticLabel;
+  final int rows;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bar(double w, double h) => Container(
+          width: w,
+          height: h,
+          decoration: BoxDecoration(
+            color: AppColors.hubIconButton,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+        );
+    return Semantics(
+      label: semanticLabel,
+      child: GymSection(
+        children: [
+          for (var i = 0; i < rows; i++)
+            ConstrainedBox(
+              constraints:
+                  const BoxConstraints(minHeight: AppSizing.minTouchTarget + 6),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.hubIconButton,
+                        // Same corner as GymLogo (size * 0.28).
+                        borderRadius: BorderRadius.circular(36 * 0.28),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        bar(140, 14),
+                        const SizedBox(height: AppSpacing.xs),
+                        bar(90, 12),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

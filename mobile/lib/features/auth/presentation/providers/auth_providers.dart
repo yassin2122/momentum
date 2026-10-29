@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/supabase_client_provider.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../domain/entities/mfa.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/continue_as_guest.dart';
 import '../../domain/usecases/register_with_email.dart';
@@ -51,3 +52,11 @@ final updatePasswordProvider = Provider<UpdatePassword>((ref) {
 /// reset link) and hasn't set a new password yet. The router keeps them
 /// on the reset-password screen until this clears.
 final passwordRecoveryProvider = StateProvider<bool>((ref) => false);
+
+/// Confirmed authenticator-app factors on the signed-in account.
+final mfaFactorsProvider =
+    FutureProvider.autoDispose<List<MfaFactor>>((ref) async {
+  final result = await ref.watch(authRepositoryProvider).getMfaFactors();
+  if (result.failureOrNull case final f?) throw f.message;
+  return result.valueOrNull ?? const [];
+});

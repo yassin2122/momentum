@@ -276,6 +276,12 @@ class ProfileScreen extends ConsumerWidget {
               ),
               if (!isGuest)
                 _SettingsRow(
+                  icon: LucideIcons.keyRound,
+                  label: 'Two-factor authentication',
+                  onTap: () => context.push(AppRoutes.twoFactor),
+                ),
+              if (!isGuest)
+                _SettingsRow(
                   icon: LucideIcons.briefcase,
                   label: 'Join Grit as a pro',
                   onTap: () => showProJoinSheet(context),

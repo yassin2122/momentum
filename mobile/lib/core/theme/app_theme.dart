@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
@@ -42,6 +43,14 @@ abstract final class AppTheme {
       ),
       // Ripples stay subtle on the dark canvas.
       splashFactory: InkRipple.splashFactory,
+      // Android 14+: the back swipe previews the previous screen.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.transparent,
         surfaceTintColor: AppColors.transparent,
@@ -56,10 +65,18 @@ abstract final class AppTheme {
         backgroundColor: AppColors.achSheet,
         surfaceTintColor: AppColors.transparent,
         modalBarrierColor: AppColors.achScrim,
+        // Material 3's default top radius, drawn as a continuous curve.
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
       ),
       dialogTheme: const DialogThemeData(
         backgroundColor: AppColors.surfaceElevated,
         surfaceTintColor: AppColors.transparent,
+        // Material 3's default dialog radius, drawn as a continuous curve.
+        shape: RoundedSuperellipseBorder(
+          borderRadius: BorderRadius.all(Radius.circular(28)),
+        ),
       ),
       textTheme: TextTheme(
         displayLarge: AppTypography.displayLarge,
@@ -76,7 +93,7 @@ abstract final class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textPrimary,
           minimumSize: const Size.fromHeight(AppSizing.buttonHeight),
-          shape: RoundedRectangleBorder(
+          shape: RoundedSuperellipseBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           textStyle: AppTypography.button,
@@ -122,7 +139,7 @@ abstract final class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(
+        shape: RoundedSuperellipseBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         margin: EdgeInsets.zero,
@@ -133,7 +150,7 @@ abstract final class AppTheme {
           color: AppColors.textPrimary,
         ),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
+        shape: RoundedSuperellipseBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
       ),

@@ -23,7 +23,14 @@ final class EmailAlreadyInUseFailure extends Failure {
 
 final class WeakPasswordFailure extends Failure {
   const WeakPasswordFailure()
-      : super('Password must be at least 8 characters.');
+      : super('Use 8+ characters with upper & lowercase letters and a number.');
+}
+
+/// Server-side rate limit or account lockout after repeated failures.
+/// Deliberately says nothing about whether the account exists.
+final class TooManyAttemptsFailure extends Failure {
+  const TooManyAttemptsFailure()
+      : super('Too many attempts. Please wait a few minutes and try again.');
 }
 
 final class InvalidEmailFailure extends Failure {

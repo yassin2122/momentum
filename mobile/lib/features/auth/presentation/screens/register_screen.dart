@@ -12,6 +12,7 @@ import '../../../../core/utils/validators.dart';
 import '../providers/auth_state_notifier.dart';
 import '../widgets/account_type_picker.dart';
 import '../widgets/auth_ui.dart';
+import '../widgets/password_strength_meter.dart';
 
 /// Register screen (app_design/register screen.png).
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -212,22 +213,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         isPassword: true,
         textInputAction: TextInputAction.next,
         autofillHints: const [AutofillHints.newPassword],
-        validator: Validators.password,
+        validator: Validators.newPassword,
       ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
-          AppSpacing.xs,
-          AppSpacing.md,
-          AppSpacing.sm,
-        ),
-        child: Text(
-          'Use 8+ characters with a mix of letters, numbers & symbols.',
-          style: AppTypography.bodySmall.copyWith(
-            color: AppColors.authTextHint,
-          ),
-        ),
-      ),
+      PasswordStrengthMeter(controller: _passwordController),
       AuthTextField(
         controller: _confirmController,
         hintText: 'Confirm password',

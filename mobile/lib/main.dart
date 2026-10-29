@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/constants/app_constants.dart';
+import 'core/network/secure_session_storage.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/muscle_map/presentation/body/anatomy_license.dart';
@@ -30,7 +31,19 @@ Future<void> main() async {
     );
   }
 
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+    // Session tokens live in the OS keystore, never in plain prefs.
+    authOptions: FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+      autoRefreshToken: true,
+      localStorage: SecureLocalStorage(
+        persistSessionKey: supabaseSessionKey(supabaseUrl),
+      ),
+      pkceAsyncStorage: const SecureGotrueAsyncStorage(),
+    ),
+  );
 
   runApp(
     const ProviderScope(

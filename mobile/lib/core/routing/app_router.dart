@@ -5,6 +5,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../features/auth/presentation/providers/auth_state_notifier.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/mfa_verify_screen.dart';
+import '../../features/auth/presentation/screens/two_factor_screen.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
@@ -83,6 +85,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return isLoggedIn ? AppRoutes.dashboard : AppRoutes.login;
       }
 
+      // Password accepted but 2FA still pending: nothing else is reachable
+      // (the database rejects this session's requests too). Read fresh each
+      // time — passing 2FA doesn't change the user, only the session level.
+      final onMfaRoute = state.matchedLocation == AppRoutes.mfaVerify;
+      if (isLoggedIn &&
+          ref.read(authRepositoryProvider).needsMfaVerification()) {
+        return onMfaRoute ? null : AppRoutes.mfaVerify;
+      }
+      if (onMfaRoute) {
+        return isLoggedIn ? AppRoutes.dashboard : AppRoutes.login;
+      }
+
       // Hold on the splash route until its intro animation has played.
       if (state.matchedLocation == AppRoutes.splash &&
           !ref.read(splashCompleteProvider)) {
@@ -118,6 +132,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.resetPassword,
         pageBuilder: (context, state) =>
             _fadePage(state, const ResetPasswordScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.mfaVerify,
+        pageBuilder: (context, state) =>
+            _fadePage(state, const MfaVerifyScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.twoFactor,
+        pageBuilder: (context, state) =>
+            _pushPage(state, const TwoFactorScreen()),
       ),
       GoRoute(
         path: AppRoutes.captainProfile,

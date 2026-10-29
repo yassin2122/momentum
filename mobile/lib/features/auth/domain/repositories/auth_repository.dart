@@ -1,5 +1,6 @@
 import '../../../../core/error/result.dart';
 import '../entities/auth_change.dart';
+import '../entities/mfa.dart';
 import '../entities/user_entity.dart';
 
 /// Contract for all authentication operations.
@@ -39,4 +40,21 @@ abstract interface class AuthRepository {
   Future<Result<void>> updatePassword(String newPassword);
 
   Future<Result<void>> signOut();
+
+  // ---- Two-factor (authenticator app) ----
+
+  /// True when the session still has to pass 2FA before it may use the app.
+  bool needsMfaVerification();
+
+  Future<Result<List<MfaFactor>>> getMfaFactors();
+
+  Future<Result<MfaEnrollment>> startMfaEnrollment();
+
+  /// Confirms a 6-digit code — used both to finish enrolment and at sign-in.
+  Future<Result<void>> verifyMfaCode({
+    required String factorId,
+    required String code,
+  });
+
+  Future<Result<void>> removeMfaFactor(String factorId);
 }
