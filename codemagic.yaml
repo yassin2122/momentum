@@ -7,6 +7,8 @@ workflows:
     environment:
       flutter: stable
       java: 17
+      groups:
+        - supabase # SUPABASE_URL + SUPABASE_ANON_KEY, set in Codemagic UI
     triggering:
       events:
         - push
@@ -16,7 +18,9 @@ workflows:
       - name: Get packages
         script: flutter pub get
       - name: Build APK
-        # Supabase URL + publishable anon key come from mobile/.env (client-safe values).
-        script: flutter build apk --release --dart-define-from-file=.env
+        script: |
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL=$SUPABASE_URL \
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
